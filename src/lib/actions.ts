@@ -44,7 +44,7 @@ export async function socialSignInAction(provider: 'google', user: { email: stri
   }
   
   if (!user.email.endsWith('@iitdh.ac.in')) {
-    return { message: 'Only users with a iitdh.ac.in email can sign up.' };
+    return { message: `Only users with a @iitdh.ac.in email can sign up. Your email is ${user.email}.` };
   }
 
   let dbUser = await findUserByEmail(user.email);
