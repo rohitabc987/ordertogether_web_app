@@ -42,27 +42,27 @@ function GoogleSignInButton() {
   // This effect will run on the login/signup page after redirect
   useEffect(() => {
     const processRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result) {
-          const user = result.user;
-          startTransition(async () => {
+      startTransition(async () => {
+        try {
+          const result = await getRedirectResult(auth);
+          if (result) {
+            const user = result.user;
             const actionResult = await socialSignInAction('google', { email: user.email, name: user.displayName, photoURL: user.photoURL });
             if (actionResult?.success) {
               router.push('/');
             } else if(actionResult?.message) {
               setError(actionResult.message);
             }
-          });
+          }
+        } catch (error: any) {
+          console.error("Google sign-in error", error);
+          if (error.code === 'auth/unauthorized-domain') {
+            setError('This domain is not authorized for Google Sign-In. Please contact support.');
+          } else {
+            setError(`Failed to sign in with Google. ${error.message}`);
+          }
         }
-      } catch (error: any) {
-        console.error("Google sign-in error", error);
-        if (error.code === 'auth/unauthorized-domain') {
-          setError('This domain is not authorized for Google Sign-In. Please contact support.');
-        } else {
-          setError(`Failed to sign in with Google. ${error.message}`);
-        }
-      }
+      });
     };
     
     processRedirectResult();
