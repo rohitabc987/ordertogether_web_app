@@ -1,6 +1,6 @@
 'use client';
 
-import { useFormState } from 'react-dom';
+import { useActionState, useState, useTransition } from 'react';
 import { createPostAction, getRestaurantSuggestions } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,6 @@ import type { User } from '@/lib/types';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState, useTransition } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
@@ -33,8 +32,9 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export function CreatePostForm({ user }: { user: User }) {
-  const [state, formAction] = useFormState(createPostAction, null);
-  const [isPending, startTransition] = useTransition();
+  const [state, formAction] = useActionState(createPostAction, null);
+  const [isSuggesting, startSuggestionTransition] = useTransition();
+  const [isSubmitting, startSubmitTransition] = useTransition();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   
   const form = useForm<FormValues>({
@@ -48,7 +48,7 @@ export function CreatePostForm({ user }: { user: User }) {
   });
 
   const onSubmit = (data: FormValues) => {
-    startTransition(async () => {
+    startSubmitTransition(async () => {
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
         if (value instanceof Date) {
@@ -67,7 +67,7 @@ export function CreatePostForm({ user }: { user: User }) {
   };
   
   const handleGetSuggestions = async () => {
-    startTransition(async () => {
+    startSuggestionTransition(async () => {
       const result = await getRestaurantSuggestions(user.location.society);
       setSuggestions(result);
     });
@@ -91,8 +91,8 @@ export function CreatePostForm({ user }: { user: User }) {
                     <Input id="restaurant" {...field} placeholder="e.g. Zomato, Truffles" />
                   )}
                 />
-              <Button type="button" variant="outline" onClick={handleGetSuggestions} disabled={isPending}>
-                <Lightbulb className="mr-2 h-4 w-4" /> {isPending ? 'Getting...' : 'Suggest'}
+              <Button type="button" variant="outline" onClick={handleGetSuggestions} disabled={isSuggesting}>
+                <Lightbulb className="mr-2 h-4 w-4" /> {isSuggesting ? 'Getting...' : 'Suggest'}
               </Button>
             </div>
             {suggestions.length > 0 && (
@@ -187,8 +187,8 @@ export function CreatePostForm({ user }: { user: User }) {
           
           {state?.message && <p className="text-sm text-destructive">{state.message}</p>}
 
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? 'Creating Post...' : 'Create Post'}
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Creating Post...' : 'Create Post'}
           </Button>
         </form>
       </CardContent>

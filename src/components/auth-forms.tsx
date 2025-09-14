@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useState, useTransition, useEffect } from 'react';
+import { useFormStatus } from 'react-dom';
 import { loginAction, socialSignInAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,6 @@ import { LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { useState, useTransition, useEffect } from 'react';
 
 function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();
@@ -27,9 +27,14 @@ function GoogleSignInButton() {
 
   const handleGoogleSignIn = async () => {
     setError(null);
-    const provider = new GoogleAuthProvider();
-    // Use signInWithRedirect to avoid popup blockers
-    await signInWithRedirect(auth, provider);
+    try {
+      const provider = new GoogleAuthProvider();
+      // Use signInWithRedirect to avoid popup blockers
+      await signInWithRedirect(auth, provider);
+    } catch (error: any) {
+        console.error("Google sign-in error", error);
+        setError(`Failed to sign in with Google. ${error.message}`);
+    }
   };
   
   // This effect will run on the login/signup page after redirect
@@ -72,7 +77,7 @@ function GoogleSignInButton() {
 
 
 export function LoginForm() {
-  const [state, formAction] = useFormState(loginAction, null);
+  const [state, formAction] = useActionState(loginAction, null);
 
   return (
     <Card className="w-full max-w-md">
