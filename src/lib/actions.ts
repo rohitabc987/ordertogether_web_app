@@ -55,7 +55,6 @@ export async function socialSignInAction(provider: 'google', user: { email: stri
         name: user.name,
         email: user.email,
         photoURL: user.photoURL,
-        password: '', // No password for social sign-in
       });
     }
 

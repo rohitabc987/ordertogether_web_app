@@ -1,7 +1,7 @@
 'use client';
 
-import { useActionState, useState, useTransition, useEffect } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useState, useTransition, useEffect } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import { loginAction, socialSignInAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +31,6 @@ function GoogleSignInButton() {
     setError(null);
     try {
       const provider = new GoogleAuthProvider();
-      // Use signInWithRedirect to avoid popup blockers and handle mobile UX better.
       await signInWithRedirect(auth, provider);
     } catch (error: any) {
         console.error("Google sign-in initiation error", error);
@@ -39,27 +38,25 @@ function GoogleSignInButton() {
     }
   };
   
-  // This effect runs on the login/signup page after the user is redirected back from Google.
   useEffect(() => {
     const processRedirectResult = async () => {
       startTransition(async () => {
         try {
           const result = await getRedirectResult(auth);
           if (result) {
-            // User successfully signed in with Google.
             const user = result.user;
-            const actionResult = await socialSignInAction('google', { email: user.email, name: user.displayName, photoURL: user.photoURL });
+            const actionResult = await socialSignInAction('google', { 
+              email: user.email, 
+              name: user.displayName, 
+              photoURL: user.photoURL 
+            });
             
             if (actionResult?.success) {
-              // On success, redirect to the home page.
               router.push('/');
             } else if(actionResult?.message) {
-              // If the server action fails (e.g., domain not allowed), show the error.
               setError(actionResult.message);
             }
           }
-          // If 'result' is null, it means the user just landed on the page without a sign-in redirect.
-          // In this case, we do nothing and just wait for them to click the button.
         } catch (error: any) {
           console.error("Google sign-in result error", error);
           if (error.code === 'auth/unauthorized-domain') {
@@ -72,8 +69,6 @@ function GoogleSignInButton() {
     };
     
     processRedirectResult();
-    // The empty dependency array is correct here. We only want this to run once when the component mounts
-    // on the redirect page to check for the sign-in result.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -94,7 +89,7 @@ function GoogleSignInButton() {
 
 
 export function LoginForm() {
-  const [state, formAction] = useActionState(loginAction, null);
+  const [state, formAction] = useFormState(loginAction, null);
 
   return (
     <Card className="w-full max-w-md">
