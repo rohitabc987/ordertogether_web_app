@@ -57,6 +57,10 @@ export async function socialSignInAction(provider: 'google', user: { email: stri
         photoURL: user.photoURL,
       });
     }
+    
+    if (!dbUser) {
+      return { success: false, message: 'Failed to create or find user in the database.' };
+    }
 
     cookies().set('session_userId', dbUser.id, {
       httpOnly: true,

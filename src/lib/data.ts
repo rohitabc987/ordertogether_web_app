@@ -24,6 +24,7 @@ export async function getUserById(userId: string): Promise<User | undefined> {
 }
 
 export async function getPostsForUser(society: string): Promise<Post[]> {
+  if (!society) return [];
   const snapshot = await postsCollection
     .where('location.society', '==', society)
     .orderBy('deadline', 'asc')
@@ -62,7 +63,13 @@ export async function createUserInDb(data: { name: string; email: string; photoU
   };
 
   const docRef = await usersCollection.add(newUser);
-  const createdUser = (await docRef.get()).data() as Omit<User, 'id'>;
+  const userSnapshot = await docRef.get();
+  
+  if (!userSnapshot.exists) {
+      throw new Error("Failed to create user.");
+  }
+
+  const createdUser = userSnapshot.data() as Omit<User, 'id'>;
 
   return { ...createdUser, id: docRef.id };
 }
