@@ -62,5 +62,7 @@ export async function createUserInDb(data: { name: string; email: string; photoU
   };
 
   const docRef = await usersCollection.add(newUser);
-  return { ...newUser, id: docRef.id };
+  const createdUser = (await docRef.get()).data() as Omit<User, 'id'>;
+
+  return { ...createdUser, id: docRef.id };
 }
