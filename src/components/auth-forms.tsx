@@ -11,6 +11,7 @@ import { LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();
@@ -24,6 +25,7 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
 function GoogleSignInButton() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleGoogleSignIn = async () => {
     setError(null);
@@ -46,7 +48,9 @@ function GoogleSignInButton() {
           const user = result.user;
           startTransition(async () => {
             const actionResult = await socialSignInAction('google', { email: user.email, name: user.displayName, photoURL: user.photoURL });
-            if (actionResult?.message) {
+            if (actionResult?.success) {
+              router.push('/');
+            } else if(actionResult?.message) {
               setError(actionResult.message);
             }
           });
@@ -62,7 +66,7 @@ function GoogleSignInButton() {
     };
     
     processRedirectResult();
-  }, []);
+  }, [router]);
 
   return (
     <div className="space-y-2">

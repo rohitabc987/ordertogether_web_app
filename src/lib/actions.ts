@@ -40,11 +40,11 @@ export async function loginAction(prevState: any, formData: FormData) {
 
 export async function socialSignInAction(provider: 'google', user: { email: string | null; name: string | null; photoURL: string | null; }) {
   if (!user.email || !user.name) {
-    return { message: 'Google account must have an email and name.' };
+    return { success: false, message: 'Google account must have an email and name.' };
   }
   
   if (!user.email.endsWith('@iitdh.ac.in')) {
-    return { message: `Only users with a @iitdh.ac.in email can sign up. Your email is ${user.email}.` };
+    return { success: false, message: `Only users with a @iitdh.ac.in email can sign up. Your email is ${user.email}.` };
   }
 
   try {
@@ -65,13 +65,12 @@ export async function socialSignInAction(provider: 'google', user: { email: stri
       maxAge: 60 * 60 * 24, // 24 hours
       path: '/',
     });
+
+    return { success: true };
   } catch (error) {
     console.error('Error during social sign in action:', error);
-    return { message: 'An unexpected error occurred on the server.' };
+    return { success: false, message: 'An unexpected error occurred on the server.' };
   }
-
-
-  redirect('/');
 }
 
 export async function logoutAction() {
