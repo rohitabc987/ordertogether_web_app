@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useState, useTransition, useEffect, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { loginAction, socialSignInAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -89,7 +89,7 @@ function GoogleSignInButton() {
 
 
 export function LoginForm() {
-  const [state, formAction] = useFormState(loginAction, null);
+  const [state, formAction] = useActionState(loginAction, null);
 
   return (
     <Card className="w-full max-w-md">
