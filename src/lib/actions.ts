@@ -38,7 +38,7 @@ export async function loginAction(prevState: any, formData: FormData) {
   redirect('/');
 }
 
-export async function socialSignInAction(provider: 'google', user: { email: string | null; name: string | null; }) {
+export async function socialSignInAction(provider: 'google', user: { email: string | null; name: string | null; photoURL: string | null; }) {
   if (!user.email || !user.name) {
     return { message: 'Google account must have an email and name.' };
   }
@@ -54,6 +54,7 @@ export async function socialSignInAction(provider: 'google', user: { email: stri
       dbUser = await createUserInDb({
         name: user.name,
         email: user.email,
+        photoURL: user.photoURL,
         password: '', // No password for social sign-in
       });
     }

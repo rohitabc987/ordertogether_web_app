@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { useAuth } from '@/providers';
 import { logoutAction } from '@/lib/actions';
-import { Avatar, AvatarFallback } from './ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { UtensilsCrossed, LogOut, User, PlusCircle, DollarSign } from 'lucide-react';
 
 export function Header() {
@@ -44,6 +44,7 @@ export function Header() {
               <Button variant="secondary" size="sm" asChild>
                 <Link href="/profile">
                   <Avatar className="h-6 w-6 mr-2">
+                    {user.photoURL && <AvatarImage src={user.photoURL} alt={user.name} />}
                     <AvatarFallback className="text-xs bg-primary text-primary-foreground">
                       {user.name.charAt(0).toUpperCase()}
                     </AvatarFallback>

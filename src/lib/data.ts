@@ -7,6 +7,7 @@ let users: User[] = [
     id: 'user1',
     name: 'Rohan Sharma',
     email: 'rohan@example.com',
+    photoURL: 'https://picsum.photos/seed/user1/200/200',
     password: 'password123',
     contact: { phone: '9876543210', whatsapp: '9876543210' },
     location: { hostel: 'Green View PG', society: 'Koramangala 1st Block' },
@@ -20,6 +21,7 @@ let users: User[] = [
     id: 'user2',
     name: 'Priya Singh',
     email: 'priya@example.com',
+    photoURL: 'https://picsum.photos/seed/user2/200/200',
     password: 'password123',
     contact: { phone: '8765432109', whatsapp: '8765432109' },
     location: { hostel: 'Green View PG', society: 'Koramangala 1st Block' },
@@ -29,6 +31,7 @@ let users: User[] = [
     id: 'user3',
     name: 'Amit Patel',
     email: 'amit@example.com',
+    photoURL: 'https://picsum.photos/seed/user3/200/200',
     password: 'password123',
     contact: { phone: '7654321098', whatsapp: '7654321098' },
     location: { hostel: 'Sunrise Hostel', society: 'Indiranagar' },
@@ -113,12 +116,13 @@ export async function updateUser(userId: string, updates: Partial<User>): Promis
   return users.find(user => user.id === userId);
 }
 
-export async function createUserInDb(data: { name: string; email: string; password: string }): Promise<User> {
+export async function createUserInDb(data: { name: string; email: string; photoURL: string | null; password?: string }): Promise<User> {
   const newUser: User = {
     id: `user${users.length + 1}`,
     name: data.name,
     email: data.email,
-    password: data.password, // In a real app, hash this
+    photoURL: data.photoURL,
+    password: data.password || '', // In a real app, hash this
     contact: { phone: '', whatsapp: '' },
     location: { hostel: '', society: '' },
     subscription: { status: 'inactive', plan: null, expiry: null },

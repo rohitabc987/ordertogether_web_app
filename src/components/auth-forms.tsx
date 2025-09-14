@@ -45,7 +45,7 @@ function GoogleSignInButton() {
         if (result) {
           const user = result.user;
           startTransition(async () => {
-            const actionResult = await socialSignInAction('google', { email: user.email, name: user.displayName });
+            const actionResult = await socialSignInAction('google', { email: user.email, name: user.displayName, photoURL: user.photoURL });
             if (actionResult?.message) {
               setError(actionResult.message);
             }
@@ -53,7 +53,11 @@ function GoogleSignInButton() {
         }
       } catch (error: any) {
         console.error("Google sign-in error", error);
-        setError(`Failed to sign in with Google. ${error.message}`);
+        if (error.code === 'auth/unauthorized-domain') {
+          setError('This domain is not authorized for Google Sign-In. Please contact support.');
+        } else {
+          setError(`Failed to sign in with Google. ${error.message}`);
+        }
       }
     };
     
