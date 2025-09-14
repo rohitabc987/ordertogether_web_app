@@ -63,13 +63,5 @@ export async function createUserInDb(data: { name: string; email: string; photoU
   };
 
   const docRef = await usersCollection.add(newUser);
-  const userSnapshot = await docRef.get();
-  
-  if (!userSnapshot.exists) {
-      throw new Error("Failed to create user.");
-  }
-
-  const createdUser = userSnapshot.data() as Omit<User, 'id'>;
-
-  return { ...createdUser, id: docRef.id };
+  return { id: docRef.id, ...newUser };
 }
