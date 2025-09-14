@@ -8,9 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 
 function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();
@@ -28,22 +28,32 @@ function GoogleSignInButton() {
   const handleGoogleSignIn = async () => {
     setError(null);
     const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      startTransition(async () => {
-        const actionResult = await socialSignInAction('google', { email: user.email, name: user.displayName });
-        if (actionResult?.message) {
-          setError(actionResult.message);
-        }
-      });
-
-    } catch (error: any) {
-      console.error("Google sign-in error", error);
-      setError(`Failed to sign in with Google. ${error.message}`);
-    }
+    // Use signInWithRedirect to avoid popup blockers
+    await signInWithRedirect(auth, provider);
   };
+  
+  // This effect will run on the login/signup page after redirect
+  useEffect(() => {
+    const processRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          const user = result.user;
+          startTransition(async () => {
+            const actionResult = await socialSignInAction('google', { email: user.email, name: user.displayName });
+            if (actionResult?.message) {
+              setError(actionResult.message);
+            }
+          });
+        }
+      } catch (error: any) {
+        console.error("Google sign-in error", error);
+        setError(`Failed to sign in with Google. ${error.message}`);
+      }
+    };
+    
+    processRedirectResult();
+  }, []);
 
   return (
     <div className="space-y-2">
