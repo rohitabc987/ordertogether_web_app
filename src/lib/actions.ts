@@ -47,22 +47,28 @@ export async function socialSignInAction(provider: 'google', user: { email: stri
     return { message: `Only users with a @iitdh.ac.in email can sign up. Your email is ${user.email}.` };
   }
 
-  let dbUser = await findUserByEmail(user.email);
+  try {
+    let dbUser = await findUserByEmail(user.email);
 
-  if (!dbUser) {
-    dbUser = await createUserInDb({
-      name: user.name,
-      email: user.email,
-      password: '', // No password for social sign-in
+    if (!dbUser) {
+      dbUser = await createUserInDb({
+        name: user.name,
+        email: user.email,
+        password: '', // No password for social sign-in
+      });
+    }
+
+    cookies().set('session_userId', dbUser.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24, // 24 hours
+      path: '/',
     });
+  } catch (error) {
+    console.error('Error during social sign in action:', error);
+    return { message: 'An unexpected error occurred on the server.' };
   }
 
-  cookies().set('session_userId', dbUser.id, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24, // 24 hours
-    path: '/',
-  });
 
   redirect('/');
 }

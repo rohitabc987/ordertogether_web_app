@@ -39,9 +39,9 @@ function GoogleSignInButton() {
         }
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google sign-in error", error);
-      setError("Failed to sign in with Google.");
+      setError(`Failed to sign in with Google. ${error.message}`);
     }
   };
 
