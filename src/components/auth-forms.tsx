@@ -1,13 +1,16 @@
 'use client';
 
 import { useFormState, useFormStatus } from 'react-dom';
-import { loginAction, signupAction } from '@/lib/actions';
+import { loginAction, socialSignInAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useState, useTransition } from 'react';
 
 function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();
@@ -17,6 +20,46 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
     </Button>
   );
 }
+
+function GoogleSignInButton() {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      startTransition(async () => {
+        const actionResult = await socialSignInAction('google', { email: user.email, name: user.displayName });
+        if (actionResult?.message) {
+          setError(actionResult.message);
+        }
+      });
+
+    } catch (error) {
+      console.error("Google sign-in error", error);
+      setError("Failed to sign in with Google.");
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={handleGoogleSignIn}
+        disabled={isPending}
+      >
+        {isPending ? 'Signing in...' : 'Sign in with Google'}
+      </Button>
+      {error && <p className="text-sm text-destructive">{error}</p>}
+    </div>
+  );
+}
+
 
 export function LoginForm() {
   const [state, formAction] = useFormState(loginAction, null);
@@ -31,32 +74,43 @@ export function LoginForm() {
         <CardDescription>Enter your credentials to access your account.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="name@example.com" required />
+        <div className="space-y-4">
+          <GoogleSignInButton />
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" type="password" required />
-          </div>
-          {state?.message && <p className="text-sm text-destructive">{state.message}</p>}
-          <SubmitButton>Login</SubmitButton>
-          <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Link href="/signup" className="underline">
-              Sign up
-            </Link>
-          </div>
-        </form>
+          <form action={formAction} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" name="email" type="email" placeholder="name@example.com" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" name="password" type="password" required />
+            </div>
+            {state?.message && <p className="text-sm text-destructive">{state.message}</p>}
+            <SubmitButton>Login with Email</SubmitButton>
+            <div className="mt-4 text-center text-sm">
+              Don&apos;t have an account?{' '}
+              <Link href="/signup" className="underline">
+                Sign up
+              </Link>
+            </div>
+          </form>
+        </div>
       </CardContent>
     </Card>
   );
 }
 
 export function SignupForm() {
-  const [state, formAction] = useFormState(signupAction, null);
-
   return (
     <Card className="w-full max-w-md">
        <CardHeader>
@@ -64,31 +118,19 @@ export function SignupForm() {
           <UserPlus className="w-6 h-6" />
           Create an Account
         </CardTitle>
-        <CardDescription>Join OrderlyGather to start sharing orders.</CardDescription>
+        <CardDescription>Join OrderlyGather by signing in with your Google account.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <form action={formAction} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input id="name" name="name" type="text" placeholder="John Doe" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="name@example.com" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" type="password" required />
-          </div>
-          {state?.message && <p className="text-sm text-destructive">{state.message}</p>}
-          <SubmitButton>Sign Up</SubmitButton>
-           <div className="mt-4 text-center text-sm">
-            Already have an account?{' '}
-            <Link href="/login" className="underline">
-              Login
-            </Link>
-          </div>
-        </form>
+      <CardContent className="space-y-4">
+        <GoogleSignInButton />
+        <p className="px-8 text-center text-sm text-muted-foreground">
+            Only accounts with an @iitdh.ac.in email are allowed.
+        </p>
+         <div className="mt-4 text-center text-sm">
+          Already have an account?{' '}
+          <Link href="/login" className="underline">
+            Login
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );

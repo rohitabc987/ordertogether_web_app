@@ -38,36 +38,34 @@ export async function loginAction(prevState: any, formData: FormData) {
   redirect('/');
 }
 
-const signupSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  name: z.string().min(2),
-});
-
-export async function signupAction(prevState: any, formData: FormData) {
-  const parsed = signupSchema.safeParse(Object.fromEntries(formData));
-
-  if (!parsed.success) {
-    return { message: 'Invalid form data.' };
+export async function socialSignInAction(provider: 'google', user: { email: string | null; name: string | null; }) {
+  if (!user.email || !user.name) {
+    return { message: 'Google account must have an email and name.' };
   }
   
-  const existingUser = await findUserByEmail(parsed.data.email);
-  if (existingUser) {
-    return { message: 'User with this email already exists.' };
+  if (!user.email.endsWith('@iitdh.ac.in')) {
+    return { message: 'Only users with a iitdh.ac.in email can sign up.' };
   }
 
-  const newUser = await createUserInDb(parsed.data);
+  let dbUser = await findUserByEmail(user.email);
 
-  cookies().set('session_userId', newUser.id, {
+  if (!dbUser) {
+    dbUser = await createUserInDb({
+      name: user.name,
+      email: user.email,
+      password: '', // No password for social sign-in
+    });
+  }
+
+  cookies().set('session_userId', dbUser.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24, // 24 hours
     path: '/',
   });
-  
+
   redirect('/');
 }
-
 
 export async function logoutAction() {
   cookies().delete('session_userId');
