@@ -30,7 +30,7 @@ export async function loginAction(prevState: any, formData: FormData) {
     return { message: 'Invalid email or password.' };
   }
   
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   cookieStore.set('session_userId', user.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -44,9 +44,12 @@ export async function loginAction(prevState: any, formData: FormData) {
 export async function verifyAndSignInAction(idToken: string) {
   console.log('actions: verifyAndSignInAction started.');
   try {
+    if (!idToken) {
+      return { success: false, message: 'No token provided.' };
+    }
     const decodedToken = await adminAuth().verifyIdToken(idToken);
-    console.log('actions: ID token verified successfully. Decoded token UID:', decodedToken.uid);
-    
+    console.log('actions: ID token verified successfully. Decoded token:', decodedToken);
+
     const email = decodedToken.email;
     const name = decodedToken.name;
     const photoURL = decodedToken.picture;
@@ -55,15 +58,15 @@ export async function verifyAndSignInAction(idToken: string) {
       console.error('actions: Google account missing email or name.');
       return { success: false, message: 'Google account must have an email and name.' };
     }
-  
+
     if (!email.endsWith('@iitdh.ac.in')) {
-       console.error(`actions: Email is not from @iitdh.ac.in domain: ${email}`);
+      console.error(`actions: Email is not from @iitdh.ac.in domain: ${email}`);
       return { success: false, message: `Only users with a @iitdh.ac.in email can sign up. Your email is ${email}.` };
     }
-    
+
     console.log(`actions: Attempting to find user with email: ${email}`);
     let user = await findUserByEmail(email);
-    let userId: string | undefined = user?.id;
+    let userId: string;
 
     if (!user) {
       console.log('actions: User not found. Creating new user in DB...');
@@ -73,38 +76,33 @@ export async function verifyAndSignInAction(idToken: string) {
         photoURL: photoURL,
       });
       userId = newUser.id;
-      console.log('actions: New user created in DB with ID:', userId);
+      console.log('actions: New user created with ID:', userId);
     } else {
+      userId = user.id;
       console.log('actions: Existing user found with ID:', userId);
     }
-    
-    if (!userId) {
-      console.error('actions: Critical error! Failed to get a user ID after find/create.');
-      return { success: false, message: 'Failed to create or find a user in the database.' };
-    }
 
-    console.log(`actions: Setting session cookie for user ID: ${userId}`);
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.set('session_userId', userId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24, // 24 hours
+      maxAge: 60 * 60 * 24, // 1 day
       path: '/',
     });
-    
-    revalidatePath('/');
-    console.log('actions: Session cookie set and path revalidated. Returning success.');
-    return { success: true };
 
+    revalidatePath('/');
+    console.log('actions: Session cookie set successfully.');
+
+    return { success: true };
   } catch (error: any) {
     console.error('actions: Error during token verification:', error);
-    return { success: false, message: `An unexpected error occurred on the server during token verification: ${error.message}` };
+    return { success: false, message: `Internal error: ${error.message}` };
   }
 }
 
 
 export async function logoutAction() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   cookieStore.delete('session_userId');
   redirect('/login');
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect, useActionState } from 'react';
+import { useState, useTransition, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { loginAction, verifyAndSignInAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
-import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User as FirebaseAuthUser } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
@@ -27,65 +27,49 @@ function GoogleSignInButton() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    console.log('auth-forms: Setting up onAuthStateChanged listener.');
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseAuthUser | null) => {
-      console.log('auth-forms: onAuthStateChanged triggered.');
-      if (firebaseUser) {
-        console.log('auth-forms: firebaseUser object received:', firebaseUser.displayName, firebaseUser.email);
-        startTransition(async () => {
-          try {
-            console.log('auth-forms: Getting ID token from firebaseUser...');
-            const idToken = await firebaseUser.getIdToken();
-            console.log('auth-forms: ID token received, calling verifyAndSignInAction...');
-            
-            const result = await verifyAndSignInAction(idToken);
-            console.log('auth-forms: Result from verifyAndSignInAction:', result);
-            
-            if (result.success) {
-              console.log('auth-forms: Server verification successful. Redirecting to /');
-              router.push('/');
-            } else {
-              console.error('auth-forms: Server verification failed:', result.message);
-              setError(result.message || 'An unknown error occurred on the server.');
-            }
-          } catch (e: any) {
-             console.error('auth-forms: Error during server verification transition:', e);
-             setError(`An error occurred during server verification: ${e.message}`);
-          }
-        });
-      } else {
-        console.log('auth-forms: firebaseUser is null (user signed out).');
-      }
-    });
-
-    // Cleanup subscription on component unmount
-    return () => {
-      console.log('auth-forms: Cleaning up onAuthStateChanged listener.');
-      unsubscribe();
-    };
-  }, [router]);
-
-
   const handleGoogleSignIn = async () => {
     setError(null);
-    const provider = new GoogleAuthProvider();
-    try {
-      console.log('auth-forms: Starting Google sign-in with popup.');
-      await signInWithPopup(auth, provider);
-      console.log('auth-forms: signInWithPopup promise resolved. Waiting for onAuthStateChanged.');
-    } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user') {
-        console.log('auth-forms: Sign-in popup closed by user.');
-        setError('Sign-in cancelled. Please try again.');
-      } else if (error.code === 'auth/unauthorized-domain') {
-          console.error('auth-forms: Unauthorized domain error.');
-          setError('This domain is not authorized for Google Sign-In. Please contact support and add it to the Firebase console.');
-      } else {
-        console.error("auth-forms: Google sign-in error", error);
-        setError(`Failed to sign in with Google. ${error.message}`);
+    startTransition(async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        console.log('auth-forms: Starting Google sign-in with popup.');
+        const result = await signInWithPopup(auth, provider);
+
+        if (!result || !result.user) {
+          throw new Error('Google sign-in failed: No user returned.');
+        }
+        
+        const user = result.user;
+        console.log('auth-forms: Google sign-in successful for user:', user.displayName);
+        
+        console.log('auth-forms: Getting ID token from user...');
+        const idToken = await user.getIdToken();
+        console.log('auth-forms: ID token received. Calling server action...');
+
+        const actionResult = await verifyAndSignInAction(idToken);
+        
+        console.log('auth-forms: Server action result:', actionResult);
+
+        if (actionResult.success) {
+          console.log('auth-forms: Server verification successful. Redirecting to /');
+          router.push('/');
+        } else {
+          setError(actionResult.message || 'An unknown error occurred during server verification.');
+        }
+
+      } catch (error: any) {
+        if (error.code === 'auth/popup-closed-by-user') {
+          console.log('auth-forms: Sign-in popup closed by user.');
+          setError('Sign-in cancelled. Please try again.');
+        } else if (error.code === 'auth/unauthorized-domain') {
+            console.error('auth-forms: Unauthorized domain error.');
+            setError('This domain is not authorized for Google Sign-In. Please contact support and add it to the Firebase console.');
+        } else {
+          console.error("auth-forms: Google sign-in error", error);
+          setError(`Failed to sign in with Google. ${error.message}`);
+        }
       }
-    }
+    });
   };
 
   return (
