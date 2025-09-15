@@ -6,10 +6,10 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
-import { createPost, findUserByEmail, updateUser, createUserInDb } from '@/lib/data';
+import { createPost, findUserByEmail, updateUser, createUserInDb, getUserById } from '@/lib/data';
 import { filterRestaurants } from '@/ai/flows/restaurant-filtering';
 import { auth as adminAuth } from 'firebase-admin';
-import { db } from './firebase-admin'; // Ensure db is initialized here
+import { db } from './firebase-admin';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -30,7 +30,7 @@ export async function loginAction(prevState: any, formData: FormData) {
     return { message: 'Invalid email or password.' };
   }
   
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   cookieStore.set('session_userId', user.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -63,27 +63,29 @@ export async function verifyAndSignInAction(idToken: string) {
     
     console.log(`actions: Attempting to find user with email: ${email}`);
     let user = await findUserByEmail(email);
+    let userId: string | undefined = user?.id;
 
     if (!user) {
       console.log('actions: User not found. Creating new user in DB...');
-      user = await createUserInDb({
+      const newUser = await createUserInDb({
         name: name,
         email: email,
         photoURL: photoURL,
       });
-      console.log('actions: New user created in DB:', user);
+      userId = newUser.id;
+      console.log('actions: New user created in DB with ID:', userId);
     } else {
-      console.log('actions: Existing user found:', user);
+      console.log('actions: Existing user found with ID:', userId);
     }
     
-    if (!user) {
-      console.error('actions: Failed to create or find user in the database.');
-      return { success: false, message: 'Failed to create or find user in the database.' };
+    if (!userId) {
+      console.error('actions: Critical error! Failed to get a user ID after find/create.');
+      return { success: false, message: 'Failed to create or find a user in the database.' };
     }
 
-    console.log(`actions: Setting session cookie for user ID: ${user.id}`);
-    const cookieStore = await cookies();
-    cookieStore.set('session_userId', user.id, {
+    console.log(`actions: Setting session cookie for user ID: ${userId}`);
+    const cookieStore = cookies();
+    cookieStore.set('session_userId', userId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24, // 24 hours
@@ -93,7 +95,8 @@ export async function verifyAndSignInAction(idToken: string) {
     revalidatePath('/');
     console.log('actions: Session cookie set and path revalidated. Returning success.');
     return { success: true };
-  } catch (error) {
+
+  } catch (error: any) {
     console.error('actions: Error during token verification:', error);
     return { success: false, message: `An unexpected error occurred on the server during token verification: ${error.message}` };
   }
@@ -101,7 +104,7 @@ export async function verifyAndSignInAction(idToken: string) {
 
 
 export async function logoutAction() {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   cookieStore.delete('session_userId');
   redirect('/login');
 }
