@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useTransition, useActionState } from 'react';
+import { useState, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
-import { loginAction, socialSignInAction } from '@/lib/actions';
+import { loginAction, socialSignInAction, signupAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import { useActionState } from 'react';
 
 function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();
@@ -46,6 +47,8 @@ function GoogleSignInButton() {
             router.push('/');
           } else if(actionResult?.message) {
             setError(actionResult.message);
+          } else {
+             setError('An unknown error occurred during sign-in.');
           }
         }
       } catch (error: any) {
