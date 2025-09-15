@@ -6,9 +6,9 @@ import admin from 'firebase-admin';
 // For local development, you can create a `.env` file with the variables.
 // In a deployed environment, set these as environment variables.
 
-function getDb() {
-  if (admin.apps.length > 0) {
-    return admin.firestore();
+function initializeAdminApp() {
+   if (admin.apps.length > 0) {
+    return admin.app();
   }
 
   const serviceAccount = {
@@ -29,7 +29,7 @@ function getDb() {
   }
 
   try {
-    admin.initializeApp({
+    return admin.initializeApp({
       credential: admin.credential.cert(serviceAccount as admin.ServiceAccount)
     });
   } catch (error: any) {
@@ -37,8 +37,8 @@ function getDb() {
     // Throw a more descriptive error to help with debugging.
     throw new Error(`Firebase admin initialization failed: ${error.message}`);
   }
-  
-  return admin.firestore();
 }
 
-export const db = getDb();
+const adminApp = initializeAdminApp();
+export const db = adminApp.firestore();
+export const auth = adminApp.auth();

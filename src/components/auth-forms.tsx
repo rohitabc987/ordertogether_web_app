@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
-import { loginAction, socialSignInAction, signupAction } from '@/lib/actions';
+import { loginAction, verifyAndSignInAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User as FirebaseAuthUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useActionState } from 'react';
@@ -28,40 +28,54 @@ function GoogleSignInButton() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleGoogleSignIn = () => {
-    setError(null);
-    startTransition(async () => {
-      try {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-
-        if (user) {
-          const actionResult = await socialSignInAction('google', { 
-            email: user.email, 
-            name: user.displayName, 
-            photoURL: user.photoURL 
-          });
-          
-          if (actionResult?.success) {
-            router.push('/');
-          } else if(actionResult?.message) {
-            setError(actionResult.message);
-          } else {
-             setError('An unknown error occurred during sign-in.');
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseAuthUser | null) => {
+      if (firebaseUser) {
+        // This means a user has successfully signed in with the popup.
+        // Now, we get the ID token and send it to the server to be verified.
+        startTransition(async () => {
+          try {
+            const idToken = await firebaseUser.getIdToken();
+            const result = await verifyAndSignInAction(idToken);
+            
+            if (result.success) {
+              // The server has verified the token, created the user, and set the cookie.
+              // Now we can safely redirect.
+              router.push('/');
+            } else {
+              setError(result.message || 'An unknown error occurred on the server.');
+            }
+          } catch (e: any) {
+             setError(`An error occurred during server verification: ${e.message}`);
           }
-        }
-      } catch (error: any) {
-        console.error("Google sign-in error", error);
-        if (error.code === 'auth/popup-closed-by-user') {
-          setError('Sign-in cancelled. Please try again.');
-        } else if (error.code === 'auth/unauthorized-domain') {
-          setError('This domain is not authorized for Google Sign-In. Please contact support and add it to the Firebase console.');
-        } else {
-          setError(`Failed to sign in with Google. ${error.message}`);
-        }
+        });
       }
     });
+
+    // Cleanup subscription on component unmount
+    return () => unsubscribe();
+  }, [router]);
+
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    const provider = new GoogleAuthProvider();
+    try {
+      // We are only opening the popup here.
+      // The onAuthStateChanged listener above will handle the result.
+      await signInWithPopup(auth, provider);
+    } catch (error: any) {
+      if (error.code === 'auth/popup-closed-by-user') {
+        // This is a normal flow, no need to show an error.
+        // The user intentionally closed the popup.
+        console.log('Sign-in cancelled by user.');
+      } else if (error.code === 'auth/unauthorized-domain') {
+          setError('This domain is not authorized for Google Sign-In. Please contact support and add it to the Firebase console.');
+      } else {
+        console.error("Google sign-in error", error);
+        setError(`Failed to sign in with Google. ${error.message}`);
+      }
+    }
   };
 
   return (
@@ -72,7 +86,7 @@ function GoogleSignInButton() {
         onClick={handleGoogleSignIn}
         disabled={isPending}
       >
-        {isPending ? 'Signing in...' : 'Sign in with Google'}
+        {isPending ? 'Verifying...' : 'Sign in with Google'}
       </Button>
       {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
