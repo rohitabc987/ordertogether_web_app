@@ -52,7 +52,8 @@ export async function updateUser(userId: string, updates: Partial<User>): Promis
 }
 
 export async function createUserInDb(data: { name: string; email: string; photoURL?: string | null; password?: string }): Promise<User> {
-  const newUser: Omit<User, 'id'> = {
+  // This structure matches the User type, including nested objects.
+  const newUserTemplate: Omit<User, 'id'> = {
     name: data.name,
     email: data.email,
     photoURL: data.photoURL || null,
@@ -62,6 +63,8 @@ export async function createUserInDb(data: { name: string; email: string; photoU
     subscription: { status: 'inactive', plan: null, expiry: null },
   };
 
-  const docRef = await usersCollection.add(newUser);
-  return { id: docRef.id, ...newUser };
+  const docRef = await usersCollection.add(newUserTemplate);
+  const newUser = await docRef.get();
+
+  return { id: docRef.id, ...newUser.data() } as User;
 }

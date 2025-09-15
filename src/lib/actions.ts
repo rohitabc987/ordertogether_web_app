@@ -38,31 +38,34 @@ export async function loginAction(prevState: any, formData: FormData) {
   redirect('/');
 }
 
-export async function socialSignInAction(provider: 'google', user: { email: string | null; name: string | null; photoURL: string | null; }) {
-  if (!user.email || !user.name) {
+export async function socialSignInAction(provider: 'google', userData: { email: string | null; name: string | null; photoURL: string | null; }) {
+  if (!userData.email || !userData.name) {
     return { success: false, message: 'Google account must have an email and name.' };
   }
   
-  if (!user.email.endsWith('@iitdh.ac.in')) {
-    return { success: false, message: `Only users with a @iitdh.ac.in email can sign up. Your email is ${user.email}.` };
+  if (!userData.email.endsWith('@iitdh.ac.in')) {
+    return { success: false, message: `Only users with a @iitdh.ac.in email can sign up. Your email is ${userData.email}.` };
   }
 
   try {
-    let dbUser = await findUserByEmail(user.email);
+    let user = await findUserByEmail(userData.email);
 
-    if (!dbUser) {
-      dbUser = await createUserInDb({
-        name: user.name,
-        email: user.email,
-        photoURL: user.photoURL,
+    if (!user) {
+      // User doesn't exist, create a new one.
+      user = await createUserInDb({
+        name: userData.name,
+        email: userData.email,
+        photoURL: userData.photoURL,
       });
     }
     
-    if (!dbUser) {
+    if (!user) {
+      // This case should ideally not be reached if createUserInDb is correct
       return { success: false, message: 'Failed to create or find user in the database.' };
     }
 
-    cookies().set('session_userId', dbUser.id, {
+    // Set cookie and indicate success
+    cookies().set('session_userId', user.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24, // 24 hours
@@ -72,9 +75,11 @@ export async function socialSignInAction(provider: 'google', user: { email: stri
     return { success: true };
   } catch (error) {
     console.error('Error during social sign in action:', error);
+    // Return a generic server error message
     return { success: false, message: 'An unexpected error occurred on the server.' };
   }
 }
+
 
 export async function logoutAction() {
   cookies().delete('session_userId');
