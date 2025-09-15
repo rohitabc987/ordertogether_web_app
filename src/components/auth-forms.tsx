@@ -43,7 +43,10 @@ export function LoginForm() {
 
   const handleGoogleSignIn = async () => {
     const authInstance = auth();
-    if (!authInstance) return;
+    if (!authInstance) {
+      setGoogleError('Firebase Auth not available. Please try again.');
+      return;
+    }
     setGoogleError(null);
     startGoogleTransition(async () => {
       try {
@@ -115,7 +118,10 @@ export function SignupForm() {
 
     const handleGoogleSignIn = async () => {
         const authInstance = auth();
-        if (!authInstance) return;
+        if (!authInstance) {
+          setGoogleError('Firebase Auth not available. Please try again.');
+          return;
+        }
         setGoogleError(null);
         startGoogleTransition(async () => {
           try {
