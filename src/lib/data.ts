@@ -7,11 +7,14 @@ const postsCollection = db.collection('posts');
 
 // Mock API functions
 export async function findUserByEmail(email: string): Promise<User | undefined> {
+  console.log(`data: findUserByEmail called for: ${email}`);
   const snapshot = await usersCollection.where('email', '==', email).limit(1).get();
   if (snapshot.empty) {
+    console.log(`data: No user found with email: ${email}`);
     return undefined;
   }
   const userDoc = snapshot.docs[0];
+  console.log(`data: User found with ID: ${userDoc.id}`);
   return { id: userDoc.id, ...userDoc.data() } as User;
 }
 
@@ -52,6 +55,7 @@ export async function updateUser(userId: string, updates: Partial<User>): Promis
 }
 
 export async function createUserInDb(data: { name: string; email: string; photoURL?: string | null; password?: string }): Promise<User> {
+  console.log(`data: createUserInDb called for email: ${data.email}`);
   // This structure matches the User type, including nested objects.
   const newUserTemplate: Omit<User, 'id'> = {
     name: data.name,
@@ -63,8 +67,12 @@ export async function createUserInDb(data: { name: string; email: string; photoU
     subscription: { status: 'inactive', plan: null, expiry: null },
   };
 
+  console.log('data: Writing new user data to Firestore:', newUserTemplate);
   const docRef = await usersCollection.add(newUserTemplate);
+  console.log(`data: New user document created with ID: ${docRef.id}`);
   const newUser = await docRef.get();
 
-  return { id: docRef.id, ...newUser.data() } as User;
+  const result = { id: docRef.id, ...newUser.data() } as User;
+  console.log('data: Returning new user object:', result);
+  return result;
 }

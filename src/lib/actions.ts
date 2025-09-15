@@ -41,44 +41,57 @@ export async function loginAction(prevState: any, formData: FormData) {
 }
 
 export async function verifyAndSignInAction(idToken: string) {
+  console.log('actions: verifyAndSignInAction started.');
   try {
     const decodedToken = await adminAuth().verifyIdToken(idToken);
+    console.log('actions: ID token verified successfully. Decoded token UID:', decodedToken.uid);
+    
     const email = decodedToken.email;
     const name = decodedToken.name;
     const photoURL = decodedToken.picture;
 
     if (!email || !name) {
+      console.error('actions: Google account missing email or name.');
       return { success: false, message: 'Google account must have an email and name.' };
     }
   
     if (!email.endsWith('@iitdh.ac.in')) {
+       console.error(`actions: Email is not from @iitdh.ac.in domain: ${email}`);
       return { success: false, message: `Only users with a @iitdh.ac.in email can sign up. Your email is ${email}.` };
     }
-
+    
+    console.log(`actions: Attempting to find user with email: ${email}`);
     let user = await findUserByEmail(email);
 
     if (!user) {
+      console.log('actions: User not found. Creating new user in DB...');
       user = await createUserInDb({
         name: name,
         email: email,
         photoURL: photoURL,
       });
+      console.log('actions: New user created in DB:', user);
+    } else {
+      console.log('actions: Existing user found:', user);
     }
     
     if (!user) {
+      console.error('actions: Failed to create or find user in the database.');
       return { success: false, message: 'Failed to create or find user in the database.' };
     }
 
+    console.log(`actions: Setting session cookie for user ID: ${user.id}`);
     cookies().set('session_userId', user.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24, // 24 hours
       path: '/',
     });
-
+    
+    console.log('actions: Session cookie set. Returning success.');
     return { success: true };
   } catch (error) {
-    console.error('Error during token verification:', error);
+    console.error('actions: Error during token verification:', error);
     return { success: false, message: 'An unexpected error occurred on the server during token verification.' };
   }
 }

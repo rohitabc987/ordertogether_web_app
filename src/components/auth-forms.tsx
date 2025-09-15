@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
 import { loginAction, verifyAndSignInAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,10 +12,9 @@ import Link from 'next/link';
 import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User as FirebaseAuthUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
-import { useActionState } from 'react';
 
 function SubmitButton({ children }: { children: React.ReactNode }) {
-  const { pending } = useFormStatus();
+  const { pending } = useActionState(loginAction, null);
   return (
     <Button type="submit" className="w-full" disabled={pending}>
       {pending ? 'Submitting...' : children}
@@ -29,31 +28,42 @@ function GoogleSignInButton() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log('auth-forms: Setting up onAuthStateChanged listener.');
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseAuthUser | null) => {
+      console.log('auth-forms: onAuthStateChanged triggered.');
       if (firebaseUser) {
-        // This means a user has successfully signed in with the popup or redirect.
-        // Now, we get the ID token and send it to the server to be verified.
+        console.log('auth-forms: firebaseUser object received:', firebaseUser.displayName, firebaseUser.email);
         startTransition(async () => {
           try {
+            console.log('auth-forms: Getting ID token from firebaseUser...');
             const idToken = await firebaseUser.getIdToken();
+            console.log('auth-forms: ID token received, calling verifyAndSignInAction...');
+            
             const result = await verifyAndSignInAction(idToken);
+            console.log('auth-forms: Result from verifyAndSignInAction:', result);
             
             if (result.success) {
-              // The server has verified the token, created the user, and set the cookie.
-              // Now we can safely redirect.
+              console.log('auth-forms: Server verification successful. Redirecting to /');
               router.push('/');
             } else {
+              console.error('auth-forms: Server verification failed:', result.message);
               setError(result.message || 'An unknown error occurred on the server.');
             }
           } catch (e: any) {
+             console.error('auth-forms: Error during server verification transition:', e);
              setError(`An error occurred during server verification: ${e.message}`);
           }
         });
+      } else {
+        console.log('auth-forms: firebaseUser is null (user signed out).');
       }
     });
 
     // Cleanup subscription on component unmount
-    return () => unsubscribe();
+    return () => {
+      console.log('auth-forms: Cleaning up onAuthStateChanged listener.');
+      unsubscribe();
+    };
   }, [router]);
 
 
@@ -61,18 +71,17 @@ function GoogleSignInButton() {
     setError(null);
     const provider = new GoogleAuthProvider();
     try {
-      // We are only opening the popup here.
-      // The onAuthStateChanged listener above will handle the result.
+      console.log('auth-forms: Starting Google sign-in with popup.');
       await signInWithPopup(auth, provider);
+      console.log('auth-forms: signInWithPopup promise resolved. Waiting for onAuthStateChanged.');
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') {
-        // This is a normal flow, no need to show an error.
-        // The user intentionally closed the popup.
-        console.log('Sign-in cancelled by user.');
+        console.log('auth-forms: Sign-in popup closed by user.');
       } else if (error.code === 'auth/unauthorized-domain') {
+          console.error('auth-forms: Unauthorized domain error.');
           setError('This domain is not authorized for Google Sign-In. Please contact support and add it to the Firebase console.');
       } else {
-        console.error("Google sign-in error", error);
+        console.error("auth-forms: Google sign-in error", error);
         setError(`Failed to sign in with Google. ${error.message}`);
       }
     }
