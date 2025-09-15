@@ -38,52 +38,6 @@ export async function loginAction(prevState: any, formData: FormData) {
   redirect('/');
 }
 
-const signupSchema = z.object({
-  name: z.string().min(2, 'Name is too short.'),
-  email: z.string().email(),
-  password: z.string().min(6, 'Password must be at least 6 characters.'),
-});
-
-export async function signupAction(prevState: any, formData: FormData) {
-  const parsed = signupSchema.safeParse(Object.fromEntries(formData));
-
-  if (!parsed.success) {
-    return { message: parsed.error.flatten().fieldErrors.password?.[0] || 'Invalid input.' };
-  }
-  
-  const { name, email, password } = parsed.data;
-
-  if (!email.endsWith('@iitdh.ac.in')) {
-    return { message: `Only users with a @iitdh.ac.in email can sign up.` };
-  }
-
-  try {
-    const existingUser = await findUserByEmail(email);
-    if (existingUser) {
-      return { message: 'A user with this email already exists.' };
-    }
-
-    const newUser = await createUserInDb({ name, email, password });
-
-    if (!newUser) {
-      return { message: 'Failed to create user in the database.' };
-    }
-    
-    cookies().set('session_userId', newUser.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24, // 24 hours
-      path: '/',
-    });
-
-  } catch (error) {
-    console.error('Error during sign up action:', error);
-    return { message: 'An unexpected error occurred on the server.' };
-  }
-  
-  redirect('/');
-}
-
 export async function socialSignInAction(provider: 'google', user: { email: string | null; name: string | null; photoURL: string | null; }) {
   if (!user.email || !user.name) {
     return { success: false, message: 'Google account must have an email and name.' };
