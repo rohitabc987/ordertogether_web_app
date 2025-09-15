@@ -22,69 +22,46 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
   );
 }
 
-function GoogleSignInButton() {
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+export function LoginForm() {
+  const [state, formAction] = useActionState(loginAction, null);
+  const [isGooglePending, startGoogleTransition] = useTransition();
+  const [googleError, setGoogleError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const handleRedirectResult = async () => {
-      startTransition(async () => {
+      startGoogleTransition(async () => {
         try {
-          console.log('Checking redirect result...');
           const result = await getRedirectResult(auth);
           if (result && result.user) {
-            console.log('Redirect result found, user:', result.user.email);
             const idToken = await result.user.getIdToken();
-            console.log('ID token from redirect:', idToken);
             const actionResult = await verifyAndSignInAction(idToken);
-            console.log('verifyAndSignInAction result:', actionResult);
             if (actionResult.success) {
               router.push('/');
             } else {
-              setError(actionResult.message ?? 'Sign in failed after redirect.');
+              setGoogleError(actionResult.message ?? 'Sign in failed after redirect.');
             }
-          } else {
-            console.log('No redirect result (either no redirect happened or result not ready yet).');
           }
         } catch (e: any) {
-          console.error('Error in redirect result:', e);
-          setError(e.message ?? 'Error during redirect flow.');
+          setGoogleError(e.message ?? 'Error during redirect flow.');
         }
       });
     };
-
     handleRedirectResult();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  const handleSignIn = async () => {
-    setError(null);
-    startTransition(async () => {
+  const handleGoogleSignIn = async () => {
+    setGoogleError(null);
+    startGoogleTransition(async () => {
       try {
         const provider = new GoogleAuthProvider();
         await signInWithRedirect(auth, provider);
-        // After redirect, this page reloads; useEffect will run to handle result
       } catch (e: any) {
-        console.error('Error initiating redirect:', e);
-        setError(e.message ?? 'Failed to start Google sign in.');
+        setGoogleError(e.message ?? 'Failed to start Google sign in.');
       }
     });
   };
-
-  return (
-    <div className="space-y-2">
-       <Button onClick={handleSignIn} disabled={isPending} variant="outline" className="w-full">
-        {isPending ? 'Redirecting...' : 'Sign in with Google'}
-      </Button>
-      {error && <p className="text-sm text-destructive">{error}</p>}
-    </div>
-  );
-}
-
-
-export function LoginForm() {
-  const [state, formAction] = useActionState(loginAction, null);
 
   return (
     <Card className="w-full max-w-md">
@@ -97,7 +74,10 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <GoogleSignInButton />
+           <Button onClick={handleGoogleSignIn} disabled={isGooglePending} variant="outline" className="w-full">
+            {isGooglePending ? 'Redirecting...' : 'Sign in with Google'}
+          </Button>
+          {googleError && <p className="text-sm text-destructive">{googleError}</p>}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
@@ -133,6 +113,45 @@ export function LoginForm() {
 }
 
 export function SignupForm() {
+    const [isGooglePending, startGoogleTransition] = useTransition();
+    const [googleError, setGoogleError] = useState<string | null>(null);
+    const router = useRouter();
+
+    useEffect(() => {
+        const handleRedirectResult = async () => {
+        startGoogleTransition(async () => {
+            try {
+            const result = await getRedirectResult(auth);
+            if (result && result.user) {
+                const idToken = await result.user.getIdToken();
+                const actionResult = await verifyAndSignInAction(idToken);
+                if (actionResult.success) {
+                router.push('/');
+                } else {
+                setGoogleError(actionResult.message ?? 'Sign in failed after redirect.');
+                }
+            }
+            } catch (e: any) {
+                setGoogleError(e.message ?? 'Error during redirect flow.');
+            }
+        });
+        };
+        handleRedirectResult();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [router]);
+
+    const handleGoogleSignIn = async () => {
+        setGoogleError(null);
+        startGoogleTransition(async () => {
+        try {
+            const provider = new GoogleAuthProvider();
+            await signInWithRedirect(auth, provider);
+        } catch (e: any) {
+            setGoogleError(e.message ?? 'Failed to start Google sign in.');
+        }
+        });
+    };
+
     return (
       <Card className="w-full max-w-md">
          <CardHeader>
@@ -143,7 +162,10 @@ export function SignupForm() {
           <CardDescription>Join OrderlyGather by signing in with your Google account. Only accounts with an @iitdh.ac.in email are allowed.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <GoogleSignInButton />
+          <Button onClick={handleGoogleSignIn} disabled={isGooglePending} variant="outline" className="w-full">
+            {isGooglePending ? 'Redirecting...' : 'Sign in with Google'}
+          </Button>
+          {googleError && <p className="text-sm text-destructive">{googleError}</p>}
            <div className="mt-4 text-center text-sm">
             Already have an account?{' '}
             <Link href="/login" className="underline">
