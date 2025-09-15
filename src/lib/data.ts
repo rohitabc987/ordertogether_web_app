@@ -51,11 +51,11 @@ export async function updateUser(userId: string, updates: Partial<User>): Promis
   return updatedUser;
 }
 
-export async function createUserInDb(data: { name: string; email: string; photoURL: string | null; password?: string }): Promise<User> {
+export async function createUserInDb(data: { name: string; email: string; photoURL?: string | null; password?: string }): Promise<User> {
   const newUser: Omit<User, 'id'> = {
     name: data.name,
     email: data.email,
-    photoURL: data.photoURL,
+    photoURL: data.photoURL || null,
     password: data.password || '', // In a real app, hash this
     contact: { phone: '', whatsapp: '' },
     location: { hostel: '', society: '' },
