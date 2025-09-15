@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
-import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult, AuthError } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
@@ -27,60 +27,54 @@ function GoogleSignInButton() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  // This effect will run when the component mounts and after a redirect from Google.
   useEffect(() => {
-    const processRedirectResult = async () => {
+    const handleRedirectResult = async () => {
       startTransition(async () => {
         try {
+          console.log('Checking redirect result...');
           const result = await getRedirectResult(auth);
           if (result && result.user) {
-            console.log('auth-forms: Redirect result received for user:', result.user.displayName);
+            console.log('Redirect result found, user:', result.user.email);
             const idToken = await result.user.getIdToken();
-            console.log('auth-forms: ID token received. Calling server action...');
-            
+            console.log('ID token from redirect:', idToken);
             const actionResult = await verifyAndSignInAction(idToken);
-            
-            console.log('auth-forms: Server action result:', actionResult);
+            console.log('verifyAndSignInAction result:', actionResult);
             if (actionResult.success) {
-              console.log('auth-forms: Server verification successful. Redirecting to /');
               router.push('/');
             } else {
-              setError(actionResult.message || 'An unknown error occurred during server verification.');
+              setError(actionResult.message ?? 'Sign in failed after redirect.');
             }
+          } else {
+            console.log('No redirect result (either no redirect happened or result not ready yet).');
           }
-        } catch (error: any) {
-          console.error("auth-forms: Error processing redirect result", error);
-          if (error.code !== 'auth/no-user-found') { // Ignore error if no redirect operation was in progress
-              setError(`Failed to sign in with Google. ${error.message}`);
-          }
+        } catch (e: any) {
+          console.error('Error in redirect result:', e);
+          setError(e.message ?? 'Error during redirect flow.');
         }
       });
     };
-    
-    processRedirectResult();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    handleRedirectResult();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-
-  const handleGoogleSignIn = async () => {
+  const handleSignIn = async () => {
     setError(null);
     startTransition(async () => {
-      const provider = new GoogleAuthProvider();
-      // We are now using signInWithRedirect instead of signInWithPopup
-      await signInWithRedirect(auth, provider);
-      // The user will be redirected to Google and then back to this page.
-      // The useEffect hook above will handle the result.
+      try {
+        const provider = new GoogleAuthProvider();
+        await signInWithRedirect(auth, provider);
+        // After redirect, this page reloads; useEffect will run to handle result
+      } catch (e: any) {
+        console.error('Error initiating redirect:', e);
+        setError(e.message ?? 'Failed to start Google sign in.');
+      }
     });
   };
 
   return (
     <div className="space-y-2">
-      <Button
-        variant="outline"
-        className="w-full"
-        onClick={handleGoogleSignIn}
-        disabled={isPending}
-      >
+       <Button onClick={handleSignIn} disabled={isPending} variant="outline" className="w-full">
         {isPending ? 'Redirecting...' : 'Sign in with Google'}
       </Button>
       {error && <p className="text-sm text-destructive">{error}</p>}
