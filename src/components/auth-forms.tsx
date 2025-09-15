@@ -29,9 +29,9 @@ function GoogleSignInButton() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseAuthUser | null) => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseAuthUser | null) => {
       if (firebaseUser) {
-        // This means a user has successfully signed in with the popup.
+        // This means a user has successfully signed in with the popup or redirect.
         // Now, we get the ID token and send it to the server to be verified.
         startTransition(async () => {
           try {
