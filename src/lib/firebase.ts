@@ -11,15 +11,19 @@ const firebaseConfig = {
   appId: "1:183055801352:web:495772bc4e16491fe6c5bd"
 };
 
-function getClientAuth() {
+// We export a function that returns the auth instance.
+// Components will call this, ensuring it only runs on the client.
+export function auth() {
   if (typeof window === 'undefined') {
-    // On the server, return a dummy auth object or handle as needed
-    // For this app, auth is primarily used on the client for sign-in flows.
+    // On the server, return null.
+    // Auth is only needed on the client for the sign-in flow.
     return null;
   }
   
   // Dynamically set authDomain on the client-side to handle preview domains
-  firebaseConfig.authDomain = window.location.hostname;
+  if (window.location.hostname.includes('cloudworkstations.dev')) {
+    firebaseConfig.authDomain = window.location.hostname;
+  }
 
   let app;
   if (!getApps().length) {
@@ -29,7 +33,3 @@ function getClientAuth() {
   }
   return getAuth(app);
 }
-
-// We export a function that returns the auth instance.
-// Components will call this, ensuring it only runs on the client.
-export const auth = getClientAuth();

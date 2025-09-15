@@ -1,11 +1,8 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
-import { useFormStatus } from 'react-dom';
 import { verifyAndSignInAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
@@ -19,11 +16,13 @@ export function LoginForm() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!auth) return; // auth is null on the server
+    const authInstance = auth();
+    if (!authInstance) return;
+
     const handleRedirectResult = async () => {
       startGoogleTransition(async () => {
         try {
-          const result = await getRedirectResult(auth);
+          const result = await getRedirectResult(authInstance);
           if (result && result.user) {
             const idToken = await result.user.getIdToken();
             const actionResult = await verifyAndSignInAction(idToken);
@@ -43,12 +42,13 @@ export function LoginForm() {
   }, [router]);
 
   const handleGoogleSignIn = async () => {
-    if (!auth) return;
+    const authInstance = auth();
+    if (!authInstance) return;
     setGoogleError(null);
     startGoogleTransition(async () => {
       try {
         const provider = new GoogleAuthProvider();
-        await signInWithRedirect(auth, provider);
+        await signInWithRedirect(authInstance, provider);
       } catch (e: any) {
         setGoogleError(e.message ?? 'Failed to start Google sign in.');
       }
@@ -88,11 +88,13 @@ export function SignupForm() {
     const router = useRouter();
 
     useEffect(() => {
-      if (!auth) return; // auth is null on the server
+      const authInstance = auth();
+      if (!authInstance) return;
+
       const handleRedirectResult = async () => {
         startGoogleTransition(async () => {
             try {
-              const result = await getRedirectResult(auth);
+              const result = await getRedirectResult(authInstance);
               if (result && result.user) {
                   const idToken = await result.user.getIdToken();
                   const actionResult = await verifyAndSignInAction(idToken);
@@ -112,12 +114,13 @@ export function SignupForm() {
     }, [router]);
 
     const handleGoogleSignIn = async () => {
-        if (!auth) return;
+        const authInstance = auth();
+        if (!authInstance) return;
         setGoogleError(null);
         startGoogleTransition(async () => {
           try {
               const provider = new GoogleAuthProvider();
-              await signInWithRedirect(auth, provider);
+              await signInWithRedirect(authInstance, provider);
           } catch (e: any) {
               setGoogleError(e.message ?? 'Failed to start Google sign in.');
           }
@@ -130,7 +133,7 @@ export function SignupForm() {
           <CardTitle className="text-2xl font-headline flex items-center gap-2">
             <UserPlus className="w-6 h-6" />
             Create an Account
-          </CardTitle>
+          </Title>
           <CardDescription>Join OrderlyGather by signing in with your Google account. Only accounts with an @iitdh.ac.in email are allowed.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
