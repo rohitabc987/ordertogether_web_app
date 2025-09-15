@@ -11,36 +11,6 @@ import { filterRestaurants } from '@/ai/flows/restaurant-filtering';
 import { auth as adminAuth } from 'firebase-admin';
 import { db } from './firebase-admin';
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
-
-export async function loginAction(prevState: any, formData: FormData) {
-  const parsed = loginSchema.safeParse(Object.fromEntries(formData));
-
-  if (!parsed.success) {
-    return { message: 'Invalid email or password format.' };
-  }
-
-  const { email, password } = parsed.data;
-  const user = await findUserByEmail(email);
-
-  if (!user || user.password !== password) {
-    return { message: 'Invalid email or password.' };
-  }
-  
-  const cookieStore = await cookies();
-  cookieStore.set('session_userId', user.id, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24, // 24 hours
-    path: '/',
-  });
-
-  redirect('/');
-}
-
 export async function verifyAndSignInAction(idToken: string) {
   console.log('actions: verifyAndSignInAction started.');
   try {
@@ -82,7 +52,7 @@ export async function verifyAndSignInAction(idToken: string) {
       console.log('actions: Existing user found with ID:', userId);
     }
 
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     cookieStore.set('session_userId', userId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

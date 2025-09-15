@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { initializeApp, getApps } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -11,17 +11,25 @@ const firebaseConfig = {
   appId: "1:183055801352:web:495772bc4e16491fe6c5bd"
 };
 
-// Dynamically set authDomain on the client-side to handle preview domains
-if (typeof window !== 'undefined') {
+function getClientAuth() {
+  if (typeof window === 'undefined') {
+    // On the server, return a dummy auth object or handle as needed
+    // For this app, auth is primarily used on the client for sign-in flows.
+    return null;
+  }
+  
+  // Dynamically set authDomain on the client-side to handle preview domains
   firebaseConfig.authDomain = window.location.hostname;
+
+  let app;
+  if (!getApps().length) {
+    app = initializeApp(firebaseConfig);
+  } else {
+    app = getApp();
+  }
+  return getAuth(app);
 }
 
-// Initialize Firebase
-let app;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
-}
-
-export const auth = getAuth(app);
+// We export a function that returns the auth instance.
+// Components will call this, ensuring it only runs on the client.
+export const auth = getClientAuth();
