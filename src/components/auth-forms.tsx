@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useActionState } from 'react';
+import { useState, useTransition, useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { loginAction, verifyAndSignInAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
@@ -27,48 +27,49 @@ function GoogleSignInButton() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  // This effect will run when the component mounts and after a redirect from Google.
+  useEffect(() => {
+    const processRedirectResult = async () => {
+      startTransition(async () => {
+        try {
+          const result = await getRedirectResult(auth);
+          if (result && result.user) {
+            console.log('auth-forms: Redirect result received for user:', result.user.displayName);
+            const idToken = await result.user.getIdToken();
+            console.log('auth-forms: ID token received. Calling server action...');
+            
+            const actionResult = await verifyAndSignInAction(idToken);
+            
+            console.log('auth-forms: Server action result:', actionResult);
+            if (actionResult.success) {
+              console.log('auth-forms: Server verification successful. Redirecting to /');
+              router.push('/');
+            } else {
+              setError(actionResult.message || 'An unknown error occurred during server verification.');
+            }
+          }
+        } catch (error: any) {
+          console.error("auth-forms: Error processing redirect result", error);
+          if (error.code !== 'auth/no-user-found') { // Ignore error if no redirect operation was in progress
+              setError(`Failed to sign in with Google. ${error.message}`);
+          }
+        }
+      });
+    };
+    
+    processRedirectResult();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router]);
+
+
   const handleGoogleSignIn = async () => {
     setError(null);
     startTransition(async () => {
       const provider = new GoogleAuthProvider();
-      try {
-        console.log('auth-forms: Starting Google sign-in with popup.');
-        const result = await signInWithPopup(auth, provider);
-
-        if (!result || !result.user) {
-          throw new Error('Google sign-in failed: No user returned.');
-        }
-        
-        const user = result.user;
-        console.log('auth-forms: Google sign-in successful for user:', user.displayName);
-        
-        console.log('auth-forms: Getting ID token from user...');
-        const idToken = await user.getIdToken();
-        console.log('auth-forms: ID token received. Calling server action...');
-
-        const actionResult = await verifyAndSignInAction(idToken);
-        
-        console.log('auth-forms: Server action result:', actionResult);
-
-        if (actionResult.success) {
-          console.log('auth-forms: Server verification successful. Redirecting to /');
-          router.push('/');
-        } else {
-          setError(actionResult.message || 'An unknown error occurred during server verification.');
-        }
-
-      } catch (error: any) {
-        if (error.code === 'auth/popup-closed-by-user') {
-          console.log('auth-forms: Sign-in popup closed by user.');
-          setError('Sign-in cancelled. Please try again.');
-        } else if (error.code === 'auth/unauthorized-domain') {
-            console.error('auth-forms: Unauthorized domain error.');
-            setError('This domain is not authorized for Google Sign-In. Please contact support and add it to the Firebase console.');
-        } else {
-          console.error("auth-forms: Google sign-in error", error);
-          setError(`Failed to sign in with Google. ${error.message}`);
-        }
-      }
+      // We are now using signInWithRedirect instead of signInWithPopup
+      await signInWithRedirect(auth, provider);
+      // The user will be redirected to Google and then back to this page.
+      // The useEffect hook above will handle the result.
     });
   };
 
@@ -80,7 +81,7 @@ function GoogleSignInButton() {
         onClick={handleGoogleSignIn}
         disabled={isPending}
       >
-        {isPending ? 'Verifying...' : 'Sign in with Google'}
+        {isPending ? 'Redirecting...' : 'Sign in with Google'}
       </Button>
       {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
