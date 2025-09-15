@@ -160,7 +160,7 @@ export function SignupForm() {
           <CardTitle className="text-2xl font-headline flex items-center gap-2">
             <UserPlus className="w-6 h-6" />
             Create an Account
-          </CardTitle>
+          </Title>
           <CardDescription>Join OrderlyGather by signing in with your Google account. Only accounts with an @iitdh.ac.in email are allowed.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
