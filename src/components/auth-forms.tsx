@@ -77,6 +77,7 @@ function GoogleSignInButton() {
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') {
         console.log('auth-forms: Sign-in popup closed by user.');
+        setError('Sign-in cancelled. Please try again.');
       } else if (error.code === 'auth/unauthorized-domain') {
           console.error('auth-forms: Unauthorized domain error.');
           setError('This domain is not authorized for Google Sign-In. Please contact support and add it to the Firebase console.');

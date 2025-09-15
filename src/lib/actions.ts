@@ -88,11 +88,12 @@ export async function verifyAndSignInAction(idToken: string) {
       path: '/',
     });
     
-    console.log('actions: Session cookie set. Returning success.');
+    revalidatePath('/');
+    console.log('actions: Session cookie set and path revalidated. Returning success.');
     return { success: true };
   } catch (error) {
     console.error('actions: Error during token verification:', error);
-    return { success: false, message: 'An unexpected error occurred on the server during token verification.' };
+    return { success: false, message: `An unexpected error occurred on the server during token verification: ${error.message}` };
   }
 }
 

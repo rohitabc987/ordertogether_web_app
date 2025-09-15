@@ -14,16 +14,21 @@ export async function findUserByEmail(email: string): Promise<User | undefined> 
     return undefined;
   }
   const userDoc = snapshot.docs[0];
-  console.log(`data: User found with ID: ${userDoc.id}`);
-  return { id: userDoc.id, ...userDoc.data() } as User;
+  const userData = { id: userDoc.id, ...userDoc.data() } as User;
+  console.log(`data: User found with ID: ${userDoc.id}`, userData);
+  return userData;
 }
 
 export async function getUserById(userId: string): Promise<User | undefined> {
+  console.log(`data: getUserById called for ID: ${userId}`);
   const userDoc = await usersCollection.doc(userId).get();
   if (!userDoc.exists) {
+    console.log(`data: No user found with ID: ${userId}`);
     return undefined;
   }
-  return { id: userDoc.id, ...userDoc.data() } as User;
+  const userData = { id: userDoc.id, ...userDoc.data() } as User;
+  console.log(`data: User found:`, userData);
+  return userData;
 }
 
 export async function getPostsForUser(society: string): Promise<Post[]> {
@@ -56,7 +61,6 @@ export async function updateUser(userId: string, updates: Partial<User>): Promis
 
 export async function createUserInDb(data: { name: string; email: string; photoURL?: string | null; password?: string }): Promise<User> {
   console.log(`data: createUserInDb called for email: ${data.email}`);
-  // This structure matches the User type, including nested objects.
   const newUserTemplate: Omit<User, 'id'> = {
     name: data.name,
     email: data.email,
@@ -70,9 +74,9 @@ export async function createUserInDb(data: { name: string; email: string; photoU
   console.log('data: Writing new user data to Firestore:', newUserTemplate);
   const docRef = await usersCollection.add(newUserTemplate);
   console.log(`data: New user document created with ID: ${docRef.id}`);
-  const newUser = await docRef.get();
+  const newUserDoc = await docRef.get();
 
-  const result = { id: docRef.id, ...newUser.data() } as User;
+  const result = { id: docRef.id, ...newUserDoc.data() } as User;
   console.log('data: Returning new user object:', result);
   return result;
 }
