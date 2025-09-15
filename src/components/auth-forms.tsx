@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
-import { useActionState } from 'react';
+import { useState, useTransition, useEffect, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { loginAction, verifyAndSignInAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
 function SubmitButton({ children }: { children: React.ReactNode }) {
-  const { pending } = useActionState(loginAction, null);
+  const { pending } = useFormStatus();
   return (
     <Button type="submit" className="w-full" disabled={pending}>
       {pending ? 'Submitting...' : children}
