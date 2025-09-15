@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
-import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
@@ -27,50 +27,39 @@ function GoogleSignInButton() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
     setError(null);
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithRedirect(auth, provider);
-    } catch (error: any) {
-        console.error("Google sign-in initiation error", error);
-        setError(`Failed to start Google sign-in. ${error.message}`);
-    }
-  };
-  
-  useEffect(() => {
-    const processRedirectResult = async () => {
-      startTransition(async () => {
-        try {
-          const result = await getRedirectResult(auth);
-          if (result) {
-            const user = result.user;
-            const actionResult = await socialSignInAction('google', { 
-              email: user.email, 
-              name: user.displayName, 
-              photoURL: user.photoURL 
-            });
-            
-            if (actionResult?.success) {
-              router.push('/');
-            } else if(actionResult?.message) {
-              setError(actionResult.message);
-            }
-          }
-        } catch (error: any) {
-          console.error("Google sign-in result error", error);
-          if (error.code === 'auth/unauthorized-domain') {
-            setError('This domain is not authorized for Google Sign-In. Please contact support and add it to the Firebase console.');
-          } else {
-            setError(`Failed to sign in with Google. ${error.message}`);
+    startTransition(async () => {
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        if (user) {
+          const actionResult = await socialSignInAction('google', { 
+            email: user.email, 
+            name: user.displayName, 
+            photoURL: user.photoURL 
+          });
+          
+          if (actionResult?.success) {
+            router.push('/');
+          } else if(actionResult?.message) {
+            setError(actionResult.message);
           }
         }
-      });
-    };
-    
-    processRedirectResult();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      } catch (error: any) {
+        console.error("Google sign-in error", error);
+        if (error.code === 'auth/popup-closed-by-user') {
+          setError('Sign-in cancelled. Please try again.');
+        } else if (error.code === 'auth/unauthorized-domain') {
+          setError('This domain is not authorized for Google Sign-In. Please contact support and add it to the Firebase console.');
+        } else {
+          setError(`Failed to sign in with Google. ${error.message}`);
+        }
+      }
+    });
+  };
 
   return (
     <div className="space-y-2">
@@ -138,24 +127,24 @@ export function LoginForm() {
 }
 
 export function SignupForm() {
-  return (
-    <Card className="w-full max-w-md">
-       <CardHeader>
-        <CardTitle className="text-2xl font-headline flex items-center gap-2">
-          <UserPlus className="w-6 h-6" />
-          Create an Account
-        </CardTitle>
-        <CardDescription>Join OrderlyGather by signing in with your Google account. Only accounts with an @iitdh.ac.in email are allowed.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <GoogleSignInButton />
-         <div className="mt-4 text-center text-sm">
-          Already have an account?{' '}
-          <Link href="/login" className="underline">
-            Login
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+    return (
+      <Card className="w-full max-w-md">
+         <CardHeader>
+          <CardTitle className="text-2xl font-headline flex items-center gap-2">
+            <UserPlus className="w-6 h-6" />
+            Create an Account
+          </CardTitle>
+          <CardDescription>Join OrderlyGather by signing in with your Google account. Only accounts with an @iitdh.ac.in email are allowed.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <GoogleSignInButton />
+           <div className="mt-4 text-center text-sm">
+            Already have an account?{' '}
+            <Link href="/login" className="underline">
+              Login
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
