@@ -1,4 +1,5 @@
 import admin from 'firebase-admin';
+import getConfig from 'next/config';
 
 // Important: You must generate a service account key in the Firebase console,
 // Base64-encode the entire JSON file, and set it as a single environment variable.
@@ -10,10 +11,11 @@ function initializeAdminApp() {
     return admin.app();
   }
 
-  const base64ServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+  const { serverRuntimeConfig } = getConfig();
+  const base64ServiceAccount = serverRuntimeConfig.FIREBASE_SERVICE_ACCOUNT_BASE64;
 
   if (!base64ServiceAccount) {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT_BASE64 environment variable not set. Please check your .env file.');
+    throw new Error('FIREBASE_SERVICE_ACCOUNT_BASE64 is not set in next.config.js. Please check your configuration.');
   }
 
   try {

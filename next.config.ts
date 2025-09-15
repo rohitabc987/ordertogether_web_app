@@ -1,5 +1,5 @@
-import { config } from 'dotenv';
 import type {NextConfig} from 'next';
+import { config } from 'dotenv';
 
 // Load environment variables from .env file
 config();
@@ -33,6 +33,10 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+  },
+  serverRuntimeConfig: {
+    // Will only be available on the server side
+    FIREBASE_SERVICE_ACCOUNT_BASE64: process.env.FIREBASE_SERVICE_ACCOUNT_BASE64,
   },
 };
 
