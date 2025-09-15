@@ -11,6 +11,11 @@ const firebaseConfig = {
   appId: "1:183055801352:web:495772bc4e16491fe6c5bd"
 };
 
+// Dynamically set authDomain on the client-side to handle preview domains
+if (typeof window !== 'undefined') {
+  firebaseConfig.authDomain = window.location.hostname;
+}
+
 // Initialize Firebase
 let app;
 if (!getApps().length) {
