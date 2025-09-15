@@ -29,8 +29,9 @@ export async function loginAction(prevState: any, formData: FormData) {
   if (!user || user.password !== password) {
     return { message: 'Invalid email or password.' };
   }
-
-  cookies().set('session_userId', user.id, {
+  
+  const cookieStore = await cookies();
+  cookieStore.set('session_userId', user.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24, // 24 hours
@@ -81,7 +82,8 @@ export async function verifyAndSignInAction(idToken: string) {
     }
 
     console.log(`actions: Setting session cookie for user ID: ${user.id}`);
-    cookies().set('session_userId', user.id, {
+    const cookieStore = await cookies();
+    cookieStore.set('session_userId', user.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24, // 24 hours
@@ -98,7 +100,8 @@ export async function verifyAndSignInAction(idToken: string) {
 }
 
 export async function logoutAction() {
-  cookies().delete('session_userId');
+  const cookieStore = await cookies();
+  cookieStore.delete('session_userId');
   redirect('/login');
 }
 

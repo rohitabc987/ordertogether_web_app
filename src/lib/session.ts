@@ -5,7 +5,8 @@ import { getUserById } from './data';
 import type { User } from './types';
 
 export async function getUserId(): Promise<string | undefined> {
-  const sessionCookie = await cookies().get('session_userId');
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get('session_userId');
   return sessionCookie?.value;
 }
 
