@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useTransition, useEffect, useActionState } from 'react';
+import { useState, useTransition, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { loginAction, socialSignInAction, signupAction } from '@/lib/actions';
+import { loginAction, socialSignInAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
