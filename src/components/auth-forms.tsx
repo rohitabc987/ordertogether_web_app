@@ -133,12 +133,12 @@ export function SignupForm() {
           <CardTitle className="text-2xl font-headline flex items-center gap-2">
             <UserPlus className="w-6 h-6" />
             Create an Account
-          </Title>
+          </CardTitle>
           <CardDescription>Join OrderlyGather by signing in with your Google account. Only accounts with an @iitdh.ac.in email are allowed.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button onClick={handleGoogleSignIn} disabled={isGooglePending} variant="outline" className="w-full">
-            {isGooglePending ? 'Redirecting...' : 'Sign in with Google'}
+            {isGooglePending ? 'Redirecting...' : 'Sign up with Google'}
           </Button>
           {googleError && <p className="text-sm text-destructive">{googleError}</p>}
            <div className="mt-4 text-center text-sm">
@@ -150,4 +150,4 @@ export function SignupForm() {
         </CardContent>
       </Card>
     );
-  }
+}
