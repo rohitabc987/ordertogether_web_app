@@ -20,11 +20,6 @@ export function auth() {
     return null;
   }
   
-  // Dynamically set authDomain on the client-side to handle preview domains
-  if (window.location.hostname.includes('cloudworkstations.dev')) {
-    firebaseConfig.authDomain = window.location.hostname;
-  }
-
   let app;
   if (!getApps().length) {
     app = initializeApp(firebaseConfig);
