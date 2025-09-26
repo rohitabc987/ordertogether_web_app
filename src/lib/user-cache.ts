@@ -12,14 +12,17 @@ export function getCachedProfile(): User | null {
     return inMemoryUser;
   }
 
-  try {
-    const cachedUserStr = localStorage.getItem(USER_CACHE_KEY);
-    if (cachedUserStr) {
-      inMemoryUser = JSON.parse(cachedUserStr);
-      return inMemoryUser;
+  // Only access localStorage on the client-side
+  if (typeof window !== 'undefined') {
+    try {
+      const cachedUserStr = localStorage.getItem(USER_CACHE_KEY);
+      if (cachedUserStr) {
+        inMemoryUser = JSON.parse(cachedUserStr);
+        return inMemoryUser;
+      }
+    } catch (error) {
+      console.error("Failed to read from localStorage", error);
     }
-  } catch (error) {
-    console.error("Failed to read from localStorage", error);
   }
 
   return null;
@@ -35,10 +38,13 @@ export function updateProfileLocally(updates: Partial<User>) {
       updatedAt: new Date().toISOString() 
     };
     inMemoryUser = updatedUser;
-    try {
-      localStorage.setItem(USER_CACHE_KEY, JSON.stringify(updatedUser));
-    } catch (error) {
-      console.error("Failed to write to localStorage", error);
+    // Only access localStorage on the client-side
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(USER_CACHE_KEY, JSON.stringify(updatedUser));
+      } catch (error) {
+        console.error("Failed to write to localStorage", error);
+      }
     }
   }
 }
@@ -46,10 +52,13 @@ export function updateProfileLocally(updates: Partial<User>) {
 // Function to clear the user profile from cache
 export function clearProfileCache() {
   inMemoryUser = null;
-  try {
-    localStorage.removeItem(USER_CACHE_KEY);
-  } catch (error) {
-    console.error("Failed to clear localStorage", error);
+  // Only access localStorage on the client-side
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(USER_CACHE_KEY);
+    } catch (error) {
+      console.error("Failed to clear localStorage", error);
+    }
   }
   if (unsubscribe) {
     unsubscribe();
@@ -75,7 +84,9 @@ export function initUserProfileCache(userId: string, callback: (user: User) => v
 
       if (!localUser || !localUser.updatedAt || new Date(serverUser.updatedAt) > new Date(localUser.updatedAt)) {
         inMemoryUser = serverUser;
-        localStorage.setItem(USER_CACHE_KEY, JSON.stringify(serverUser));
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(USER_CACHE_KEY, JSON.stringify(serverUser));
+        }
         callback(serverUser);
       }
     }
@@ -86,7 +97,9 @@ export function initUserProfileCache(userId: string, callback: (user: User) => v
     if (doc.exists()) {
       const serverUser = { id: doc.id, ...doc.data(), updatedAt: new Date().toISOString() } as User;
       inMemoryUser = serverUser;
-      localStorage.setItem(USER_CACHE_KEY, JSON.stringify(serverUser));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(USER_CACHE_KEY, JSON.stringify(serverUser));
+      }
       callback(serverUser);
     }
   }, (error) => {

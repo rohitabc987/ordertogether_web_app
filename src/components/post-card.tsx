@@ -91,7 +91,7 @@ export function PostCard({ post }: { post: Post }) {
         <Dialog>
           <DialogTrigger asChild>
             <Button 
-                className="w-full bg-brand-gradient text-white font-bold transition-all duration-300 hover:shadow-[0_0_20px_theme(colors.purple.500)] disabled:opacity-50" 
+                className="w-full bg-brand-gradient text-white font-bold transition-all duration-300 hover:shadow-[0_0_20px_#800080] disabled:opacity-50" 
                 disabled={deadlineInPast || !user}
             >
                 Join Order
