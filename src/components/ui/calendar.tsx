@@ -1,70 +1,104 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
+import { useActionState, useState, useTransition } from 'react';
+import { createPostAction, getRestaurantSuggestions } from '@/lib/actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Lightbulb } from 'lucide-react';
+import type { User } from '@/lib/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
-
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
-
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  ...props
-}: CalendarProps) {
+export function CreatePostForm({ user }: { user: User }) {
+  const [state, formAction] = useActionState(createPostAction, null);
+  const [isSuggesting, startSuggestionTransition] = useTransition();
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [restaurant, setRestaurant] = useState('');
+  
+  const handleGetSuggestions = async () => {
+    startSuggestionTransition(async () => {
+      const location = user.location?.area || user.location?.city || '';
+      const result = await getRestaurantSuggestions(location);
+      setSuggestions(result);
+    });
+  }
+  
   return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
-      classNames={{
-        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4",
-        caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
-        nav: "space-x-1 flex items-center",
-        nav_button: cn(
-          buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-        ),
-        nav_button_previous: "absolute left-1",
-        nav_button_next: "absolute right-1",
-        table: "w-full border-collapse space-y-1",
-        head_row: "flex",
-        head_cell:
-          "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
-        row: "flex w-full mt-2",
-        cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-        day: cn(
-          buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
-        ),
-        day_range_end: "day-range-end",
-        day_selected:
-          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground",
-        day_outside:
-          "day-outside text-muted-foreground aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
-        day_disabled: "text-muted-foreground opacity-50",
-        day_range_middle:
-          "aria-selected:bg-accent aria-selected:text-accent-foreground",
-        day_hidden: "invisible",
-        ...classNames,
-      }}
-      components={{
-        IconLeft: ({ className, ...props }) => (
-          <ChevronLeft className={cn("h-4 w-4", className)} {...props} />
-        ),
-        IconRight: ({ className, ...props }) => (
-          <ChevronRight className={cn("h-4 w-4", className)} {...props} />
-        ),
-      }}
-      {...props}
-    />
-  )
-}
-Calendar.displayName = "Calendar"
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle className="text-2xl font-headline">Create a New Order Post</CardTitle>
+        <CardDescription>Let others in your building know you're ordering.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form action={formAction} className="space-y-6">
+          <input type="hidden" name="authorId" value={user.id} />
+          <input type="hidden" name="authorName" value={user.userProfile?.name || ''} />
+          <input type="hidden" name="contactNumber" value={user.contact?.phone || ''} />
+          <input type="hidden" name="institutionType" value={user.institution?.institutionType || ''} />
+          <input type="hidden" name="institutionName" value={user.institution?.institutionName || ''} />
+          <input type="hidden" name="area" value={user.location?.area || ''} />
+          <input type="hidden" name="city" value={user.location?.city || ''} />
+          <input type="hidden" name="pinCode" value={user.location?.pinCode || ''} />
 
-export { Calendar }
+          <div className="space-y-2">
+            <Label htmlFor="restaurant">Delivery App / Restaurant</Label>
+            <div className="flex items-center gap-2">
+                <Input 
+                  id="restaurant" 
+                  name="restaurant"
+                  placeholder="e.g. Zomato, Truffles"
+                  value={restaurant}
+                  onChange={(e) => setRestaurant(e.target.value)}
+                  required
+                />
+              <Button type="button" variant="outline" onClick={handleGetSuggestions} disabled={isSuggesting}>
+                <Lightbulb className="mr-2 h-4 w-4" /> {isSuggesting ? 'Getting...' : 'Suggest'}
+              </Button>
+            </div>
+            {suggestions.length > 0 && (
+              <Select onValueChange={setRestaurant} value={restaurant}>
+                  <SelectTrigger>
+                      <SelectValue placeholder="Or pick a suggestion..."/>
+                  </SelectTrigger>
+                  <SelectContent>
+                      {suggestions.map((s, i) => (
+                          <SelectItem key={i} value={s}>{s}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="minAmount">Minimum Order Amount (₹)</Label>
+               <Input id="minAmount" name="minAmount" type="number" defaultValue={200} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="maxAmount">Maximum Order Amount (₹)</Label>
+               <Input id="maxAmount" name="maxAmount" type="number" defaultValue={500} required />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="deadline">Deadline</Label>
+            <Input id="deadline" name="deadline" type="date" required />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes (Optional)</Label>
+            <Textarea id="notes" name="notes" placeholder="e.g. Only vegetarian options" />
+          </div>
+          
+          {state?.message && <p className="text-sm text-destructive">{state.message}</p>}
+
+          <Button type="submit" className="w-full">
+            Create Post
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}

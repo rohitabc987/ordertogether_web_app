@@ -6,11 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Lightbulb } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { Lightbulb } from 'lucide-react';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -19,7 +15,6 @@ export function CreatePostForm({ user }: { user: User }) {
   const [state, formAction] = useActionState(createPostAction, null);
   const [isSuggesting, startSuggestionTransition] = useTransition();
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [deadline, setDeadline] = useState<Date | undefined>();
   const [restaurant, setRestaurant] = useState('');
   
   const handleGetSuggestions = async () => {
@@ -89,29 +84,7 @@ export function CreatePostForm({ user }: { user: User }) {
 
           <div className="space-y-2">
             <Label htmlFor="deadline">Deadline</Label>
-            <input type="hidden" name="deadline" value={deadline?.toISOString() ?? ''} />
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !deadline && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {deadline ? format(deadline, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={deadline}
-                  onSelect={setDeadline}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <Input id="deadline" name="deadline" type="date" required />
           </div>
 
           <div className="space-y-2">
