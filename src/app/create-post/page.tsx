@@ -9,8 +9,8 @@ export default async function CreatePostPage() {
     redirect('/login');
   }
 
-  // Check if user has location details set
-  if (!user.location?.hostel || !user.location?.society) {
+  // Check if user has an institution/location set
+  if (!user.institution?.institutionName) {
     redirect('/profile?message=Please complete your location details first.');
   }
 
