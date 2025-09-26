@@ -39,17 +39,17 @@ export function CreatePostForm({ user }: { user: User }) {
             <Input 
               id="title" 
               name="title"
-              placeholder="e.g. Dominos 300 Coupon"
+              placeholder=" e.g. Rs.100 off coupon, Free delivery over 199, 2-for-1 pizza"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="restaurant">Delivery App / Restaurant</Label>
+            <Label htmlFor="restaurant">Delivery App / Restaurant Name</Label>
             <Input 
               id="restaurant" 
               name="restaurant"
-              placeholder="e.g. Dominos"
+              placeholder="e.g. Dominos / Pizza Hut / Zomato / Swiggy / Flipkart"
               required
             />
           </div>
@@ -60,7 +60,7 @@ export function CreatePostForm({ user }: { user: User }) {
                <Input id="totalAmount" name="totalAmount" type="number" placeholder="300" required onChange={(e) => setTotalAmount(Number(e.target.value))} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contributionAmount">Your Contribution Amount (₹)</Label>
+              <Label htmlFor="contributionAmount">Your Order Amount (₹)</Label>
                <Input id="contributionAmount" name="contributionAmount" type="number" placeholder="120" required onChange={(e) => setContributionAmount(Number(e.target.value))} />
             </div>
           </div>
@@ -77,7 +77,7 @@ export function CreatePostForm({ user }: { user: User }) {
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes (Optional)</Label>
-            <Textarea id="notes" name="notes" placeholder="e.g. Only vegetarian options please" />
+            <Textarea id="notes" name="notes" placeholder="e.g. Only vegetarian " />
           </div>
           
           {state?.message && <p className="text-sm text-destructive">{state.message}</p>}

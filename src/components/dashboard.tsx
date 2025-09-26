@@ -6,6 +6,7 @@ import { PostCard } from './post-card';
 import { PostFilters } from './post-filters';
 import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
+import { AboutSection } from './about-section';
 
 export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
   const { user } = useAuth();
@@ -36,6 +37,8 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
 
   return (
     <div className="space-y-8">
+      <AboutSection />
+      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-4xl font-headline bg-brand-gradient text-transparent bg-clip-text pb-2">
