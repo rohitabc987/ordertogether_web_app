@@ -1,29 +1,17 @@
 'use client';
 
-import { useActionState, useState, useTransition } from 'react';
-import { createPostAction, getRestaurantSuggestions } from '@/lib/actions';
+import { useActionState, useState } from 'react';
+import { createPostAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Lightbulb } from 'lucide-react';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 export function CreatePostForm({ user }: { user: User }) {
   const [state, formAction] = useActionState(createPostAction, null);
-  const [isSuggesting, startSuggestionTransition] = useTransition();
-  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [restaurant, setRestaurant] = useState('');
-  
-  const handleGetSuggestions = async () => {
-    startSuggestionTransition(async () => {
-      const location = user.location?.area || user.location?.city || '';
-      const result = await getRestaurantSuggestions(location);
-      setSuggestions(result);
-    });
-  }
   
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -44,31 +32,14 @@ export function CreatePostForm({ user }: { user: User }) {
 
           <div className="space-y-2">
             <Label htmlFor="restaurant">Delivery App / Restaurant</Label>
-            <div className="flex items-center gap-2">
-                <Input 
-                  id="restaurant" 
-                  name="restaurant"
-                  placeholder="e.g. Zomato, Truffles"
-                  value={restaurant}
-                  onChange={(e) => setRestaurant(e.target.value)}
-                  required
-                />
-              <Button type="button" variant="outline" onClick={handleGetSuggestions} disabled={isSuggesting}>
-                <Lightbulb className="mr-2 h-4 w-4" /> {isSuggesting ? 'Getting...' : 'Suggest'}
-              </Button>
-            </div>
-            {suggestions.length > 0 && (
-              <Select onValueChange={setRestaurant} value={restaurant}>
-                  <SelectTrigger>
-                      <SelectValue placeholder="Or pick a suggestion..."/>
-                  </SelectTrigger>
-                  <SelectContent>
-                      {suggestions.map((s, i) => (
-                          <SelectItem key={i} value={s}>{s}</SelectItem>
-                      ))}
-                  </SelectContent>
-              </Select>
-            )}
+            <Input 
+              id="restaurant" 
+              name="restaurant"
+              placeholder="e.g. Zomato, Truffles"
+              value={restaurant}
+              onChange={(e) => setRestaurant(e.target.value)}
+              required
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
