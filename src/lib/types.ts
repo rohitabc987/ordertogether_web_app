@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   updatedAt?: string; // For cache invalidation
@@ -30,6 +31,7 @@ export interface User {
 
 export interface Post {
   id: string;
+  title: string;
   authorId: string;
   authorName: string;
   restaurant: string;

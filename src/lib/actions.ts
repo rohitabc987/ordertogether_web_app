@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use server';
 
@@ -96,6 +97,7 @@ export async function logoutAction() {
 }
 
 const postSchema = z.object({
+  title: z.string().min(1, 'Title is required.'),
   restaurant: z.string().min(1, 'Restaurant is required.'),
   minAmount: z.coerce.number().min(0),
   maxAmount: z.coerce.number().min(0),

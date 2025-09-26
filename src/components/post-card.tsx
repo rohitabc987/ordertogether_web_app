@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -12,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Clock, Home, Phone, MessageSquare } from 'lucide-react';
+import { Clock, Home, Phone, MessageSquare, Utensils } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
 import { formatDistanceToNow } from 'date-fns';
@@ -32,10 +33,9 @@ export function PostCard({ post }: { post: Post }) {
   if (post.institutionType === 'College/University') {
     if (post.institutionName) locationParts.push(post.institutionName);
   } else {
-    if (post.hostelOrPG) locationParts.push(post.hostelOrPG);
-    if (post.area) locationParts.push(post.area);
+    if (post.location?.area) locationParts.push(post.location.area);
   }
-  if (post.city) locationParts.push(post.city);
+  if (post.location?.city) locationParts.push(post.location.city);
   const locationString = locationParts.filter(Boolean).join(', ');
   
   // Safely generate author initials
@@ -51,7 +51,7 @@ export function PostCard({ post }: { post: Post }) {
                     <AvatarFallback>{authorInitials}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <CardTitle className="text-xl font-headline break-words text-white">{post.restaurant || 'N/A'}</CardTitle>
+                    <CardTitle className="text-xl font-headline break-words text-white">{post.title || 'N/A'}</CardTitle>
                     <CardDescription className="flex items-center pt-1 text-gray-400">
                         {authorName}
                     </CardDescription>
@@ -73,6 +73,12 @@ export function PostCard({ post }: { post: Post }) {
         {post.notes && <p className="text-sm border-l-2 border-purple-400/50 pl-3 py-1 bg-black/20 rounded-r-md">{post.notes}</p>}
 
         <div className="space-y-2 text-sm">
+            {post.restaurant && (
+               <div className="flex items-center gap-2">
+                  <Utensils className="w-4 h-4 text-teal-400" />
+                  <span>From: <span className="font-semibold text-white">{post.restaurant}</span></span>
+              </div>
+            )}
             {deadline && (
               <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-teal-400" />

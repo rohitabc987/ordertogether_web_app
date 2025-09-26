@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useActionState, useState } from 'react';
@@ -11,7 +12,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 
 export function CreatePostForm({ user }: { user: User }) {
   const [state, formAction] = useActionState(createPostAction, null);
-  const [restaurant, setRestaurant] = useState('');
   
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -31,13 +31,21 @@ export function CreatePostForm({ user }: { user: User }) {
           <input type="hidden" name="pinCode" value={user.location?.pinCode || ''} />
 
           <div className="space-y-2">
+            <Label htmlFor="title">Title</Label>
+            <Input 
+              id="title" 
+              name="title"
+              placeholder="e.g. Late night pizza run"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="restaurant">Delivery App / Restaurant</Label>
             <Input 
               id="restaurant" 
               name="restaurant"
               placeholder="e.g. Zomato, Truffles"
-              value={restaurant}
-              onChange={(e) => setRestaurant(e.target.value)}
               required
             />
           </div>
