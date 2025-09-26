@@ -1,10 +1,13 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { initUserProfileCache, clearProfileCache, getCachedProfile } from '@/lib/user-cache';
+import { getUserById } from '@/lib/data';
 import type { User } from '@/lib/types';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from './lib/firebase';
 
 interface AuthContextType {
   user: User | null;
@@ -12,37 +15,68 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+let unsubscribe: (() => void) | null = null;
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => getCachedProfile());
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        // User is logged in
-        initUserProfileCache(firebaseUser.uid, (cachedUser) => {
-          setUser(cachedUser);
-        });
+        // User is signed in with Firebase, now get our app's user ID (document ID)
+        // This is a workaround to get the session cookie value on the client
+        const response = await fetch('/api/session');
+        const session = await response.json();
+        const userId = session.userId;
+        
+        if (userId) {
+          if (unsubscribe) {
+            unsubscribe();
+          }
+          const userDocRef = doc(db, 'users', userId);
+          unsubscribe = onSnapshot(userDocRef, (doc) => {
+            if (doc.exists()) {
+              setUser({ id: doc.id, ...doc.data() } as User);
+            } else {
+              setUser(null);
+            }
+            setLoading(false);
+          });
+        } else {
+          setUser(null);
+          setLoading(false);
+        }
       } else {
-        // User is logged out
-        clearProfileCache();
+        // User is signed out
+        if (unsubscribe) {
+          unsubscribe();
+          unsubscribe = null;
+        }
         setUser(null);
+        setLoading(false);
       }
     });
 
     // Cleanup subscription on unmount
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   return (
     <AuthContext.Provider value={{ user }}>
-      {children}
+      {loading ? null : children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
