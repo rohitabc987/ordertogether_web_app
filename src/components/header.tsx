@@ -58,6 +58,12 @@ export function Header() {
                     <span>My Profile</span>
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/create-post">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    <span>Create Post</span>
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={() => startTransition(() => logoutAction())} disabled={isPending}>
                   <LogOut className="mr-2 h-4 w-4" />

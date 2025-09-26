@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -17,13 +18,14 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['var(--font-body)', 'sans-serif'],
-        headline: ['var(--font-body)', 'sans-serif'],
-        code: ['monospace'],
+        body: ['Inter', 'sans-serif'],
+        headline: ['ClashDisplay', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
+        teal: '#008080',
+        purple: '#800080',
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
@@ -99,6 +101,9 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+      },
+      backgroundImage: {
+        'brand-gradient': 'linear-gradient(to right, #008080, #800080)',
       },
     },
   },

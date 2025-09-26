@@ -38,12 +38,15 @@ export async function getPostsForUser(user: User | null): Promise<Post[]> {
   if (user) {
     // Authenticated user: Try to fetch posts based on their location
     if (user.institution?.institutionName) {
+      // FIRESTORE_INDEX: This query requires a composite index on `institution.institutionName` (asc) and `deadline` (asc).
       snapshot = await postsCollection.where('institution.institutionName', '==', user.institution.institutionName).orderBy('deadline', 'asc').get();
       locationQueryAttempted = true;
     } else if (user.location?.area) {
+      // FIRESTORE_INDEX: This query requires a composite index on `location.area` (asc) and `deadline` (asc).
       snapshot = await postsCollection.where('location.area', '==', user.location.area).orderBy('deadline', 'asc').get();
       locationQueryAttempted = true;
     } else if (user.location?.city) {
+      // FIRESTORE_INDEX: This query requires a composite index on `location.city` (asc) and `deadline` (asc).
       snapshot = await postsCollection.where('location.city', '==', user.location.city).orderBy('deadline', 'asc').get();
       locationQueryAttempted = true;
     }

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -5,13 +6,10 @@ import { PostCard } from './post-card';
 import { PostFilters } from './post-filters';
 import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
-import { Button } from './ui/button';
-import Link from 'next/link';
-import { PlusCircle } from 'lucide-react';
 
 export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
   const { user } = useAuth();
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const [posts] = useState<Post[]>(initialPosts);
   const [timeFilter, setTimeFilter] = useState('all');
   const [amountFilter, setAmountFilter] = useState([0, 2000]);
 
@@ -39,27 +37,17 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-headline">
+          <h1 className="text-4xl font-headline bg-brand-gradient text-transparent bg-clip-text pb-2">
             Active Group Orders
           </h1>
           <p className="text-muted-foreground">
             {user ? (
               `Orders available in ${locationName}. Join one or create your own!`
             ) : (
-              <span>
-                Discover group orders near you. <Link href="/login" className="text-primary underline">Log in</Link> to create your own.
-              </span>
+              'Discover group orders near you. Log in to create your own.'
             )}
           </p>
         </div>
-        {user && (
-          <Button asChild>
-            <Link href="/create-post">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Create Post
-            </Link>
-          </Button>
-        )}
       </div>
       
       <PostFilters
@@ -76,8 +64,11 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 border-2 border-dashed rounded-lg">
-          <h2 className="text-xl font-semibold">
+        <div className="text-center py-16 border-2 border-dashed rounded-lg bg-card">
+          <div className="flex justify-center mb-4">
+            <img src="/images/empty-state.svg" alt="No Orders" className="w-48 h-48"/>
+          </div>
+          <h2 className="text-2xl font-headline text-primary">
             {user ? `No active orders in ${locationName} yet.` : 'No orders found'}
           </h2>
           <p className="text-muted-foreground mt-2">
