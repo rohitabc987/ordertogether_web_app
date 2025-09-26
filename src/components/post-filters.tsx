@@ -50,7 +50,7 @@ export function PostFilters({
             </div>
             <div className="space-y-2 flex-1 min-w-[200px]">
                 <div className="flex justify-between items-center">
-                    <Label className="text-base">Amount:</Label>
+                    <Label className="text-base">Amount Needed:</Label>
                     <div className="text-sm font-medium bg-brand-gradient text-transparent bg-clip-text">
                         {formatCurrency(amountFilter[0])} - {formatCurrency(amountFilter[1])}
                     </div>

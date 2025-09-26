@@ -99,8 +99,8 @@ export async function logoutAction() {
 const postSchema = z.object({
   title: z.string().min(1, 'Title is required.'),
   restaurant: z.string().min(1, 'Restaurant is required.'),
-  minAmount: z.coerce.number().min(0),
-  maxAmount: z.coerce.number().min(0),
+  totalAmount: z.coerce.number().min(0, 'Total amount must be positive.'),
+  contributionAmount: z.coerce.number().min(0, 'Contribution must be positive.'),
   deadline: z.coerce.date(),
   notes: z.string().optional(),
   authorId: z.string(),
@@ -123,11 +123,12 @@ export async function createPostAction(prevState: any, formData: FormData) {
 
   if (!parsed.success) {
     console.error(parsed.error.flatten().fieldErrors);
-    return { message: 'Invalid post data. Please check your inputs.' };
+    const firstError = Object.values(parsed.error.flatten().fieldErrors)[0]?.[0];
+    return { message: firstError || 'Invalid post data. Please check your inputs.' };
   }
   
-  if (parsed.data.minAmount > parsed.data.maxAmount) {
-    return { message: 'Minimum amount cannot be greater than maximum amount.' };
+  if (parsed.data.contributionAmount > parsed.data.totalAmount) {
+    return { message: 'Your contribution cannot be greater than the total order amount.' };
   }
 
   await createPost(parsed.data);

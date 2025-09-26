@@ -25,7 +25,8 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
         timeMatch = deadline <= cutoff;
       }
 
-      const amountMatch = post.minAmount >= amountFilter[0] && post.maxAmount <= amountFilter[1];
+      const remainingNeeded = post.totalAmount - post.contributionAmount;
+      const amountMatch = remainingNeeded >= amountFilter[0] && remainingNeeded <= amountFilter[1];
 
       return timeMatch && amountMatch;
     });

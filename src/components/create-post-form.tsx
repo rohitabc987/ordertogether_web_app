@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useActionState, useState } from 'react';
@@ -9,10 +8,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { formatCurrency } from '@/lib/utils';
 
 export function CreatePostForm({ user }: { user: User }) {
   const [state, formAction] = useActionState(createPostAction, null);
-  
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [contributionAmount, setContributionAmount] = useState(0);
+
+  const remainingNeeded = Math.max(0, totalAmount - contributionAmount);
+
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -35,7 +39,7 @@ export function CreatePostForm({ user }: { user: User }) {
             <Input 
               id="title" 
               name="title"
-              placeholder="e.g. Late night pizza run"
+              placeholder="e.g. Dominos 300 Coupon"
               required
             />
           </div>
@@ -45,30 +49,35 @@ export function CreatePostForm({ user }: { user: User }) {
             <Input 
               id="restaurant" 
               name="restaurant"
-              placeholder="e.g. Zomato, Truffles"
+              placeholder="e.g. Dominos"
               required
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="minAmount">Minimum Order Amount (₹)</Label>
-               <Input id="minAmount" name="minAmount" type="number" defaultValue={200} required />
+              <Label htmlFor="totalAmount">Minimum Order Amount (₹)</Label>
+               <Input id="totalAmount" name="totalAmount" type="number" placeholder="300" required onChange={(e) => setTotalAmount(Number(e.target.value))} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="maxAmount">Maximum Order Amount (₹)</Label>
-               <Input id="maxAmount" name="maxAmount" type="number" defaultValue={500} required />
+              <Label htmlFor="contributionAmount">Your Contribution Amount (₹)</Label>
+               <Input id="contributionAmount" name="contributionAmount" type="number" placeholder="120" required onChange={(e) => setContributionAmount(Number(e.target.value))} />
             </div>
+          </div>
+
+           <div className="space-y-2">
+              <Label htmlFor="remainingNeeded">Remaining Needed (Auto-calculated)</Label>
+              <Input id="remainingNeeded" name="remainingNeeded" value={formatCurrency(remainingNeeded)} readOnly className="bg-muted" />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="deadline">Deadline</Label>
-            <Input id="deadline" name="deadline" type="date" required />
+            <Input id="deadline" name="deadline" type="datetime-local" required />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes (Optional)</Label>
-            <Textarea id="notes" name="notes" placeholder="e.g. Only vegetarian options" />
+            <Textarea id="notes" name="notes" placeholder="e.g. Only vegetarian options please" />
           </div>
           
           {state?.message && <p className="text-sm text-destructive">{state.message}</p>}

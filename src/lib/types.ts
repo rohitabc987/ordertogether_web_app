@@ -35,8 +35,8 @@ export interface Post {
   authorId: string;
   authorName: string;
   restaurant: string;
-  minAmount: number;
-  maxAmount: number;
+  totalAmount: number;
+  contributionAmount: number;
   deadline: Date;
   notes?: string;
   createdAt: Date;

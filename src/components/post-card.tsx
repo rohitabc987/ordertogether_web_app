@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Clock, Home, Phone, MessageSquare, Utensils } from 'lucide-react';
+import { Clock, Home, Phone, MessageSquare, Utensils, IndianRupee } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
 import { formatDistanceToNow } from 'date-fns';
@@ -28,6 +28,8 @@ export function PostCard({ post }: { post: Post }) {
   const deadline = post.deadline ? new Date(post.deadline) : null;
   const deadlineInPast = deadline ? deadline < new Date() : true;
   const authorName = post.authorName || 'Anonymous';
+  
+  const remainingNeeded = post.totalAmount - post.contributionAmount;
 
   const locationParts = [];
   if (post.institutionType === 'College/University') {
@@ -66,8 +68,12 @@ export function PostCard({ post }: { post: Post }) {
         </div>
       </CardHeader>
       <CardContent className="flex-grow space-y-4 text-gray-300">
-        <div className="text-2xl font-bold bg-brand-gradient text-transparent bg-clip-text">
-          {formatCurrency(post.minAmount)} - {formatCurrency(post.maxAmount)}
+        <div className="flex items-baseline gap-2">
+            <span className="text-sm text-gray-400">Need</span>
+            <div className="text-3xl font-bold bg-brand-gradient text-transparent bg-clip-text">
+              {formatCurrency(remainingNeeded)}
+            </div>
+            <span className="text-sm text-gray-400">out of {formatCurrency(post.totalAmount)}</span>
         </div>
         
         {post.notes && <p className="text-sm border-l-2 border-purple-400/50 pl-3 py-1 bg-black/20 rounded-r-md">{post.notes}</p>}
