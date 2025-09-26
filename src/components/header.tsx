@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useTransition } from 'react';
@@ -6,7 +7,7 @@ import { Button } from './ui/button';
 import { useAuth } from '@/providers';
 import { logoutAction } from '@/lib/actions';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { UtensilsCrossed, LogOut, User, PlusCircle, DollarSign, LogIn } from 'lucide-react';
+import { UtensilsCrossed, LogOut, User, PlusCircle, DollarSign, LogIn, Info } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +29,10 @@ export function Header() {
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
           <Link href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">Dashboard</Link>
+          <Link href="/about" className="transition-colors hover:text-foreground/80 text-foreground/60">
+            <Info className="inline-block -mt-1 mr-1 h-4 w-4" />
+            About
+          </Link>
           <Link href="/create-post" className="transition-colors hover:text-foreground/80 text-foreground/60">
             <PlusCircle className="inline-block -mt-1 mr-1 h-4 w-4" />
             Create Post
@@ -56,6 +61,12 @@ export function Header() {
                   <Link href="/profile">
                     <User className="mr-2 h-4 w-4" />
                     <span>My Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/about">
+                    <Info className="mr-2 h-4 w-4" />
+                    <span>About</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
