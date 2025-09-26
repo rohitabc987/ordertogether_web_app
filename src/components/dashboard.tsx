@@ -7,7 +7,7 @@ import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
 import { Button } from './ui/button';
 import Link from 'next/link';
-import { PlusCircle, LogIn } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 
 export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
   const { user } = useAuth();
@@ -40,14 +40,14 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold font-headline">
-            {user ? 'Open Orders' : 'Latest Orders'}
+            Active Group Orders
           </h1>
           <p className="text-muted-foreground">
             {user ? (
-              `Orders available in ${locationName}.`
+              `Orders available in ${locationName}. Join one or create your own!`
             ) : (
               <span>
-                See orders from your area.
+                Discover group orders near you. <Link href="/login" className="text-primary underline">Log in</Link> to create your own.
               </span>
             )}
           </p>
@@ -77,12 +77,16 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
         </div>
       ) : (
         <div className="text-center py-16 border-2 border-dashed rounded-lg">
-          <h2 className="text-xl font-semibold">No active orders found.</h2>
-          {user ? (
-            <p className="text-muted-foreground mt-2">Why not be the first to create one?</p>
-          ) : (
-            <p className="text-muted-foreground mt-2">Check back later or modify filter to see if there are orders in your area.</p>
-          )}
+          <h2 className="text-xl font-semibold">
+            {user ? `No active orders in ${locationName} yet.` : 'No orders found'}
+          </h2>
+          <p className="text-muted-foreground mt-2">
+            {user ? (
+              'Be the first to start a group order!'
+            ) : (
+              'Check back later or adjust the filters to see if there are orders in your area.'
+            )}
+          </p>
         </div>
       )}
     </div>

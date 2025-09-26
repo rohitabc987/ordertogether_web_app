@@ -32,7 +32,7 @@ export default async function RootLayout({
           inter.variable
         )}
       >
-        <Providers user={user}>
+        <Providers>
           <div className="relative flex min-h-screen flex-col">
             <Header />
             <main className="flex-1">{children}</main>
