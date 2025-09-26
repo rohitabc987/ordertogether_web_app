@@ -7,7 +7,7 @@ import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
 import { Button } from './ui/button';
 import Link from 'next/link';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, LogIn } from 'lucide-react';
 
 export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
   const { user } = useAuth();
@@ -33,21 +33,33 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
     });
   }, [posts, timeFilter, amountFilter]);
 
+  const locationName = user?.institution?.institutionName || user?.location?.area || user?.location?.city || 'your area';
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-headline">Open Orders</h1>
+          <h1 className="text-3xl font-bold font-headline">
+            {user ? 'Open Orders' : 'Latest Orders'}
+          </h1>
           <p className="text-muted-foreground">
-            Orders available in your location: {user?.location?.society}
+            {user ? (
+              `Orders available in ${locationName}.`
+            ) : (
+              <span>
+                See orders from your area.
+              </span>
+            )}
           </p>
         </div>
-        <Button asChild>
-          <Link href="/create-post">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create Post
-          </Link>
-        </Button>
+        {user && (
+          <Button asChild>
+            <Link href="/create-post">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create Post
+            </Link>
+          </Button>
+        )}
       </div>
       
       <PostFilters
@@ -66,7 +78,11 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
       ) : (
         <div className="text-center py-16 border-2 border-dashed rounded-lg">
           <h2 className="text-xl font-semibold">No active orders found.</h2>
-          <p className="text-muted-foreground mt-2">Why not be the first to create one?</p>
+          {user ? (
+            <p className="text-muted-foreground mt-2">Why not be the first to create one?</p>
+          ) : (
+            <p className="text-muted-foreground mt-2">Check back later or modify filter to see if there are orders in your area.</p>
+          )}
         </div>
       )}
     </div>

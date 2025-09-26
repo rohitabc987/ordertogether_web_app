@@ -58,9 +58,13 @@ export function CreatePostForm({ user }: { user: User }) {
         }
       });
       formData.append('authorId', user.id);
-      formData.append('authorName', user.name);
-      formData.append('contact', JSON.stringify(user.contact));
-      formData.append('location', JSON.stringify(user.location));
+      formData.append('authorName', user.userProfile?.name || '');
+      formData.append('contactNumber', user.contact?.phone || '');
+      formData.append('institutionType', user.institution?.institutionType || '');
+      formData.append('institutionName', user.institution?.institutionName || '');
+      formData.append('area', user.location?.area || '');
+      formData.append('city', user.location?.city || '');
+      formData.append('pinCode', user.location?.pinCode || '');
       
       formAction(formData);
     });
@@ -68,7 +72,8 @@ export function CreatePostForm({ user }: { user: User }) {
   
   const handleGetSuggestions = async () => {
     startSuggestionTransition(async () => {
-      const result = await getRestaurantSuggestions(user.location.society);
+      const location = user.location?.area || user.location?.city || '';
+      const result = await getRestaurantSuggestions(location);
       setSuggestions(result);
     });
   }

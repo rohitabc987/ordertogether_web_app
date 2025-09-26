@@ -11,5 +11,6 @@ export function formatCurrency(amount: number) {
     currency: 'INR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
+    currencyDisplay: 'symbol'
   }).format(amount);
 }

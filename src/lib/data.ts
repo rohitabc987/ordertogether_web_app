@@ -1,14 +1,14 @@
 // @ts-nocheck
 import type { User, Post } from './types';
 import { db } from './firebase-admin';
+import { cache } from 'react';
 
 const usersCollection = db.collection('users');
 const postsCollection = db.collection('posts');
 
-// Mock API functions
 export async function findUserByEmail(email: string): Promise<User | undefined> {
   console.log(`data: findUserByEmail called for: ${email}`);
-  const snapshot = await usersCollection.where('email', '==', email).limit(1).get();
+  const snapshot = await usersCollection.where('contact.email', '==', email).limit(1).get();
   if (snapshot.empty) {
     console.log(`data: No user found with email: ${email}`);
     return undefined;
@@ -19,7 +19,7 @@ export async function findUserByEmail(email: string): Promise<User | undefined> 
   return userData;
 }
 
-export async function getUserById(userId: string): Promise<User | undefined> {
+export const getUserById = cache(async (userId: string): Promise<User | undefined> => {
   console.log(`data: getUserById called for ID: ${userId}`);
   const userDoc = await usersCollection.doc(userId).get();
   if (!userDoc.exists) {
@@ -29,16 +29,36 @@ export async function getUserById(userId: string): Promise<User | undefined> {
   const userData = { id: userDoc.id, ...userDoc.data() } as User;
   console.log(`data: User found:`, userData);
   return userData;
-}
+});
 
-export async function getPostsForUser(society: string): Promise<Post[]> {
-  if (!society) return [];
-  const snapshot = await postsCollection
-    .where('location.society', '==', society)
-    .orderBy('deadline', 'asc')
-    .get();
-    
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
+export async function getPostsForUser(user: User | null): Promise<Post[]> {
+  let snapshot;
+  let locationQueryAttempted = false;
+
+  if (user) {
+    // Authenticated user: Try to fetch posts based on their location
+    if (user.institution?.institutionName) {
+      snapshot = await postsCollection.where('institution.institutionName', '==', user.institution.institutionName).orderBy('deadline', 'asc').get();
+      locationQueryAttempted = true;
+    } else if (user.location?.area) {
+      snapshot = await postsCollection.where('location.area', '==', user.location.area).orderBy('deadline', 'asc').get();
+      locationQueryAttempted = true;
+    } else if (user.location?.city) {
+      snapshot = await postsCollection.where('location.city', '==', user.location.city).orderBy('deadline', 'asc').get();
+      locationQueryAttempted = true;
+    }
+  }
+
+  // Fallback for guests or users without a location set
+  if (!locationQueryAttempted) {
+    snapshot = await postsCollection.orderBy('createdAt', 'desc').limit(50).get();
+  }
+
+  if (snapshot) {
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
+  }
+
+  return [];
 }
 
 export async function createPost(postData: Omit<Post, 'id' | 'createdAt'>): Promise<Post> {
@@ -50,8 +70,8 @@ export async function createPost(postData: Omit<Post, 'id' | 'createdAt'>): Prom
   return { id: docRef.id, ...postWithTimestamp };
 }
 
-export async function updateUser(userId: string, updates: Partial<User>): Promise<User> {
-  await usersCollection.doc(userId).set(updates, { merge: true });
+export async function updateUser(userId: string, updates: Record<string, any>): Promise<User> {
+  await usersCollection.doc(userId).update(updates);
   const updatedUser = await getUserById(userId);
   if (!updatedUser) {
     throw new Error('User not found after update');
@@ -59,16 +79,34 @@ export async function updateUser(userId: string, updates: Partial<User>): Promis
   return updatedUser;
 }
 
-export async function createUserInDb(data: { name: string; email: string; photoURL?: string | null; password?: string }): Promise<User> {
+export async function createUserInDb(data: { name: string; email: string; gender: string; photoURL?: string | null; }): Promise<User> {
   console.log(`data: createUserInDb called for email: ${data.email}`);
   const newUserTemplate: Omit<User, 'id'> = {
-    name: data.name,
-    email: data.email,
-    photoURL: data.photoURL || null,
-    password: data.password || '', // In a real app, hash this
-    contact: { phone: '', whatsapp: '' },
-    location: { hostel: '', society: '' },
-    subscription: { status: 'inactive', plan: null, expiry: null },
+    userProfile: {
+      name: data.name,
+      gender: data.gender,
+      photoURL: data.photoURL || null,
+    },
+    contact: {
+      email: data.email,
+      phone: null,
+      whatsapp: null,
+    },
+    location: {
+      area: null,
+      city: null,
+      pinCode: null,
+    },
+    institution: {
+      institutionType: null,
+      institutionName: null,
+    },
+    subscription: {
+      status: 'inactive',
+      plan: null,
+      startDate: null,
+      expiry: null,
+    },
   };
 
   console.log('data: Writing new user data to Firestore:', newUserTemplate);

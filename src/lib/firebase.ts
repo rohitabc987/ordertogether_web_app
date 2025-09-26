@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyA00F2LyzvMPYTLN4SLjZ0aOPky8CcDyLA",
@@ -11,20 +12,8 @@ const firebaseConfig = {
   appId: "1:183055801352:web:495772bc4e16491fe6c5bd"
 };
 
-// We export a function that returns the auth instance.
-// Components will call this, ensuring it only runs on the client.
-export function auth() {
-  if (typeof window === 'undefined') {
-    // On the server, return null.
-    // Auth is only needed on the client for the sign-in flow.
-    return null;
-  }
-  
-  let app;
-  if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-  } else {
-    app = getApp();
-  }
-  return getAuth(app);
-}
+// Initialize Firebase
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
+export const auth = getAuth(app);
+export const db = getFirestore(app);

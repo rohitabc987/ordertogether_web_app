@@ -1,32 +1,40 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { initUserProfileCache, clearProfileCache, getCachedProfile } from '@/lib/user-cache';
 import type { User } from '@/lib/types';
 
 interface AuthContextType {
   user: User | null;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  // In a real app, you'd have login/logout functions here that call server actions
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({
-  children,
-  initialUser,
-}: {
-  children: React.ReactNode;
-  initialUser: User | null;
-}) {
-  const [user, setUser] = useState<User | null>(initialUser);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(() => getCachedProfile());
 
-  // This effect ensures client-side navigation updates the user state if it changes.
   useEffect(() => {
-    setUser(initialUser);
-  }, [initialUser]);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        // User is logged in
+        initUserProfileCache(firebaseUser.uid, (cachedUser) => {
+          setUser(cachedUser);
+        });
+      } else {
+        // User is logged out
+        clearProfileCache();
+        setUser(null);
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user }}>
       {children}
     </AuthContext.Provider>
   );
@@ -40,12 +48,6 @@ export function useAuth() {
   return context;
 }
 
-export function Providers({
-  children,
-  user,
-}: {
-  children: React.ReactNode;
-  user: User | null;
-}) {
-  return <AuthProvider initialUser={user}>{children}</AuthProvider>;
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <AuthProvider>{children}</AuthProvider>;
 }

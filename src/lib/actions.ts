@@ -20,9 +20,11 @@ export async function verifyAndSignInAction(idToken: string) {
     const decodedToken = await adminAuth().verifyIdToken(idToken);
     console.log('actions: ID token verified successfully. Decoded token:', decodedToken);
 
+    const uid = decodedToken.uid;
     const email = decodedToken.email;
     const name = decodedToken.name;
     const photoURL = decodedToken.picture;
+    const gender = decodedToken.gender || 'prefer_not_to_say';
 
     if (!email || !name) {
       console.error('actions: Google account missing email or name.');
@@ -44,6 +46,7 @@ export async function verifyAndSignInAction(idToken: string) {
         name: name,
         email: email,
         photoURL: photoURL,
+        gender: gender
       });
       userId = newUser.id;
       console.log('actions: New user created with ID:', userId);
@@ -54,6 +57,12 @@ export async function verifyAndSignInAction(idToken: string) {
 
     const cookieStore = cookies();
     cookieStore.set('session_userId', userId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24, // 1 day
+      path: '/',
+    });
+    cookieStore.set('session_authId', uid, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24, // 1 day
@@ -72,8 +81,17 @@ export async function verifyAndSignInAction(idToken: string) {
 
 
 export async function logoutAction() {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
+  const authId = cookieStore.get('session_authId')?.value;
+  if (authId) {
+    try {
+      await adminAuth().revokeRefreshTokens(authId);
+    } catch (error) {
+      console.error('Error revoking refresh tokens:', error);
+    }
+  }
   cookieStore.delete('session_userId');
+  cookieStore.delete('session_authId');
   redirect('/login');
 }
 
@@ -85,24 +103,21 @@ const postSchema = z.object({
   notes: z.string().optional(),
   authorId: z.string(),
   authorName: z.string(),
-  contact: z.object({
-    phone: z.string(),
-    whatsapp: z.string(),
-  }),
-  location: z.object({
-    hostel: z.string(),
-    society: z.string(),
-  }),
+  institutionType: z.enum(['College/University', 'Hostel/PG/Apartment']).optional(),
+  institutionName: z.string().optional(),
+  area: z.string().optional(),
+  city: z.string().optional(),
+  pinCode: z.string().optional(),
+  contactNumber: z.string().optional(),
 });
 
 export async function createPostAction(prevState: any, formData: FormData) {
-  const rawData = {
-    ...Object.fromEntries(formData),
-    contact: JSON.parse(formData.get('contact') as string),
-    location: JSON.parse(formData.get('location') as string),
-  };
-  
-  const parsed = postSchema.safeParse(rawData);
+  const user = await getUserById(formData.get('authorId') as string);
+  if (!user || !user.userProfile.name || !user.contact.phone || !user.userProfile.gender || user.userProfile.gender === 'prefer_not_to_say') {
+    return { message: 'Please complete your profile (name, contact number, and gender) before posting.' };
+  }
+
+  const parsed = postSchema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) {
     console.error(parsed.error.flatten().fieldErrors);
@@ -121,10 +136,16 @@ export async function createPostAction(prevState: any, formData: FormData) {
 const profileSchema = z.object({
   id: z.string(),
   name: z.string().min(2, 'Name must be at least 2 characters.'),
-  phone: z.string().min(10, 'Please enter a valid phone number.'),
-  whatsapp: z.string().min(10, 'Please enter a valid WhatsApp number.'),
-  hostel: z.string().min(1, 'Hostel/PG name is required.'),
-  society: z.string().min(1, 'Society/Area name is required.'),
+  contactNumber: z.string().min(10, 'Contact number must be at least 10 digits.'),
+  gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']),
+  institutionType: z.enum(['College/University', 'Hostel/PG/Apartment']).optional(),
+  institutionName: z.string().optional(),
+  area: z.string().optional(),
+  city: z.string().optional(),
+  pinCode: z.string().optional(),
+}).refine(data => data.gender !== 'prefer_not_to_say', {
+  message: "Please select a gender.",
+  path: ["gender"],
 });
 
 export async function updateProfileAction(prevState: any, formData: FormData) {
@@ -134,11 +155,22 @@ export async function updateProfileAction(prevState: any, formData: FormData) {
     return { message: 'Invalid profile data.' };
   }
 
-  await updateUser(parsed.data.id, {
-    name: parsed.data.name,
-    contact: { phone: parsed.data.phone, whatsapp: parsed.data.whatsapp },
-    location: { hostel: parsed.data.hostel, society: parsed.data.society },
-  });
+  const { id, institutionType, institutionName, area, ...data } = parsed.data;
+
+  const updates: Record<string, any> = {
+    'userProfile.name': data.name,
+    'userProfile.gender': data.gender || null,
+    'contact.phone': data.contactNumber || null,
+    'contact.whatsapp': data.contactNumber || null, // Assuming phone and whatsapp are the same
+    'institution.institutionType': institutionType || null,
+    'institution.institutionName': institutionName || null,
+    'location.area': area || null,
+    'location.city': data.city || null,
+    'location.pinCode': data.pinCode || null,
+    'institution.hostelOrPG': null, // Explicitly remove this field
+  };
+
+  await updateUser(id, updates);
 
   revalidatePath('/profile');
   revalidatePath('/');
@@ -155,11 +187,9 @@ export async function subscribeAction(plan: 'daily' | 'weekly' | 'monthly', user
   expiryDate.setDate(expiryDate.getDate() + expiryDays);
 
   await updateUser(userId, {
-    subscription: {
-      status: 'active',
-      plan: plan,
-      expiry: expiryDate.toISOString(),
-    },
+    'subscription.status': 'active',
+    'subscription.plan': plan,
+    'subscription.expiry': expiryDate.toISOString(),
   });
 
   revalidatePath('/pricing');

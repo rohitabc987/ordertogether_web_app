@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Clock, Home, Building, User, Phone, MessageSquare } from 'lucide-react';
+import { Clock, Home, User, Phone, MessageSquare } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
 import { formatDistanceToNow } from 'date-fns';
@@ -24,6 +24,16 @@ export function PostCard({ post }: { post: Post }) {
   const isSubscribed = user?.subscription?.status === 'active';
 
   const deadlineInPast = new Date(post.deadline) < new Date();
+
+  const locationParts = [];
+  if (post.institutionType === 'College/University') {
+    if (post.institutionName) locationParts.push(post.institutionName);
+  } else {
+    if (post.hostelOrPG) locationParts.push(post.hostelOrPG);
+    if (post.area) locationParts.push(post.area);
+  }
+  if (post.city) locationParts.push(post.city);
+  const locationString = locationParts.filter(Boolean).join(', ');
   
   return (
     <Card className="flex flex-col transition-transform transform hover:-translate-y-1 hover:shadow-lg">
@@ -50,7 +60,7 @@ export function PostCard({ post }: { post: Post }) {
         </div>
         <div className="text-sm text-muted-foreground flex items-center">
             <Home className="w-4 h-4 mr-2" />
-            {post.location.hostel}, {post.location.society}
+            {locationString}
         </div>
       </CardContent>
       <CardFooter>
@@ -67,11 +77,11 @@ export function PostCard({ post }: { post: Post }) {
               <div className="space-y-4 py-4">
                 <div className="flex items-center gap-4">
                     <Phone className="w-5 h-5 text-primary" />
-                    <a href={`tel:${post.contact.phone}`} className="font-mono text-lg">{post.contact.phone}</a>
+                    <a href={`tel:${post.contactNumber}`} className="font-mono text-lg">{post.contactNumber}</a>
                 </div>
                 <div className="flex items-center gap-4">
                     <MessageSquare className="w-5 h-5 text-primary" />
-                    <a href={`https://wa.me/${post.contact.whatsapp}`} target="_blank" rel="noopener noreferrer" className="font-mono text-lg">{post.contact.whatsapp}</a>
+                    <a href={`https://wa.me/${post.contactNumber}`} target="_blank" rel="noopener noreferrer" className="font-mono text-lg">{post.contactNumber}</a>
                 </div>
               </div>
             </DialogContent>

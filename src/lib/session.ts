@@ -1,5 +1,4 @@
-'use server';
-
+import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { getUserById } from './data';
 import type { User } from './types';
@@ -10,11 +9,17 @@ export async function getUserId(): Promise<string | undefined> {
   return sessionCookie?.value;
 }
 
-export async function getCurrentUser(): Promise<User | null> {
+export async function getAuthId(): Promise<string | undefined> {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('session_authId');
+    return sessionCookie?.value;
+}
+
+export const getCurrentUser = cache(async (): Promise<User | null> => {
   const userId = await getUserId();
   if (!userId) {
     return null;
   }
   const user = await getUserById(userId);
   return user || null;
-}
+});

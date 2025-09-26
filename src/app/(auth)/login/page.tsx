@@ -1,4 +1,4 @@
-import { LoginForm } from '@/components/auth-forms';
+import { AuthForm } from '@/components/auth-forms';
 import { getCurrentUser } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
@@ -8,5 +8,5 @@ export default async function LoginPage() {
     redirect('/');
   }
 
-  return <LoginForm />;
+  return <AuthForm />;
 }

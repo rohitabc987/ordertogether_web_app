@@ -1,45 +1,54 @@
-export type SubscriptionStatus = 'active' | 'inactive';
-export type SubscriptionPlan = 'daily' | 'weekly' | 'monthly' | null;
-
-export interface Subscription {
-  status: SubscriptionStatus;
-  plan: SubscriptionPlan;
-  expiry: string | null;
-}
-
 export interface User {
   id: string;
-  name: string;
-  email: string;
-  photoURL?: string | null;
-  password?: string;
+  updatedAt?: string; // For cache invalidation
+  userProfile: {
+    name: string;
+    photoURL?: string;
+    gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+  };
   contact: {
-    phone: string;
-    whatsapp: string;
+    email: string;
+    phone?: string;
+    whatsapp?: string;
+  };
+  institution: {
+    institutionType?: 'College/University' | 'Hostel/PG/Apartment';
+    institutionName?: string;
   };
   location: {
-    hostel: string;
-    society: string;
+    area?: string;
+    city?: string;
+    pinCode?: string;
   };
-  subscription: Subscription;
+  subscription?: {
+    status: 'active' | 'inactive';
+    plan: 'daily' | 'weekly' | 'monthly' | 'Premium';
+    startDate?: string;
+    expiry?: string;
+  };
 }
 
 export interface Post {
   id: string;
   authorId: string;
   authorName: string;
-  contact: {
-    phone: string;
-    whatsapp: string;
-  };
-  location: {
-    hostel: string;
-    society: string;
-  };
   restaurant: string;
   minAmount: number;
   maxAmount: number;
-  deadline: string;
+  deadline: Date;
   notes?: string;
-  createdAt: string;
+  createdAt: Date;
+  institution: {
+    institutionType?: 'College/University' | 'Hostel/PG/Apartment';
+    institutionName?: string;
+  };
+  location: {
+    area?: string;
+    city?: string;
+    pinCode?: string;
+  };
+  contact: {
+    phone?: string;
+    whatsapp?: string;
+  };
 }
