@@ -105,12 +105,12 @@ const postSchema = z.object({
   notes: z.string().optional(),
   authorId: z.string(),
   authorName: z.string(),
-  institutionType: z.enum(['College/University', 'Hostel/PG/Apartment']).optional(),
+  contactNumber: z.string(),
+  institutionType: z.string().optional(),
   institutionName: z.string().optional(),
   area: z.string().optional(),
   city: z.string().optional(),
   pinCode: z.string().optional(),
-  contactNumber: z.string().optional(),
 });
 
 export async function createPostAction(prevState: any, formData: FormData) {

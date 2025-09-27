@@ -3,6 +3,7 @@
 import type { User, Post } from './types';
 import { db } from './firebase-admin';
 import { cache } from 'react';
+import { Timestamp } from 'firebase-admin/firestore';
 
 const usersCollection = db.collection('users');
 const postsCollection = db.collection('posts');
@@ -32,6 +33,26 @@ export const getUserById = cache(async (userId: string): Promise<User | undefine
   return userData;
 });
 
+// Helper function to convert Firestore Timestamps to JS Dates
+function convertTimestamps(obj: any): any {
+  if (!obj) return obj;
+  if (Array.isArray(obj)) {
+    return obj.map(convertTimestamps);
+  }
+  if (obj instanceof Timestamp) {
+    return obj.toDate();
+  }
+  if (typeof obj === 'object') {
+    const newObj: { [key: string]: any } = {};
+    for (const key in obj) {
+      newObj[key] = convertTimestamps(obj[key]);
+    }
+    return newObj;
+  }
+  return obj;
+}
+
+
 export async function getPostsForUser(user: User | null): Promise<Post[]> {
   let snapshot;
 
@@ -54,16 +75,18 @@ export async function getPostsForUser(user: User | null): Promise<Post[]> {
     snapshot = await postsCollection.orderBy('createdAt', 'desc').limit(50).get();
   }
   
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
+  const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return convertTimestamps(posts) as Post[];
 }
 
 export async function createPost(postData: Omit<Post, 'id' | 'createdAt'>): Promise<Post> {
   const postWithTimestamp = {
     ...postData,
-    createdAt: new Date().toISOString(),
+    createdAt: new Date(),
   };
   const docRef = await postsCollection.add(postWithTimestamp);
-  return { id: docRef.id, ...postWithTimestamp };
+  const newPostData = (await docRef.get()).data();
+  return convertTimestamps({ id: docRef.id, ...newPostData }) as Post;
 }
 
 export async function updateUser(userId: string, updates: Record<string, any>): Promise<User> {
