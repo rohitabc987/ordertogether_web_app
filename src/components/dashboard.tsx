@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -66,7 +65,7 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
 
   return (
     <div className="space-y-8">
-      <div className="container mx-auto px-4 mt-8">
+      <div className="container mx-auto px-4 mt-8 rounded-lg overflow-hidden">
         <AboutSection bannerImageUrl={bannerImageUrl} />
       </div>
       
