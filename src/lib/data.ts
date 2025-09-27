@@ -54,35 +54,34 @@ function convertTimestamps(obj: any): any {
 
 
 export async function getPostsForUser(user: User | null): Promise<Post[]> {
-  let query = postsCollection.orderBy('createdAt', 'desc');
-
-  if (user) {
-    // Try to filter by location if available
-    if (user.institution?.institutionName) {
-      query = query.where('institution.institutionName', '==', user.institution.institutionName);
-    } else if (user.location?.area) {
-      query = query.where('location.area', '==', user.location.area);
-    } else if (user.location?.city) {
-      query = query.where('location.city', '==', user.location.city);
-    }
-  }
-
-  let snapshot = await query.limit(50).get();
-
-  // Fallback for authenticated users if location-specific query yields no results
-  if (user && snapshot.empty) {
-    let fallbackQuery = postsCollection.orderBy('createdAt', 'desc');
-    snapshot = await fallbackQuery.limit(50).get();
-  }
+  // Simplified query: fetch the 50 most recent posts.
+  const query = postsCollection.orderBy('createdAt', 'desc').limit(50);
+  const snapshot = await query.get();
   
-  let posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  let allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-  // Exclude posts made by the current user after fetching
+  // Exclude posts made by the current user
   if (user) {
-    posts = posts.filter(post => post.authorId !== user.id);
+    allPosts = allPosts.filter(post => post.authorId !== user.id);
   }
 
-  return convertTimestamps(posts) as Post[];
+  // If a user is logged in, sort to prioritize posts from their location
+  if (user) {
+    allPosts.sort((a, b) => {
+      const aIsLocal = (a.institution?.institutionName && a.institution.institutionName === user.institution?.institutionName) ||
+                       (a.location?.area && a.location.area === user.location?.area) ||
+                       (a.location?.city && a.location.city === user.location?.city);
+      const bIsLocal = (b.institution?.institutionName && b.institution.institutionName === user.institution?.institutionName) ||
+                       (b.location?.area && b.location.area === user.location?.area) ||
+                       (b.location?.city && b.location.city === user.location?.city);
+
+      if (aIsLocal && !bIsLocal) return -1; // a comes first
+      if (!aIsLocal && bIsLocal) return 1;  // b comes first
+      return 0; // maintain original order (by date)
+    });
+  }
+
+  return convertTimestamps(allPosts) as Post[];
 }
 
 
