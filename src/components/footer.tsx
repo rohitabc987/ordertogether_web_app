@@ -24,22 +24,22 @@ export function Footer() {
               <ul className="space-y-2">
                 <li><Link href="/about" className="text-sm text-muted-foreground hover:text-foreground">About</Link></li>
                 <li><Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground">Pricing Plan</Link></li>
-                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Contact Us</Link></li>
+                <li><Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground">Contact Us</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="font-semibold font-headline mb-4">Resources</h3>
               <ul className="space-y-2">
                 <li><Link href="/about#how-it-works" className="text-sm text-muted-foreground hover:text-foreground">How it Works</Link></li>
-                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Give Feedback</Link></li>
-                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Know More</Link></li>
+                <li><Link href="/feedback" className="text-sm text-muted-foreground hover:text-foreground">Give Feedback</Link></li>
+                <li><Link href="/know-more" className="text-sm text-muted-foreground hover:text-foreground">Know More</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="font-semibold font-headline mb-4">Legal</h3>
               <ul className="space-y-2">
-                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Privacy Policy</Link></li>
-                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Terms of Service</Link></li>
+                <li><Link href="/legal/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground">Privacy Policy</Link></li>
+                <li><Link href="/legal/terms-of-service" className="text-sm text-muted-foreground hover:text-foreground">Terms of Service</Link></li>
               </ul>
             </div>
           </div>
