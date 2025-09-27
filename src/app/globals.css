@@ -22,8 +22,8 @@
     --primary: 220 90% 56%; /* modern indigo */
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 160 84% 9%; /* emerald green for accents */
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 0 84% 97%; /* emerald green for accents */
+    --secondary-foreground: 170 0 0% 8%;
 
     --muted: 210 20% 96%;
     --muted-foreground: 215 20% 45%;
