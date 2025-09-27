@@ -51,7 +51,7 @@ export function PostCard({ post }: { post: Post }) {
         <div className="hidden sm:flex items-center gap-4 text-sm text-muted-foreground">
            <Badge variant="outline" className="capitalize">
               <UserIcon className="w-3 h-3 mr-1" />
-              {post.authorGender}
+              {post.gender}
            </Badge>
            <div className="flex items-center gap-1.5">
              <Clock className="w-4 h-4" />

@@ -106,7 +106,7 @@ const postSchema = z.object({
   authorId: z.string(),
   authorName: z.string(),
   contactNumber: z.string(),
-  authorGender: z.string(),
+  gender: z.string(),
   institutionType: z.string().optional(),
   institutionName: z.string().optional(),
   area: z.string().optional(),
@@ -121,7 +121,7 @@ export async function createPostAction(prevState: any, formData: FormData) {
   }
   
   const data = Object.fromEntries(formData);
-  data.authorGender = user.userProfile.gender;
+  data.gender = user.userProfile.gender;
 
   const parsed = postSchema.safeParse(data);
 
