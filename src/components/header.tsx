@@ -35,7 +35,7 @@ export function Header() {
       <div className="container flex h-16 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <UtensilsCrossed className="h-6 w-6 text-primary" />
-          <span className="font-bold font-headline text-lg text-white">OrderlyGather</span>
+          <span className="font-bold font-headline text-lg text-foreground">OrderlyGather</span>
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
           {navLinks.map((link) => {
@@ -45,8 +45,8 @@ export function Header() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "flex items-center gap-2 text-white/80 transition-colors hover:text-white relative py-2",
-                  isActive && "text-white"
+                  "flex items-center gap-2 text-foreground/80 transition-colors hover:text-foreground relative py-2",
+                  isActive && "text-foreground"
                 )}
               >
                 <link.icon className="h-4 w-4" />
