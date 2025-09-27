@@ -73,6 +73,9 @@ export function PostCard({ post }: { post: Post }) {
       <div className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 flex-1 min-w-0">
+             <Avatar>
+                <AvatarFallback>{authorInitials}</AvatarFallback>
+            </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 flex-wrap">
                 <p className="font-semibold text-base text-primary">Save {formatCurrency(remainingNeeded)} with a group order!</p>
