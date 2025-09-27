@@ -3,34 +3,51 @@
 
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Info, PlusCircle } from 'lucide-react';
+import { ArrowDown, PlusCircle } from 'lucide-react';
+import Image from 'next/image';
 
 export function AboutSection() {
+  const handleBrowseClick = () => {
+    const element = document.getElementById('active-orders');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <Card className="bg-card/70 backdrop-blur-sm border-primary/20">
-      <CardHeader className="flex flex-row items-start gap-4 space-y-0 pb-4">
-        <div className="bg-primary/10 p-3 rounded-full border border-primary/30">
-          <Info className="w-6 h-6 text-primary" />
+    <div className="rounded-lg bg-card shadow-sm border border-primary/10 overflow-hidden">
+      <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <div className="space-y-4">
+          <h1 className="text-4xl md:text-5xl font-bold font-headline text-primary">
+            Never Pay Delivery Fees Again.
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Team up with people in your building or campus to combine small orders into one. Save money, together.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            <Button asChild size="lg">
+              <Link href="/create-post">
+                <PlusCircle />
+                Start a New Order
+              </Link>
+            </Button>
+            <Button variant="secondary" size="lg" onClick={handleBrowseClick}>
+              <ArrowDown />
+              Browse Orders
+            </Button>
+          </div>
         </div>
-        <div>
-          <CardTitle className="text-2xl font-headline">Welcome to OrderlyGather</CardTitle>
-          <CardDescription className="text-base">
-            The smart way to meet minimum order values and save on delivery fees.
-          </CardDescription>
+        <div className="hidden md:block">
+           <Image
+              src="https://picsum.photos/seed/group-food/600/400"
+              alt="People sharing food"
+              width={600}
+              height={400}
+              className="rounded-lg shadow-lg"
+              data-ai-hint="people sharing food"
+            />
         </div>
-      </CardHeader>
-      <CardContent>
-        <p className="mb-4 text-muted-foreground">
-          Ever been just a few rupees short of a free delivery coupon? With OrderlyGather, you can team up with others in your building or campus to combine smaller orders into one. Browse active group orders below or be the one to start a new one!
-        </p>
-        <Button asChild>
-          <Link href="/create-post">
-            <PlusCircle />
-            Start a New Order
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

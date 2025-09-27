@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -50,74 +51,76 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
     <div className="space-y-8">
       <AboutSection />
       
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">
-            Active Group Orders
-          </h1>
-          <p className="text-muted-foreground">
-            {user ? (
-              `Orders available in ${locationName}. Join one or create your own!`
-            ) : (
-              'Discover group orders near you. Log in to create your own.'
-            )}
-          </p>
+      <div id="active-orders" className="scroll-mt-20">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 className="text-3xl font-bold font-headline">
+              Active Group Orders
+            </h2>
+            <p className="text-muted-foreground">
+              {user ? (
+                `Orders available in ${locationName}. Join one or create your own!`
+              ) : (
+                'Discover group orders near you. Log in to create your own.'
+              )}
+            </p>
+          </div>
         </div>
-      </div>
-      
-      <PostFilters
-        timeFilter={timeFilter}
-        setTimeFilter={setTimeFilter}
-        amountFilter={amountFilter}
-        setAmountFilter={setAmountFilter}
-      />
+        
+        <PostFilters
+          timeFilter={timeFilter}
+          setTimeFilter={setTimeFilter}
+          amountFilter={amountFilter}
+          setAmountFilter={setAmountFilter}
+        />
 
-      {paginatedPosts.length > 0 ? (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
-            {paginatedPosts.map(post => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 pt-4">
-              <Button 
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-              <span className="text-sm font-medium">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
+        {paginatedPosts.length > 0 ? (
+          <div className="space-y-4 pt-6">
+            <div className="grid grid-cols-1 gap-4">
+              {paginatedPosts.map(post => (
+                <PostCard key={post.id} post={post} />
+              ))}
             </div>
-          )}
-        </div>
-      ) : (
-        <div className="text-center py-16 border-2 border-dashed rounded-lg bg-card">
-          <div className="flex justify-center mb-4">
-            <img src="/images/empty-state.svg" alt="No Orders" className="w-48 h-48"/>
-          </div>
-          <h2 className="text-2xl font-headline text-primary">
-            {user ? `No active orders in ${locationName} yet.` : 'No orders found'}
-          </h2>
-          <p className="text-muted-foreground mt-2">
-            {user ? (
-              'Be the first to start a group order!'
-            ) : (
-              'Check back later or adjust the filters to see if there are orders in your area.'
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 pt-4">
+                <Button 
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm font-medium">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
             )}
-          </p>
-        </div>
-      )}
+          </div>
+        ) : (
+          <div className="text-center py-16 border-2 border-dashed rounded-lg bg-card mt-6">
+            <div className="flex justify-center mb-4">
+              <img src="/images/empty-state.svg" alt="No Orders" className="w-48 h-48"/>
+            </div>
+            <h2 className="text-2xl font-headline text-primary">
+              {user ? `No active orders in ${locationName} yet.` : 'No orders found'}
+            </h2>
+            <p className="text-muted-foreground mt-2">
+              {user ? (
+                'Be the first to start a group order!'
+              ) : (
+                'Check back later or adjust the filters to see if there are orders in your area.'
+              )}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
