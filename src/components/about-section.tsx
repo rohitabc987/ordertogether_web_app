@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { PlusCircle, Search } from 'lucide-react';
+import { PlusCircle, ChevronDown } from 'lucide-react';
 
 export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null }) {
   
@@ -34,7 +34,7 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
               </Button>
               <Button asChild size="lg" variant="secondary">
                 <Link href="#active-orders">
-                   <Search />
+                   <ChevronDown />
                   Browse Orders
                 </Link>
               </Button>
