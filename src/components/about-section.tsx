@@ -14,11 +14,11 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
 
   return (
     <div 
-      className="relative w-full h-[60vh] bg-cover bg-center bg-no-repeat"
+      className="relative w-full h-[60vh] bg-cover bg-center bg-no-repeat rounded-lg overflow-hidden"
       style={heroStyle}
     >
       <div className="absolute inset-0 bg-black/60"></div>
-      <div className="container px-4 relative h-full flex items-center justify-start text-left">
+      <div className="relative h-full flex items-center justify-start text-left px-8 sm:px-12 md:px-16">
         <div className="z-10 space-y-4 max-w-3xl">
             <RotatingHeadlines />
             <p className="text-lg text-white/90">
