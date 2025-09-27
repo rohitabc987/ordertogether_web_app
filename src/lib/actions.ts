@@ -193,3 +193,29 @@ export async function subscribeAction(plan: 'daily' | 'weekly' | 'monthly', user
   revalidatePath('/');
   revalidatePath('/profile');
 }
+
+const feedbackSchema = z.object({
+  email: z.string().email().optional().or(z.literal('')),
+  feedback: z.string().min(10, 'Feedback must be at least 10 characters.'),
+});
+
+export async function submitFeedbackAction(prevState: any, formData: FormData) {
+  try {
+    const data = Object.fromEntries(formData);
+    const parsed = feedbackSchema.safeParse(data);
+
+    if (!parsed.success) {
+      const firstError = Object.values(parsed.error.flatten().fieldErrors)[0]?.[0];
+      return { success: false, message: firstError || 'Invalid data.' };
+    }
+
+    await db.collection('feedback').add({
+      ...parsed.data,
+      createdAt: new Date(),
+    });
+
+    return { success: true, message: 'Thank you for your feedback!' };
+  } catch (error) {
+    return { success: false, message: 'Something went wrong. Please try again.' };
+  }
+}
