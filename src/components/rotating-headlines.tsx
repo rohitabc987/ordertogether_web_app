@@ -58,8 +58,8 @@ export function RotatingHeadlines() {
         className={cn(
           'transition-all duration-500',
           isAnimatingOut
-            ? 'animate-fade-out-left'
-            : 'animate-fade-in-left'
+            ? 'animate-fade-out-down'
+            : 'animate-fade-in-up'
         )}
       >
         {renderHeadline()}

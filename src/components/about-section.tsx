@@ -18,8 +18,8 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
       style={heroStyle}
     >
       <div className="absolute inset-0 bg-black/60"></div>
-      <div className="relative h-full flex items-center justify-start text-left">
-        <div className="z-10 space-y-4 max-w-3xl px-4 md:px-12">
+      <div className="container px-4 relative h-full flex items-center justify-start text-left">
+        <div className="z-10 space-y-4 max-w-3xl">
             <RotatingHeadlines />
             <p className="text-lg text-white/90">
               Why pay alone? Combine orders, share costs, and enjoy more with less
