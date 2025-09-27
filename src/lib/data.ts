@@ -7,6 +7,7 @@ import { Timestamp, FieldPath } from 'firebase-admin/firestore';
 
 const usersCollection = db.collection('users');
 const postsCollection = db.collection('posts');
+const appDataCollection = db.collection('app_data');
 
 // Helper function to convert Firestore Timestamps to JS Dates
 function convertTimestamps(obj: any): any {
@@ -176,3 +177,20 @@ export async function createUserInDb(data: { name: string; email: string; gender
   console.log('data: Returning new user object:', result);
   return result;
 }
+
+export const getBannerImageUrl = cache(async (): Promise<string | null> => {
+  try {
+    // Assuming there's a single document with a known ID like 'config'
+    const snapshot = await appDataCollection.limit(1).get();
+    if (snapshot.empty) {
+      console.log('data: No document found in app_data collection.');
+      return null;
+    }
+    const doc = snapshot.docs[0];
+    const data = doc.data();
+    return data.banner_img || null;
+  } catch (error) {
+    console.error('Error fetching banner image URL:', error);
+    return null;
+  }
+});

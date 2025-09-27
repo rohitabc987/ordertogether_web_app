@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { ArrowDown, PlusCircle } from 'lucide-react';
 import Image from 'next/image';
 
-export function AboutSection() {
+export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null }) {
   const handleBrowseClick = () => {
     const element = document.getElementById('active-orders');
     if (element) {
@@ -14,9 +14,16 @@ export function AboutSection() {
     }
   };
 
+  const heroStyle = bannerImageUrl ? {
+      backgroundImage: `url(${bannerImageUrl})`,
+    } : {};
+
   return (
-    <div className="rounded-lg bg-card shadow-sm border border-primary/10 overflow-hidden">
-      <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+    <div 
+      className="rounded-lg bg-card shadow-sm border border-primary/10 overflow-hidden bg-cover bg-center bg-no-repeat"
+      style={heroStyle}
+    >
+      <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-card/70 backdrop-blur-sm">
         <div className="space-y-4">
           <h1 className="text-4xl md:text-5xl font-bold font-headline text-primary">
             Never Pay Delivery Fees Again.

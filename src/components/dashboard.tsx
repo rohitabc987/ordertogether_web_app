@@ -11,7 +11,7 @@ import { Button } from './ui/button';
 
 const POSTS_PER_PAGE = 10;
 
-export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
+export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post[], bannerImageUrl: string | null }) {
   const { user } = useAuth();
   const [posts] = useState<Post[]>(initialPosts);
   const [timeFilter, setTimeFilter] = useState('all');
@@ -49,7 +49,7 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
 
   return (
     <div className="space-y-8">
-      <AboutSection />
+      <AboutSection bannerImageUrl={bannerImageUrl} />
       
       <div id="active-orders" className="scroll-mt-20">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
