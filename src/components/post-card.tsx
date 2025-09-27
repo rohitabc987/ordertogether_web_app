@@ -71,7 +71,7 @@ export function PostCard({ post }: { post: Post }) {
   return (
     <Card className="bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm transition-all duration-300 ease-in-out hover:shadow-lg">
       <CardContent className="p-4 space-y-4">
-        <div>
+        <div className="space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3 flex-1 min-w-0">
                <Avatar>
@@ -104,7 +104,7 @@ export function PostCard({ post }: { post: Post }) {
             </div>
           </div>
 
-          <div className="mt-4 space-y-2">
+          <div className="space-y-2">
               <div className="flex justify-between items-center text-xs text-muted-foreground">
                   <span>{formatCurrency(post.contributionAmount)}</span>
                   <span>{formatCurrency(post.totalAmount)}</span>
@@ -113,7 +113,7 @@ export function PostCard({ post }: { post: Post }) {
               {allNotes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{allNotes}</span></p>}
           </div>
 
-          <div className="flex justify-start mt-4">
+          <div className="flex justify-start">
             <Button 
                 size="sm"
                 onClick={toggleExpand} 
