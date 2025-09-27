@@ -3,11 +3,12 @@
 
 import { useTransition } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Button } from './ui/button';
 import { useAuth } from '@/providers';
 import { logoutAction } from '@/lib/actions';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { UtensilsCrossed, LogOut, User, PlusCircle, DollarSign, LogIn, Info, ListOrdered } from 'lucide-react';
+import { UtensilsCrossed, LogOut, User, PlusCircle, DollarSign, LogIn, Info, ListOrdered, LayoutDashboard } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,10 +16,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 export function Header() {
   const { user } = useAuth();
   const [isPending, startTransition] = useTransition();
+  const pathname = usePathname();
+
+  const navLinks = [
+    { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/about', label: 'About', icon: Info },
+    { href: '/create-post', label: 'Create Post', icon: PlusCircle },
+    { href: '/pricing', label: 'Pricing', icon: DollarSign },
+  ];
 
   return (
     <header className="sticky top-0 z-50 w-full bg-header-background">
@@ -28,19 +38,23 @@ export function Header() {
           <span className="font-bold font-headline text-lg text-white">OrderlyGather</span>
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-          <Link href="/" className="transition-colors text-white/80 hover:text-white">Dashboard</Link>
-          <Link href="/about" className="transition-colors text-white/80 hover:text-white">
-            <Info className="inline-block -mt-1 mr-1 h-4 w-4" />
-            About
-          </Link>
-          <Link href="/create-post" className="transition-colors text-white/80 hover:text-white">
-            <PlusCircle className="inline-block -mt-1 mr-1 h-4 w-4" />
-            Create Post
-          </Link>
-          <Link href="/pricing" className="transition-colors text-white/80 hover:text-white">
-            <DollarSign className="inline-block -mt-1 mr-1 h-4 w-4" />
-            Pricing
-          </Link>
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "flex items-center gap-2 text-white/80 transition-colors hover:text-white relative py-2",
+                  isActive && "text-white"
+                )}
+              >
+                <link.icon className="h-4 w-4" />
+                <span>{link.label}</span>
+                {isActive && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full"></span>}
+              </Link>
+            );
+          })}
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-4">
           {user ? (
