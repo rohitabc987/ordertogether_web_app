@@ -40,6 +40,8 @@ export function PostCard({ post }: { post: Post }) {
     }
   };
 
+  const allNotes = [post.title, post.notes].filter(Boolean).join(' - ');
+
   return (
     <Card className="bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm transition-all duration-300 ease-in-out">
       <div className="p-4">
@@ -52,13 +54,13 @@ export function PostCard({ post }: { post: Post }) {
             <div className="flex-1 min-w-0">
               <p className="font-semibold truncate text-base text-primary">Save {formatCurrency(remainingNeeded)} with a group order!</p>
               <div className="flex items-center gap-2 flex-wrap mt-1">
-                 <p className="text-sm text-muted-foreground truncate">{post.title}</p>
                  <Badge variant="outline" className="capitalize">
                     <UserIcon className="w-3 h-3 mr-1" />
                     {post.author.userProfile.gender}
                 </Badge>
+                <p className="text-sm text-muted-foreground truncate">Contributing: {formatCurrency(post.contributionAmount)}</p>
               </div>
-              {post.notes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{post.notes}</span></p>}
+              {allNotes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{allNotes}</span></p>}
             </div>
           </div>
 
