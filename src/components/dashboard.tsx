@@ -1,13 +1,15 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { PostCard } from './post-card';
 import { PostFilters } from './post-filters';
 import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
 import { AboutSection } from './about-section';
 import { Button } from './ui/button';
+import { useInView } from '@/hooks/use-in-view';
+import { cn } from '@/lib/utils';
 
 const POSTS_PER_PAGE = 10;
 
@@ -60,14 +62,16 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
     return filteredPosts.slice(startIndex, endIndex);
   }, [filteredPosts, currentPage]);
 
-
   const locationName = user?.institution?.institutionName || user?.location?.area || user?.location?.city || 'your area';
+
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(sectionRef, { once: true, rootMargin: '-100px' });
 
   return (
     <div className="space-y-8">
       <AboutSection bannerImageUrl={bannerImageUrl} />
       
-      <div id="active-orders" className="scroll-mt-20 container mx-auto px-4">
+      <div id="active-orders" ref={sectionRef} className="scroll-mt-20 container mx-auto px-4">
         <div className="mb-6">
           <h2 className="text-3xl font-bold font-headline">
             Active Group Orders
@@ -82,7 +86,10 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <aside className="lg:col-span-1 animate-slide-in-from-top-left">
+          <aside className={cn(
+            "lg:col-span-1 opacity-0",
+            isInView && "animate-slide-in-from-top-left"
+          )}>
             <PostFilters
               timeFilter={timeFilter}
               setTimeFilter={setTimeFilter}
@@ -97,7 +104,10 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
             />
           </aside>
 
-          <div className="lg:col-span-3 animate-slide-in-from-top-right">
+          <div className={cn(
+            "lg:col-span-3 opacity-0",
+             isInView && "animate-slide-in-from-top-right"
+          )}>
             {paginatedPosts.length > 0 ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4">
