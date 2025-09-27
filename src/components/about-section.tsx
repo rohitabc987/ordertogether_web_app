@@ -22,7 +22,7 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
         <div className="z-10 space-y-4 max-w-3xl px-4">
             <RotatingHeadlines />
             <p className="text-lg text-white/90">
-              Team up with people in your building or campus to combine small orders into one. Save money, together.
+              Why pay alone? Combine orders, share costs, and enjoy more with less
             </p>
             <div className="flex flex-wrap justify-center items-center gap-4 pt-4">
               <Button asChild size="lg">
@@ -31,7 +31,7 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
                   Start a New Order
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="secondary" prefetch={false}>
+              <Button asChild size="lg" variant="secondary">
                 <Link href="#active-orders">
                    <ChevronDown />
                   Browse Orders
