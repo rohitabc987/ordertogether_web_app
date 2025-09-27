@@ -21,7 +21,13 @@ export function PostCard({ post }: { post: Post }) {
 
   const deadline = post.deadline ? new Date(post.deadline) : null;
   const deadlineInPast = deadline ? deadline < new Date() : true;
-  const authorName = post.authorName || 'Anonymous';
+  
+  if (!post.author) {
+    // Post has no author, maybe it's corrupted data. Don't render.
+    return null;
+  }
+  
+  const authorName = post.author.userProfile.name || 'Anonymous';
   const authorInitials = authorName.split(' ').map(n => n[0]).join('');
 
   const remainingNeeded = post.totalAmount - post.contributionAmount;
@@ -40,7 +46,7 @@ export function PostCard({ post }: { post: Post }) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${authorName}`} />
+              <AvatarImage src={post.author.userProfile.photoURL ?? `https://api.dicebear.com/7.x/initials/svg?seed=${authorName}`} />
               <AvatarFallback>{authorInitials}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
@@ -52,7 +58,7 @@ export function PostCard({ post }: { post: Post }) {
           <div className="flex flex-col items-end gap-2 text-sm text-muted-foreground">
             <Badge variant="outline" className="capitalize">
                 <UserIcon className="w-3 h-3 mr-1" />
-                {post.gender}
+                {post.author.userProfile.gender}
             </Badge>
             <div className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
@@ -80,15 +86,15 @@ export function PostCard({ post }: { post: Post }) {
             <div>
               <h4 className="font-semibold mb-3">Contact {authorName} to Coordinate</h4>
               <div className="space-y-3 text-sm">
-                {post.contact?.phone && (
+                {post.author.contact?.phone && (
                   <>
                     <div className="flex items-center gap-3 p-2 rounded-md bg-muted/50">
                         <Phone className="w-4 h-4 text-primary" />
-                        <a href={`tel:${post.contact.phone}`} className="font-mono tracking-wider">{post.contact.phone}</a>
+                        <a href={`tel:${post.author.contact.phone}`} className="font-mono tracking-wider">{post.author.contact.phone}</a>
                     </div>
                     <div className="flex items-center gap-3 p-2 rounded-md bg-muted/50">
                         <MessageSquare className="w-4 h-4 text-primary" />
-                        <a href={`https://wa.me/${post.contact.phone}`} target="_blank" rel="noopener noreferrer" className="font-mono tracking-wider">WhatsApp</a>
+                        <a href={`https://wa.me/${post.author.contact.phone}`} target="_blank" rel="noopener noreferrer" className="font-mono tracking-wider">WhatsApp</a>
                     </div>
                   </>
                 )}

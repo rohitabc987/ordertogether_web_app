@@ -26,14 +26,7 @@ export function CreatePostForm({ user }: { user: User }) {
       <CardContent>
         <form action={formAction} className="space-y-6">
           <input type="hidden" name="authorId" value={user.id} />
-          <input type="hidden" name="authorName" value={user.userProfile?.name || ''} />
-          <input type="hidden" name="contactNumber" value={user.contact?.phone || ''} />
-          <input type="hidden" name="institutionType" value={user.institution?.institutionType || ''} />
-          <input type="hidden" name="institutionName" value={user.institution?.institutionName || ''} />
-          <input type="hidden" name="area" value={user.location?.area || ''} />
-          <input type="hidden" name="city" value={user.location?.city || ''} />
-          <input type="hidden" name="pinCode" value={user.location?.pinCode || ''} />
-
+          
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
             <Input 

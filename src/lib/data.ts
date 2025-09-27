@@ -8,6 +8,26 @@ import { Timestamp, FieldPath } from 'firebase-admin/firestore';
 const usersCollection = db.collection('users');
 const postsCollection = db.collection('posts');
 
+// Helper function to convert Firestore Timestamps to JS Dates
+function convertTimestamps(obj: any): any {
+  if (!obj) return obj;
+  if (Array.isArray(obj)) {
+    return obj.map(convertTimestamps);
+  }
+  if (obj instanceof Timestamp) {
+    return obj.toDate();
+  }
+  if (typeof obj === 'object') {
+    const newObj: { [key: string]: any } = {};
+    for (const key in obj) {
+      newObj[key] = convertTimestamps(obj[key]);
+    }
+    return newObj;
+  }
+  return obj;
+}
+
+
 export async function findUserByEmail(email: string): Promise<User | undefined> {
   console.log(`data: findUserByEmail called for: ${email}`);
   const snapshot = await usersCollection.where('contact.email', '==', email).limit(1).get();
@@ -33,28 +53,26 @@ export const getUserById = cache(async (userId: string): Promise<User | undefine
   return userData;
 });
 
-// Helper function to convert Firestore Timestamps to JS Dates
-function convertTimestamps(obj: any): any {
-  if (!obj) return obj;
-  if (Array.isArray(obj)) {
-    return obj.map(convertTimestamps);
-  }
-  if (obj instanceof Timestamp) {
-    return obj.toDate();
-  }
-  if (typeof obj === 'object') {
-    const newObj: { [key: string]: any } = {};
-    for (const key in obj) {
-      newObj[key] = convertTimestamps(obj[key]);
-    }
-    return newObj;
-  }
-  return obj;
+async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
+  const authorIds = [...new Set(posts.map(p => p.authorId))];
+  if (authorIds.length === 0) return convertTimestamps(posts) as Post[];
+
+  const authorSnapshots = await db.collection('users').where(FieldPath.documentId(), 'in', authorIds).get();
+  const authors = {};
+  authorSnapshots.forEach(doc => {
+    authors[doc.id] = { id: doc.id, ...doc.data() };
+  });
+
+  const joinedPosts = posts.map(post => ({
+    ...post,
+    author: authors[post.authorId] || null,
+  })).filter(p => p.author !== null); // Filter out posts where author was not found
+
+  return convertTimestamps(joinedPosts) as Post[];
 }
 
 
 export async function getPostsForUser(user: User | null): Promise<Post[]> {
-  // Simplified query: fetch the 50 most recent posts.
   const query = postsCollection.orderBy('createdAt', 'desc').limit(50);
   const snapshot = await query.get();
   
@@ -65,15 +83,17 @@ export async function getPostsForUser(user: User | null): Promise<Post[]> {
     allPosts = allPosts.filter(post => post.authorId !== user.id);
   }
 
+  const postsWithAuthors = await joinAuthorToPosts(allPosts);
+
   // If a user is logged in, sort to prioritize posts from their location
   if (user) {
-    allPosts.sort((a, b) => {
-      const aIsLocal = (a.institution?.institutionName && a.institution.institutionName === user.institution?.institutionName) ||
-                       (a.location?.area && a.location.area === user.location?.area) ||
-                       (a.location?.city && a.location.city === user.location?.city);
-      const bIsLocal = (b.institution?.institutionName && b.institution.institutionName === user.institution?.institutionName) ||
-                       (b.location?.area && b.location.area === user.location?.area) ||
-                       (b.location?.city && b.location.city === user.location?.city);
+    postsWithAuthors.sort((a, b) => {
+      const aIsLocal = (a.author.institution?.institutionName && a.author.institution.institutionName === user.institution?.institutionName) ||
+                       (a.author.location?.area && a.author.location.area === user.location?.area) ||
+                       (a.author.location?.city && a.author.location.city === user.location?.city);
+      const bIsLocal = (b.author.institution?.institutionName && b.author.institution.institutionName === user.institution?.institutionName) ||
+                       (b.author.location?.area && b.author.location.area === user.location?.area) ||
+                       (b.author.location?.city && b.author.location.city === user.location?.city);
 
       if (aIsLocal && !bIsLocal) return -1; // a comes first
       if (!aIsLocal && bIsLocal) return 1;  // b comes first
@@ -81,7 +101,7 @@ export async function getPostsForUser(user: User | null): Promise<Post[]> {
     });
   }
 
-  return convertTimestamps(allPosts) as Post[];
+  return postsWithAuthors;
 }
 
 
@@ -89,22 +109,23 @@ export async function getPostsByAuthorId(authorId: string): Promise<Post[]> {
   const snapshot = await postsCollection.where('authorId', '==', authorId).get();
   const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   
+  const postsWithAuthors = await joinAuthorToPosts(posts);
+
   // Sort posts by creation date in descending order (newest first)
-  const convertedPosts = convertTimestamps(posts) as Post[];
-  convertedPosts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  postsWithAuthors.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   
-  return convertedPosts;
+  return postsWithAuthors;
 }
 
 
-export async function createPost(postData: Omit<Post, 'id' | 'createdAt'>): Promise<Post> {
+export async function createPost(postData: Omit<Post, 'id' | 'createdAt' | 'author'>): Promise<Post> {
   const postWithTimestamp = {
     ...postData,
     createdAt: new Date(),
   };
   const docRef = await postsCollection.add(postWithTimestamp);
   const newPostData = (await docRef.get()).data();
-  return convertTimestamps({ id: docRef.id, ...newPostData }) as Post;
+  return { id: docRef.id, ...newPostData } as Post;
 }
 
 export async function updateUser(userId: string, updates: Record<string, any>): Promise<User> {

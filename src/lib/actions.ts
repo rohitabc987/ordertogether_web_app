@@ -104,14 +104,6 @@ const postSchema = z.object({
   deadline: z.coerce.date(),
   notes: z.string().optional(),
   authorId: z.string(),
-  authorName: z.string(),
-  contactNumber: z.string(),
-  gender: z.string(),
-  institutionType: z.string().optional(),
-  institutionName: z.string().optional(),
-  area: z.string().optional(),
-  city: z.string().optional(),
-  pinCode: z.string().optional(),
 });
 
 export async function createPostAction(prevState: any, formData: FormData) {
@@ -121,7 +113,6 @@ export async function createPostAction(prevState: any, formData: FormData) {
   }
   
   const data = Object.fromEntries(formData);
-  data.gender = user.userProfile.gender;
 
   const parsed = postSchema.safeParse(data);
 

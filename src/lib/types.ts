@@ -33,25 +33,12 @@ export interface Post {
   id: string;
   title: string;
   authorId: string;
-  authorName: string;
-  gender: 'male' | 'female' | 'other';
   restaurant: string;
   totalAmount: number;
   contributionAmount: number;
   deadline: Date;
   notes?: string;
   createdAt: Date;
-  institution: {
-    institutionType?: 'College/University' | 'Hostel/PG/Apartment';
-    institutionName?: string;
-  };
-  location: {
-    area?: string;
-    city?: string;
-    pinCode?: string;
-  };
-  contact: {
-    phone?: string;
-    whatsapp?: string;
-  };
+  // Author details are joined from the users collection
+  author: User;
 }
