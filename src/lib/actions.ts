@@ -209,10 +209,13 @@ export async function submitFeedbackAction(prevState: any, formData: FormData) {
       return { success: false, message: firstError || 'Invalid data.' };
     }
 
-    await db.collection('feedback').add({
-      ...parsed.data,
+    const feedbackData = {
+      email: parsed.data.email || null,
+      feedback: parsed.data.feedback,
       createdAt: new Date(),
-    });
+    };
+
+    await db.collection('feedback').add(feedbackData);
 
     return { success: true, message: 'Thank you for your feedback!' };
   } catch (error) {

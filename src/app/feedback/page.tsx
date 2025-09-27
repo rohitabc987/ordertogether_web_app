@@ -8,8 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { submitFeedbackAction } from '@/lib/actions';
+import { useAuth } from '@/providers';
 
 export default function FeedbackPage() {
+  const { user } = useAuth();
   const [state, formAction] = useActionState(submitFeedbackAction, null);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -30,10 +32,15 @@ export default function FeedbackPage() {
         </CardHeader>
         <CardContent>
           <form ref={formRef} action={formAction} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email">Your Email (Optional)</Label>
-              <Input id="email" name="email" type="email" placeholder="you@example.com" />
-            </div>
+            {user ? (
+              <input type="hidden" name="email" value={user.contact.email} />
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="email">Your Email (Optional)</Label>
+                <Input id="email" name="email" type="email" placeholder="you@example.com" />
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="feedback">Your Feedback</Label>
               <Textarea id="feedback" name="feedback" placeholder="Tell us what you think..." rows={5} required />
