@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,6 @@ import Link from 'next/link';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
 import { Progress } from './ui/progress';
-import { useInView } from '@/hooks/use-in-view';
 
 const RestaurantIcon = ({ name }: { name: string }) => {
   const lowerCaseName = name.toLowerCase();
@@ -44,10 +43,6 @@ export function PostCard({ post }: { post: Post }) {
   const { user } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const isSubscribed = user?.subscription?.status === 'active';
-  
-  const cardRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(cardRef, { once: true });
-
 
   const deadline = post.deadline ? new Date(post.deadline) : null;
   const deadlineInPast = deadline ? deadline < new Date() : true;
@@ -73,10 +68,8 @@ export function PostCard({ post }: { post: Post }) {
 
   return (
     <Card 
-      ref={cardRef}
       className={cn(
-        "bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm transition-all duration-300 ease-in-out hover:shadow-lg opacity-0",
-        isInView && "animate-fade-in-up"
+        "bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm transition-all duration-300 ease-in-out hover:shadow-lg"
       )}
     >
       <CardContent className="p-4 space-y-4">
@@ -95,7 +88,7 @@ export function PostCard({ post }: { post: Post }) {
                     <UserIcon className="w-3 h-3 mr-1" />
                     {post.author.userProfile.gender}
                 </Badge>
-                <p className="text-sm text-muted-foreground truncate">Contributing: {formatCurrency(post.contributionAmount)} by {authorName}</p>
+                <p className="text-sm text-muted-foreground truncate">Contributing: {formatCurrency(post.contributionAmount)}</p>
               </div>
             </div>
           </div>

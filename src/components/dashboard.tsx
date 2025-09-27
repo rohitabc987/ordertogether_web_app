@@ -97,7 +97,7 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
             />
           </aside>
 
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 animate-slide-in-from-top-right">
             {paginatedPosts.length > 0 ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4">
