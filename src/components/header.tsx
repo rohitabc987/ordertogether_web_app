@@ -21,7 +21,7 @@ export function Header() {
   const [isPending, startTransition] = useTransition();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-black">
+    <header className="sticky top-0 z-50 w-full bg-header-background">
       <div className="container flex h-16 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <UtensilsCrossed className="h-6 w-6 text-primary" />

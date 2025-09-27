@@ -22,6 +22,7 @@ export default {
         headline: ['ClashDisplay', 'sans-serif'],
       },
       colors: {
+        'header-background': 'hsl(var(--bg-header-background))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         teal: '#008080',

@@ -17,6 +17,7 @@ h6 {
 
 @layer base {
   :root {
+    --bg-header-background : #2b0303;
     --background: 210 20% 98%;
     --foreground: 215 28% 17%;
     --card: 0 0% 100%;
