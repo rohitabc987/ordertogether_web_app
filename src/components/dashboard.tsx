@@ -7,12 +7,16 @@ import { PostFilters } from './post-filters';
 import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
 import { AboutSection } from './about-section';
+import { Button } from './ui/button';
+
+const POSTS_PER_PAGE = 10;
 
 export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
   const { user } = useAuth();
   const [posts] = useState<Post[]>(initialPosts);
   const [timeFilter, setTimeFilter] = useState('all');
   const [amountFilter, setAmountFilter] = useState([0, 10000]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredPosts = useMemo(() => {
     return posts.filter(post => {
@@ -32,6 +36,14 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
       return timeMatch && amountMatch;
     });
   }, [posts, timeFilter, amountFilter]);
+
+  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
+  const paginatedPosts = useMemo(() => {
+    const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+    const endIndex = startIndex + POSTS_PER_PAGE;
+    return filteredPosts.slice(startIndex, endIndex);
+  }, [filteredPosts, currentPage]);
+
 
   const locationName = user?.institution?.institutionName || user?.location?.area || user?.location?.city || 'your area';
 
@@ -61,11 +73,34 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
         setAmountFilter={setAmountFilter}
       />
 
-      {filteredPosts.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4">
-          {filteredPosts.map(post => (
-            <PostCard key={post.id} post={post} />
-          ))}
+      {paginatedPosts.length > 0 ? (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
+            {paginatedPosts.map(post => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 pt-4">
+              <Button 
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <span className="text-sm font-medium">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-center py-16 border-2 border-dashed rounded-lg bg-card">

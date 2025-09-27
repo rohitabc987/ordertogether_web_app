@@ -54,7 +54,7 @@ export function PostCard({ post }: { post: Post }) {
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 flex-wrap">
                 <p className="font-semibold text-base text-primary">Save {formatCurrency(remainingNeeded)} with a group order!</p>
-                <p className="text-sm text-muted-foreground">(Total Order: {formatCurrency(post.totalAmount)})</p>
+                <p className="text-sm text-muted-foreground">(Min Order: {formatCurrency(post.totalAmount)})</p>
               </div>
               <div className="flex items-center gap-2 flex-wrap mt-1">
                  <Badge variant="outline" className="capitalize">

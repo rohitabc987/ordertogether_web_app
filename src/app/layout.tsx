@@ -6,6 +6,7 @@ import { Providers } from '@/providers';
 import { Header } from '@/components/header';
 import { getCurrentUser } from '@/lib/session';
 import { Inter } from 'next/font/google';
+import { Footer } from '@/components/footer';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-body' });
 
@@ -36,6 +37,7 @@ export default async function RootLayout({
           <div className="relative flex min-h-screen flex-col">
             <Header />
             <main className="flex-1">{children}</main>
+            <Footer />
           </div>
           <Toaster />
         </Providers>
