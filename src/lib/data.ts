@@ -3,7 +3,7 @@
 import type { User, Post } from './types';
 import { db } from './firebase-admin';
 import { cache } from 'react';
-import { Timestamp } from 'firebase-admin/firestore';
+import { Timestamp, FieldPath } from 'firebase-admin/firestore';
 
 const usersCollection = db.collection('users');
 const postsCollection = db.collection('posts');
@@ -54,30 +54,41 @@ function convertTimestamps(obj: any): any {
 
 
 export async function getPostsForUser(user: User | null): Promise<Post[]> {
-  let snapshot;
+  let query = postsCollection.orderBy('createdAt', 'desc');
 
   if (user) {
-    // Authenticated user: Try to fetch posts based on their location
+    // Exclude posts made by the current user
+    query = query.where('authorId', '!=', user.id);
+
+    // Try to filter by location if available
     if (user.institution?.institutionName) {
-      // FIRESTORE_INDEX: This query requires a composite index on `institution.institutionName` (asc) and `deadline` (asc).
-      snapshot = await postsCollection.where('institution.institutionName', '==', user.institution.institutionName).orderBy('deadline', 'asc').get();
+      query = query.where('institution.institutionName', '==', user.institution.institutionName);
     } else if (user.location?.area) {
-      // FIRESTORE_INDEX: This query requires a composite index on `location.area` (asc) and `deadline` (asc).
-      snapshot = await postsCollection.where('location.area', '==', user.location.area).orderBy('deadline', 'asc').get();
+      query = query.where('location.area', '==', user.location.area);
     } else if (user.location?.city) {
-      // FIRESTORE_INDEX: This query requires a composite index on `location.city` (asc) and `deadline` (asc).
-      snapshot = await postsCollection.where('location.city', '==', user.location.city).orderBy('deadline', 'asc').get();
+      query = query.where('location.city', '==', user.location.city);
     }
   }
 
-  // Fallback for guests or if location-specific query yields no results
-  if (!snapshot || snapshot.empty) {
-    snapshot = await postsCollection.orderBy('createdAt', 'desc').limit(50).get();
+  let snapshot = await query.limit(50).get();
+
+  // Fallback for authenticated users if location-specific query yields no results
+  if (user && snapshot.empty) {
+    let fallbackQuery = postsCollection.orderBy('createdAt', 'desc').where('authorId', '!=', user.id);
+    snapshot = await fallbackQuery.limit(50).get();
   }
   
   const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   return convertTimestamps(posts) as Post[];
 }
+
+
+export async function getPostsByAuthorId(authorId: string): Promise<Post[]> {
+  const snapshot = await postsCollection.where('authorId', '==', authorId).orderBy('createdAt', 'desc').get();
+  const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return convertTimestamps(posts) as Post[];
+}
+
 
 export async function createPost(postData: Omit<Post, 'id' | 'createdAt'>): Promise<Post> {
   const postWithTimestamp = {

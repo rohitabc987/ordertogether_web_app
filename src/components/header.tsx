@@ -7,7 +7,7 @@ import { Button } from './ui/button';
 import { useAuth } from '@/providers';
 import { logoutAction } from '@/lib/actions';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { UtensilsCrossed, LogOut, User, PlusCircle, DollarSign, LogIn, Info } from 'lucide-react';
+import { UtensilsCrossed, LogOut, User, PlusCircle, DollarSign, LogIn, Info, ListOrdered } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,16 +63,23 @@ export function Header() {
                     <span>My Profile</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/about">
-                    <Info className="mr-2 h-4 w-4" />
-                    <span>About</span>
+                 <DropdownMenuItem asChild>
+                  <Link href="/my-posts">
+                    <ListOrdered className="mr-2 h-4 w-4" />
+                    <span>My Posts</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/create-post">
                     <PlusCircle className="mr-2 h-4 w-4" />
                     <span>Create Post</span>
+                  </Link>
+                </DropdownMenuItem>
+                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/about">
+                    <Info className="mr-2 h-4 w-4" />
+                    <span>About</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
