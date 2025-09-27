@@ -29,7 +29,6 @@ export function AuthForm() {
           const actionResult = await verifyAndSignInAction(idToken);
           if (actionResult.success) {
             router.push('/');
-            router.refresh(); // Force a refresh to update server components
           } else {
             setError(actionResult.message ?? 'Sign in failed after authentication.');
           }

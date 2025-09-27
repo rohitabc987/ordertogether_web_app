@@ -43,7 +43,6 @@ export function Header() {
       }
       await logoutAction();
       router.push('/login');
-      router.refresh();
     });
   };
 
