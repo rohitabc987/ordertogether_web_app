@@ -51,7 +51,7 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
     <div className="space-y-8">
       <AboutSection bannerImageUrl={bannerImageUrl} />
       
-      <div id="active-orders" className="scroll-mt-20">
+      <div id="active-orders" className="scroll-mt-20 container mx-auto px-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-3xl font-bold font-headline">

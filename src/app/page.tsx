@@ -11,8 +11,6 @@ export default async function Home() {
   const bannerImageUrl = await getBannerImageUrl();
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Dashboard initialPosts={initialPosts} bannerImageUrl={bannerImageUrl} />
-    </div>
+    <Dashboard initialPosts={initialPosts} bannerImageUrl={bannerImageUrl} />
   );
 }
