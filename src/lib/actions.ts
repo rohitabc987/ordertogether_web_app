@@ -92,7 +92,7 @@ export async function logoutAction() {
   }
   cookieStore.delete('session_userId');
   cookieStore.delete('session_authId');
-  redirect('/login');
+  revalidatePath('/');
 }
 
 const postSchema = z.object({
