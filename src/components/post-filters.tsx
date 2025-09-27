@@ -2,7 +2,6 @@
 
 'use client';
 
-import { useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { formatCurrency } from '@/lib/utils';
@@ -13,7 +12,6 @@ import { Input } from './ui/input';
 import { Combobox } from './ui/combobox';
 import { institutions } from '@/lib/institutions';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { useInView } from '@/hooks/use-in-view';
 import { cn } from '@/lib/utils';
 
 interface PostFiltersProps {
@@ -49,16 +47,8 @@ export function PostFilters({
   institutionFilter,
   setInstitutionFilter,
 }: PostFiltersProps) {
-
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, threshold: 0.2 });
-
-  const animateClass = isInView
-    ? 'translate-x-0 opacity-100'
-    : '-translate-x-full opacity-0';
-
   return (
-    <div ref={ref} className={cn("sticky top-20 transition-all duration-700 ease-out", animateClass)}>
+    <div className="sticky top-20">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">

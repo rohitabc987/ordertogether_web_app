@@ -66,6 +66,7 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
   const locationName = user?.institution?.institutionName || user?.location?.area || user?.location?.city || 'your area';
 
   const sectionRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: false, rootMargin: '0px' });
   
   return (
     <div className="space-y-8">

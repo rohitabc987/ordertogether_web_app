@@ -50,14 +50,11 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
   const deadlineInPast = deadline ? deadline < new Date() : true;
   
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, threshold: 0.2 });
+  const isInView = useInView(ref, { once: false, threshold: 0.2 });
 
-  const side = index % 2 === 0 ? 'left' : 'right';
   const animateClass = isInView
-    ? 'translate-x-0 opacity-100'
-    : side === 'left'
-    ? '-translate-x-full opacity-0'
-    : 'translate-x-full opacity-0';
+    ? 'scale-100 opacity-100'
+    : 'scale-0 opacity-0';
 
   if (!post.author) {
     // Post has no author, maybe it's corrupted data. Don't render.
@@ -82,9 +79,10 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     <div
       ref={ref}
       className={cn(
-        "bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm transition-all duration-700 ease-out",
+        "bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm transition-all duration-500 ease-out origin-center",
         animateClass
       )}
+      style={{ transitionDelay: `${index * 150}ms` }}
     >
       <Card>
         <CardContent className="p-4 space-y-4">
