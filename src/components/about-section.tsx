@@ -14,31 +14,33 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
 
   return (
     <div 
-      className="relative w-full h-[60vh] bg-cover bg-center bg-no-repeat overflow-hidden"
+      className="relative w-full h-[60vh] bg-cover bg-center bg-no-repeat"
       style={heroStyle}
     >
       <div className="absolute inset-0 bg-black/60"></div>
-      <div className="relative h-full flex items-center justify-start text-left px-4">
-        <div className="z-10 space-y-4 max-w-3xl">
-            <RotatingHeadlines />
-            <p className="text-lg text-white/90">
-              Why pay alone? Combine orders, share costs, and enjoy more with less
-            </p>
-            <div className="flex flex-wrap justify-start items-center gap-4 pt-4">
-              <Button asChild size="lg">
-                <Link href="/create-post">
-                  <PlusCircle />
-                  Start a New Order
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="secondary">
-                <Link href="#active-orders">
-                   <ChevronDown />
-                  Browse Orders
-                </Link>
-              </Button>
+      <div className="relative h-full flex items-center justify-start text-left">
+        <div className="container mx-auto px-4">
+          <div className="z-10 space-y-4 max-w-3xl">
+              <RotatingHeadlines />
+              <p className="text-lg text-white/90">
+                Why pay alone? Combine orders, share costs, and enjoy more with less
+              </p>
+              <div className="flex flex-wrap justify-start items-center gap-4 pt-4">
+                <Button asChild size="lg">
+                  <Link href="/create-post">
+                    <PlusCircle />
+                    Start a New Order
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="secondary">
+                  <Link href="#active-orders">
+                     <ChevronDown />
+                    Browse Orders
+                  </Link>
+                </Button>
+              </div>
             </div>
-          </div>
+        </div>
       </div>
     </div>
   );

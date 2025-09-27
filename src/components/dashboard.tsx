@@ -65,9 +65,7 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
 
   return (
     <div className="space-y-8">
-      <div className="container mx-auto px-4 mt-8 rounded-lg overflow-hidden">
-        <AboutSection bannerImageUrl={bannerImageUrl} />
-      </div>
+      <AboutSection bannerImageUrl={bannerImageUrl} />
       
       <div id="active-orders" className="scroll-mt-20 container mx-auto px-4">
         <div className="mb-6">
