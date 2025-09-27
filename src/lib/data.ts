@@ -57,9 +57,6 @@ export async function getPostsForUser(user: User | null): Promise<Post[]> {
   let query = postsCollection.orderBy('createdAt', 'desc');
 
   if (user) {
-    // Exclude posts made by the current user
-    query = query.where('authorId', '!=', user.id);
-
     // Try to filter by location if available
     if (user.institution?.institutionName) {
       query = query.where('institution.institutionName', '==', user.institution.institutionName);
@@ -74,11 +71,17 @@ export async function getPostsForUser(user: User | null): Promise<Post[]> {
 
   // Fallback for authenticated users if location-specific query yields no results
   if (user && snapshot.empty) {
-    let fallbackQuery = postsCollection.orderBy('createdAt', 'desc').where('authorId', '!=', user.id);
+    let fallbackQuery = postsCollection.orderBy('createdAt', 'desc');
     snapshot = await fallbackQuery.limit(50).get();
   }
   
-  const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  let posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  // Exclude posts made by the current user after fetching
+  if (user) {
+    posts = posts.filter(post => post.authorId !== user.id);
+  }
+
   return convertTimestamps(posts) as Post[];
 }
 
