@@ -2,15 +2,13 @@
 
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { PostCard } from './post-card';
 import { PostFilters } from './post-filters';
 import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
 import { AboutSection } from './about-section';
 import { Button } from './ui/button';
-import { useInView } from '@/hooks/use-in-view';
-import { cn } from '@/lib/utils';
 
 const POSTS_PER_PAGE = 10;
 
@@ -65,14 +63,11 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
 
   const locationName = user?.institution?.institutionName || user?.location?.area || user?.location?.city || 'your area';
 
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: false, rootMargin: '0px' });
-  
   return (
     <div className="space-y-8">
       <AboutSection bannerImageUrl={bannerImageUrl} />
       
-      <div id="active-orders" ref={sectionRef} className="scroll-mt-20 container mx-auto px-4">
+      <div id="active-orders" className="scroll-mt-20 container mx-auto px-4">
         <div className="mb-6">
           <h2 className="text-3xl font-bold font-headline">
             Active Group Orders
@@ -99,7 +94,6 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
               setRestaurantFilter={setRestaurantFilter}
               institutionFilter={institutionFilter}
               setInstitutionFilter={setInstitutionFilter}
-              isInView={isInView}
             />
           </aside>
 

@@ -13,6 +13,8 @@ import { Combobox } from './ui/combobox';
 import { institutions } from '@/lib/institutions';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { cn } from '@/lib/utils';
+import { useRef } from 'react';
+import { useInView } from '@/hooks/use-in-view';
 
 interface PostFiltersProps {
   timeFilter: string;
@@ -25,7 +27,6 @@ interface PostFiltersProps {
   setRestaurantFilter: (value: string) => void;
   institutionFilter: string;
   setInstitutionFilter: (value: string) => void;
-  isInView: boolean;
 }
 
 const timeOptions = [
@@ -47,16 +48,20 @@ export function PostFilters({
   setRestaurantFilter,
   institutionFilter,
   setInstitutionFilter,
-  isInView,
 }: PostFiltersProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: false, threshold: 0.2 });
+
   const animateClass = isInView
     ? 'scale-100 opacity-100'
     : 'scale-0 opacity-0';
 
   return (
-    <div className={cn(
-      "sticky top-20 transition-all duration-500 ease-out origin-center",
-      animateClass
+    <div 
+      ref={ref}
+      className={cn(
+        "sticky top-20 transition-all duration-500 ease-out transform-gpu origin-center",
+        animateClass
     )}>
       <Card>
         <CardHeader>
