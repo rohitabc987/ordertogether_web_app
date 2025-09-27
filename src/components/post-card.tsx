@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail } from 'lucide-react';
+import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail, Utensils } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
 import { formatDistanceToNow } from 'date-fns';
@@ -50,17 +50,23 @@ export function PostCard({ post }: { post: Post }) {
               <AvatarFallback>{authorInitials}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold truncate text-base text-primary">Save {formatCurrency(remainingNeeded)} on {post.restaurant}</p>
-              <p className="text-sm text-muted-foreground truncate">{post.title}</p>
+              <p className="font-semibold truncate text-base text-primary">Save {formatCurrency(remainingNeeded)} with a group order!</p>
+              <div className="flex items-center gap-2 flex-wrap mt-1">
+                 <p className="text-sm text-muted-foreground truncate">{post.title}</p>
+                 <Badge variant="outline" className="capitalize">
+                    <UserIcon className="w-3 h-3 mr-1" />
+                    {post.author.userProfile.gender}
+                </Badge>
+              </div>
               {post.notes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{post.notes}</span></p>}
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-2 text-sm text-muted-foreground">
-            <Badge variant="outline" className="capitalize">
-                <UserIcon className="w-3 h-3 mr-1" />
-                {post.author.userProfile.gender}
-            </Badge>
+          <div className="flex flex-col items-end gap-2 text-sm text-muted-foreground text-right flex-shrink-0">
+            <div className="flex items-center gap-1.5">
+                <Utensils className="w-4 h-4" />
+                <span className="font-medium truncate">{post.restaurant}</span>
+            </div>
             <div className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
                 <span>{deadline ? formatDistanceToNow(deadline, { addSuffix: true }) : 'N/A'}</span>
@@ -68,7 +74,7 @@ export function PostCard({ post }: { post: Post }) {
           </div>
         </div>
 
-        <div className="flex justify-end mt-4">
+        <div className="flex justify-start mt-4">
           <Button 
               size="sm"
               onClick={toggleExpand} 
