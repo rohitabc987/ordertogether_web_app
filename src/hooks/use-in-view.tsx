@@ -19,20 +19,20 @@ export function useInView(
 
   useEffect(() => {
     const element = ref.current;
-    if (!element) return;
+    if (!element) {
+        // If the ref isn't attached, we're not in view
+        setIsInView(false);
+        return;
+    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          if (once) {
+         // Update state based on whether the element is intersecting
+        setIsInView(entry.isIntersecting);
+
+        // If it's a one-time animation and it's intersecting, disconnect the observer
+        if (once && entry.isIntersecting) {
             observer.unobserve(element);
-          }
-        } else {
-          // If not intersecting and not a one-time animation, reset the state
-          if (!once) {
-            setIsInView(false);
-          }
         }
       },
       { root, rootMargin, threshold }
