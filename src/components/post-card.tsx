@@ -52,7 +52,10 @@ export function PostCard({ post }: { post: Post }) {
               <AvatarFallback>{authorInitials}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold truncate text-base text-primary">Save {formatCurrency(remainingNeeded)} with a group order!</p>
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <p className="font-semibold text-base text-primary">Save {formatCurrency(remainingNeeded)} with a group order!</p>
+                <p className="text-sm text-muted-foreground">(Total Order: {formatCurrency(post.totalAmount)})</p>
+              </div>
               <div className="flex items-center gap-2 flex-wrap mt-1">
                  <Badge variant="outline" className="capitalize">
                     <UserIcon className="w-3 h-3 mr-1" />
