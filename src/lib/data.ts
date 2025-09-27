@@ -86,9 +86,14 @@ export async function getPostsForUser(user: User | null): Promise<Post[]> {
 
 
 export async function getPostsByAuthorId(authorId: string): Promise<Post[]> {
-  const snapshot = await postsCollection.where('authorId', '==', authorId).orderBy('createdAt', 'desc').get();
+  const snapshot = await postsCollection.where('authorId', '==', authorId).get();
   const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  return convertTimestamps(posts) as Post[];
+  
+  // Sort posts by creation date in descending order (newest first)
+  const convertedPosts = convertTimestamps(posts) as Post[];
+  convertedPosts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  
+  return convertedPosts;
 }
 
 
