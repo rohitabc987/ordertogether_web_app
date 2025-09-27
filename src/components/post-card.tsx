@@ -126,7 +126,7 @@ export function PostCard({ post }: { post: Post }) {
       </div>
       
       {isExpanded && (
-        <CardContent className="pt-0 pb-4 px-4 border-t mt-2 pt-4">
+        <CardContent className="border-t mt-2 pt-4">
           <div className={cn(!isSubscribed && "relative")}>
             { !isSubscribed && <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm z-10 rounded-lg"></div> }
             <div className={cn(
