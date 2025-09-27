@@ -34,35 +34,27 @@ export const getUserById = cache(async (userId: string): Promise<User | undefine
 
 export async function getPostsForUser(user: User | null): Promise<Post[]> {
   let snapshot;
-  let locationQueryAttempted = false;
 
   if (user) {
     // Authenticated user: Try to fetch posts based on their location
     if (user.institution?.institutionName) {
       // FIRESTORE_INDEX: This query requires a composite index on `institution.institutionName` (asc) and `deadline` (asc).
       snapshot = await postsCollection.where('institution.institutionName', '==', user.institution.institutionName).orderBy('deadline', 'asc').get();
-      locationQueryAttempted = true;
     } else if (user.location?.area) {
       // FIRESTORE_INDEX: This query requires a composite index on `location.area` (asc) and `deadline` (asc).
       snapshot = await postsCollection.where('location.area', '==', user.location.area).orderBy('deadline', 'asc').get();
-      locationQueryAttempted = true;
     } else if (user.location?.city) {
       // FIRESTORE_INDEX: This query requires a composite index on `location.city` (asc) and `deadline` (asc).
       snapshot = await postsCollection.where('location.city', '==', user.location.city).orderBy('deadline', 'asc').get();
-      locationQueryAttempted = true;
     }
   }
 
-  // Fallback for guests or users without a location set
-  if (!locationQueryAttempted) {
+  // Fallback for guests or if location-specific query yields no results
+  if (!snapshot || snapshot.empty) {
     snapshot = await postsCollection.orderBy('createdAt', 'desc').limit(50).get();
   }
-
-  if (snapshot) {
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
-  }
-
-  return [];
+  
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
 }
 
 export async function createPost(postData: Omit<Post, 'id' | 'createdAt'>): Promise<Post> {
