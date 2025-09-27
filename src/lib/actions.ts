@@ -106,6 +106,7 @@ const postSchema = z.object({
   authorId: z.string(),
   authorName: z.string(),
   contactNumber: z.string(),
+  authorGender: z.string(),
   institutionType: z.string().optional(),
   institutionName: z.string().optional(),
   area: z.string().optional(),
@@ -118,8 +119,11 @@ export async function createPostAction(prevState: any, formData: FormData) {
   if (!user || !user.userProfile.name || !user.contact.phone || !user.userProfile.gender || user.userProfile.gender === 'prefer_not_to_say') {
     return { message: 'Please complete your profile (name, contact number, and gender) before posting.' };
   }
+  
+  const data = Object.fromEntries(formData);
+  data.authorGender = user.userProfile.gender;
 
-  const parsed = postSchema.safeParse(Object.fromEntries(formData));
+  const parsed = postSchema.safeParse(data);
 
   if (!parsed.success) {
     console.error(parsed.error.flatten().fieldErrors);

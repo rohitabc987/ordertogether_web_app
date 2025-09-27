@@ -34,6 +34,7 @@ export interface Post {
   title: string;
   authorId: string;
   authorName: string;
+  authorGender: 'male' | 'female' | 'other';
   restaurant: string;
   totalAmount: number;
   contributionAmount: number;

@@ -41,7 +41,7 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-4xl font-headline bg-brand-gradient text-transparent bg-clip-text pb-2">
+          <h1 className="text-3xl font-bold font-headline">
             Active Group Orders
           </h1>
           <p className="text-muted-foreground">
@@ -62,7 +62,7 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
       />
 
       {filteredPosts.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4">
           {filteredPosts.map(post => (
             <PostCard key={post.id} post={post} />
           ))}
