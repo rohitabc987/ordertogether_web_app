@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Clock, Home, Phone, MessageSquare, Utensils, IndianRupee, ChevronDown, User as UserIcon, Info } from 'lucide-react';
+import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
 import { formatDistanceToNow } from 'date-fns';
@@ -43,8 +43,8 @@ export function PostCard({ post }: { post: Post }) {
             <AvatarFallback>{authorInitials}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold truncate text-base">{post.title}</p>
-            <p className="text-sm text-muted-foreground truncate">{post.restaurant}</p>
+            <p className="font-semibold truncate text-base text-primary">Save {formatCurrency(remainingNeeded)} on {post.restaurant}</p>
+            <p className="text-sm text-muted-foreground truncate">{post.title}</p>
           </div>
         </div>
 
@@ -60,10 +60,6 @@ export function PostCard({ post }: { post: Post }) {
         </div>
         
         <div className="flex items-center gap-2">
-            <div className="text-right">
-                <p className="font-bold text-lg text-primary">{formatCurrency(remainingNeeded)}</p>
-                <p className="text-xs text-muted-foreground">Needed</p>
-            </div>
           <Button 
             size="sm"
             onClick={toggleExpand} 

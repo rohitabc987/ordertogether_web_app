@@ -12,7 +12,7 @@ export function Dashboard({ initialPosts }: { initialPosts: Post[] }) {
   const { user } = useAuth();
   const [posts] = useState<Post[]>(initialPosts);
   const [timeFilter, setTimeFilter] = useState('all');
-  const [amountFilter, setAmountFilter] = useState([0, 2000]);
+  const [amountFilter, setAmountFilter] = useState([0, 10000]);
 
   const filteredPosts = useMemo(() => {
     return posts.filter(post => {
