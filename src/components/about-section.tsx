@@ -18,13 +18,13 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
       style={heroStyle}
     >
       <div className="absolute inset-0 bg-black/60"></div>
-      <div className="relative h-full flex items-center justify-center text-center">
-        <div className="z-10 space-y-4 max-w-3xl px-4">
+      <div className="relative h-full flex items-center justify-start text-left">
+        <div className="z-10 space-y-4 max-w-3xl px-4 md:px-12">
             <RotatingHeadlines />
             <p className="text-lg text-white/90">
               Why pay alone? Combine orders, share costs, and enjoy more with less
             </p>
-            <div className="flex flex-wrap justify-center items-center gap-4 pt-4">
+            <div className="flex flex-wrap justify-start items-center gap-4 pt-4">
               <Button asChild size="lg">
                 <Link href="/create-post">
                   <PlusCircle />
