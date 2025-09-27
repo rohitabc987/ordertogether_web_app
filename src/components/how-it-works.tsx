@@ -24,7 +24,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section>
+    <section id="how-it-works">
       <h2 className="text-3xl font-bold font-headline text-center mb-8">
         How It Works
       </h2>
