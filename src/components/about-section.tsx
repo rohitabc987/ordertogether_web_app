@@ -13,7 +13,7 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
 
   return (
     <div 
-      className="relative w-full h-screen bg-cover bg-center bg-no-repeat"
+      className="relative w-full h-[60vh] bg-cover bg-center bg-no-repeat"
       style={heroStyle}
     >
       <div className="absolute inset-0 bg-black/60"></div>
