@@ -33,7 +33,7 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
                 </Link>
               </Button>
               <Button asChild size="lg" variant="secondary">
-                <Link href="#active-orders">
+                <Link href="#active-orders" prefetch={false}>
                    <ChevronDown />
                   Browse Orders
                 </Link>
