@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon } from 'lucide-react';
+import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
 import { formatDistanceToNow } from 'date-fns';
@@ -86,19 +86,35 @@ export function PostCard({ post }: { post: Post }) {
           {isSubscribed ? (
             <div>
               <h4 className="font-semibold mb-3">Contact {authorName} to Coordinate</h4>
-              <div className="space-y-3 text-sm">
-                {post.author.contact?.phone && (
-                  <>
-                    <div className="flex items-center gap-3 p-2 rounded-md bg-muted/50">
-                        <Phone className="w-4 h-4 text-primary" />
-                        <a href={`tel:${post.author.contact.phone}`} className="font-mono tracking-wider">{post.author.contact.phone}</a>
-                    </div>
-                    <div className="flex items-center gap-3 p-2 rounded-md bg-muted/50">
-                        <MessageSquare className="w-4 h-4 text-primary" />
-                        <a href={`https://wa.me/${post.author.contact.phone}`} target="_blank" rel="noopener noreferrer" className="font-mono tracking-wider">WhatsApp</a>
-                    </div>
-                  </>
-                )}
+              <div className="p-3 rounded-lg bg-muted/50 border">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={post.author.userProfile.photoURL ?? `https://api.dicebear.com/7.x/initials/svg?seed=${authorName}`} />
+                    <AvatarFallback className="text-2xl">{authorInitials}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-grow space-y-1 text-sm">
+                    <p className="font-bold text-base">{authorName}</p>
+                    {post.author.contact.email && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Mail className="w-4 h-4" />
+                        <a href={`mailto:${post.author.contact.email}`} className="hover:underline">{post.author.contact.email}</a>
+                      </div>
+                    )}
+                    {post.author.contact.phone && (
+                       <div className="flex items-center gap-2 text-muted-foreground">
+                        <Phone className="w-4 h-4" />
+                        <a href={`tel:${post.author.contact.phone}`} className="hover:underline">{post.author.contact.phone}</a>
+                      </div>
+                    )}
+                  </div>
+                   {post.author.contact.phone && (
+                    <Button asChild variant="ghost" size="icon" className="h-12 w-12 flex-shrink-0">
+                      <a href={`https://wa.me/${post.author.contact.phone}`} target="_blank" rel="noopener noreferrer" title="Chat on WhatsApp">
+                        <MessageSquare className="w-6 h-6 text-green-500" />
+                      </a>
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           ) : (
