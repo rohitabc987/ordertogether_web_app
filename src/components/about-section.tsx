@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { PlusCircle, ChevronDown } from 'lucide-react';
+import { RotatingHeadlines } from './rotating-headlines';
 
 export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null }) {
   
@@ -19,9 +20,7 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
       <div className="absolute inset-0 bg-black/60"></div>
       <div className="relative h-full flex items-center justify-center text-center">
         <div className="z-10 space-y-4 max-w-3xl px-4">
-            <h1 className="text-4xl md:text-5xl font-bold font-headline text-white">
-              Never Pay Delivery Fees Again.
-            </h1>
+            <RotatingHeadlines />
             <p className="text-lg text-white/90">
               Team up with people in your building or campus to combine small orders into one. Save money, together.
             </p>
@@ -32,8 +31,8 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
                   Start a New Order
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="secondary">
-                <Link href="#active-orders" prefetch={false}>
+              <Button asChild size="lg" variant="secondary" prefetch={false}>
+                <Link href="#active-orders">
                    <ChevronDown />
                   Browse Orders
                 </Link>
