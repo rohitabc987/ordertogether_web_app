@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -158,3 +159,4 @@ export function PostCard({ post }: { post: Post }) {
     </Card>
   );
 }
+
