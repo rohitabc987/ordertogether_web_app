@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Search } from 'lucide-react';
 
 export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null }) {
   
@@ -25,11 +25,17 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
             <p className="text-lg text-white/90">
               Team up with people in your building or campus to combine small orders into one. Save money, together.
             </p>
-            <div className="flex justify-center pt-4">
+            <div className="flex flex-wrap justify-center items-center gap-4 pt-4">
               <Button asChild size="lg">
                 <Link href="/create-post">
                   <PlusCircle />
                   Start a New Order
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="secondary">
+                <Link href="#active-orders">
+                   <Search />
+                  Browse Orders
                 </Link>
               </Button>
             </div>

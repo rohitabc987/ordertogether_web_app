@@ -13,7 +13,7 @@ h1, h2, h3, h4, h5, h6 {
 @layer base {
   :root {
     /* ===== Colors (Light Mode) ===== */
-    --bg-header-background: 0 84.2% 10.2%; /* soft gradient-ready */
+    --bg-header-background: 27 100% 18%; 
     --background: 210 20% 98%;
     --foreground: 222 47% 11%;
 
@@ -26,7 +26,7 @@ h1, h2, h3, h4, h5, h6 {
     --primary: 220 90% 56%; /* modern indigo */
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 160 84% 39%; /* emerald green for accents */
+    --secondary: 160 84% 9%; /* emerald green for accents */
     --secondary-foreground: 0 0% 98%;
 
     --muted: 210 20% 96%;
