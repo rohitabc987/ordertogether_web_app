@@ -2,15 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Inter', sans-serif; /* modern sans-serif */
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Poppins', sans-serif; /* bold for headings */
-}
-
 @layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
   :root {
     /* ===== Colors (Light Mode) ===== */
     --bg-header-background: 27 100% 18%; 
@@ -80,23 +76,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @layer base {
-  * {
-    @apply border-border transition-colors duration-200;
-  }
-
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground;
   }
 
-  button {
-    @apply px-4 py-2 rounded-full font-medium shadow-sm hover:shadow-md transition;
-  }
-
-  .card {
-    @apply bg-card text-card-foreground rounded-xl shadow-md p-4 hover:shadow-lg transition;
-  }
-
-  .chip {
-    @apply px-3 py-1 rounded-full bg-muted text-sm font-medium hover:bg-primary hover:text-primary-foreground transition;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
   }
 }
