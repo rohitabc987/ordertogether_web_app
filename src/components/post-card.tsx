@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -13,6 +12,7 @@ import { formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
+import { Progress } from './ui/progress';
 
 export function PostCard({ post }: { post: Post }) {
   const { user } = useAuth();
@@ -31,6 +31,7 @@ export function PostCard({ post }: { post: Post }) {
   const authorInitials = authorName.split(' ').map(n => n[0]).join('');
 
   const remainingNeeded = post.totalAmount - post.contributionAmount;
+  const progressPercentage = (post.contributionAmount / post.totalAmount) * 100;
 
   const toggleExpand = () => {
     if (!deadlineInPast && user) {
@@ -43,13 +44,13 @@ export function PostCard({ post }: { post: Post }) {
   const allNotes = [post.title, post.notes].filter(Boolean).join(' - ');
 
   return (
-    <Card className="bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm transition-all duration-300 ease-in-out">
+    <Card className="bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm transition-all duration-300 ease-in-out hover:shadow-lg">
       <div className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={post.author.userProfile.photoURL ?? `https://api.dicebear.com/7.x/initials/svg?seed=${authorName}`} />
-              <AvatarFallback>{authorInitials}</AvatarFallback>
+             <Avatar className="h-10 w-10 border-2 border-primary/50">
+                <AvatarImage src={`https://picsum.photos/seed/${post.restaurant.replace(/\s+/g, '-')}/100/100`} />
+                <AvatarFallback>{post.restaurant.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 flex-wrap">
@@ -61,9 +62,8 @@ export function PostCard({ post }: { post: Post }) {
                     <UserIcon className="w-3 h-3 mr-1" />
                     {post.author.userProfile.gender}
                 </Badge>
-                <p className="text-sm text-muted-foreground truncate">Contributing: {formatCurrency(post.contributionAmount)}</p>
+                <p className="text-sm text-muted-foreground truncate">Contributing: {formatCurrency(post.contributionAmount)} by {authorName}</p>
               </div>
-              {allNotes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{allNotes}</span></p>}
             </div>
           </div>
 
@@ -79,12 +79,21 @@ export function PostCard({ post }: { post: Post }) {
           </div>
         </div>
 
+        <div className="mt-4 space-y-2">
+            <div className="flex justify-between items-center text-xs text-muted-foreground">
+                <span>{formatCurrency(post.contributionAmount)}</span>
+                <span>{formatCurrency(post.totalAmount)}</span>
+            </div>
+            <Progress value={progressPercentage} className="h-2" />
+            {allNotes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{allNotes}</span></p>}
+        </div>
+
         <div className="flex justify-start mt-4">
           <Button 
               size="sm"
               onClick={toggleExpand} 
               disabled={deadlineInPast || !user}
-              className="transition-transform duration-300"
+              className="transition-transform duration-300 hover:scale-105"
             >
               Join
               <ChevronDown className={cn("w-4 h-4 ml-1 transition-transform", isExpanded && "rotate-180")} />
@@ -94,7 +103,22 @@ export function PostCard({ post }: { post: Post }) {
       
       {isExpanded && (
         <CardContent className="pt-0 pb-4 px-4 border-t mt-2 pt-4">
-          {isSubscribed ? (
+          <div className={cn(!isSubscribed && "relative")}>
+            { !isSubscribed && <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm z-10 rounded-lg"></div> }
+            <div className={cn(
+              "text-center transition-opacity duration-300",
+              !isSubscribed ? 'opacity-100' : 'opacity-0'
+            )}>
+              <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+                  <h4 className="font-semibold">Subscribe to Join Orders</h4>
+                  <p className="text-muted-foreground text-sm mt-1 mb-3">
+                      You need an active subscription to view contact details.
+                  </p>
+                  <Button asChild size="sm">
+                      <Link href="/pricing">View Plans</Link>
+                  </Button>
+              </div>
+            </div>
             <div>
               <h4 className="font-semibold mb-3">Contact {authorName} to Coordinate</h4>
               <div className="p-3 rounded-lg bg-muted/50 border">
@@ -128,17 +152,7 @@ export function PostCard({ post }: { post: Post }) {
                 </div>
               </div>
             </div>
-          ) : (
-             <div className="text-center">
-                <h4 className="font-semibold">Subscribe to Join Orders</h4>
-                <p className="text-muted-foreground text-sm mt-1 mb-3">
-                    You need an active subscription to view contact details.
-                </p>
-                 <Button asChild size="sm">
-                    <Link href="/pricing">View Plans</Link>
-                </Button>
-            </div>
-          )}
+          </div>
         </CardContent>
       )}
     </Card>
