@@ -52,14 +52,14 @@ export function RotatingHeadlines() {
   };
 
   return (
-    <h1 className="text-4xl md:text-5xl font-bold font-headline text-white overflow-hidden h-28 md:h-32">
+    <h1 className="text-4xl md:text-5xl font-bold font-headline text-white overflow-hidden h-28 md:h-20">
       <div
         key={currentIndex}
         className={cn(
-          'transition-all duration-500',
+          'transition-all duration-400',
           isAnimatingOut
-            ? 'animate-fade-out-down'
-            : 'animate-fade-in-up'
+            ? 'animate-fade-out-left'
+            : 'animate-fade-in-left'
         )}
       >
         {renderHeadline()}
