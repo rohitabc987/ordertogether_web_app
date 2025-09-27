@@ -34,11 +34,9 @@ export default async function RootLayout({
         )}
       >
         <Providers>
-          <div className="relative flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
+          <Header />
+          <main>{children}</main>
+          <Footer />
           <Toaster />
         </Providers>
       </body>

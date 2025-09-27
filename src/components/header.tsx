@@ -25,19 +25,19 @@ export function Header() {
       <div className="container flex h-16 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <UtensilsCrossed className="h-6 w-6 text-primary" />
-          <span className="font-bold font-headline text-lg">OrderlyGather</span>
+          <span className="font-bold font-headline text-lg text-white">OrderlyGather</span>
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-          <Link href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">Dashboard</Link>
-          <Link href="/about" className="transition-colors hover:text-foreground/80 text-foreground/60">
+          <Link href="/" className="transition-colors text-white/80 hover:text-white">Dashboard</Link>
+          <Link href="/about" className="transition-colors text-white/80 hover:text-white">
             <Info className="inline-block -mt-1 mr-1 h-4 w-4" />
             About
           </Link>
-          <Link href="/create-post" className="transition-colors hover:text-foreground/80 text-foreground/60">
+          <Link href="/create-post" className="transition-colors text-white/80 hover:text-white">
             <PlusCircle className="inline-block -mt-1 mr-1 h-4 w-4" />
             Create Post
           </Link>
-          <Link href="/pricing" className="transition-colors hover:text-foreground/80 text-foreground/60">
+          <Link href="/pricing" className="transition-colors text-white/80 hover:text-white">
             <DollarSign className="inline-block -mt-1 mr-1 h-4 w-4" />
             Pricing
           </Link>
