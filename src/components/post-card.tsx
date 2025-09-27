@@ -52,6 +52,7 @@ export function PostCard({ post }: { post: Post }) {
             <div className="flex-1 min-w-0">
               <p className="font-semibold truncate text-base text-primary">Save {formatCurrency(remainingNeeded)} on {post.restaurant}</p>
               <p className="text-sm text-muted-foreground truncate">{post.title}</p>
+              {post.notes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{post.notes}</span></p>}
             </div>
           </div>
 
@@ -98,7 +99,6 @@ export function PostCard({ post }: { post: Post }) {
                     </div>
                   </>
                 )}
-                {post.notes && <p className="text-sm border-l-2 border-accent pl-3 mt-3 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{post.notes}</span></p>}
               </div>
             </div>
           ) : (
