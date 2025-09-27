@@ -6,9 +6,9 @@ import { cn } from '@/lib/utils';
 
 const content = [
   {
-    headline: 'Never Pay Delivery Fees Again — Enjoy Coupons Too 🚫💸',
+    headline: 'Free Delivery & Extra Coupons, Together',
     subtitle: 'Team up with people in your campus or building to combine small orders into one. Share, save, succeed.',
-    highlight: 'Share, save, succeed.',
+    highlight: 'Free',
   },
   {
     headline: 'Combine Orders, Join Rides, Share Courses',
@@ -18,7 +18,7 @@ const content = [
   {
     headline: 'Share, Gather, Save — All in One Platform',
     subtitle: 'From orders to rides to online tools — connect with others in your area to get more together.',
-    highlight: 'Share, Gather, Save',
+    highlight: 'Share',
   },
 ];
 
@@ -32,8 +32,8 @@ export function RotatingHeadlines() {
       setTimeout(() => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length);
         setIsAnimatingOut(false);
-      }, 500); // Wait for fade-out animation
-    }, 4000); // Change every 4 seconds
+      }, 600); // Wait for fade-out animation
+    }, 5500); // Change every 8 seconds
 
     return () => clearInterval(interval);
   }, []);
