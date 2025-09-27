@@ -99,6 +99,7 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
               setRestaurantFilter={setRestaurantFilter}
               institutionFilter={institutionFilter}
               setInstitutionFilter={setInstitutionFilter}
+              isInView={isInView}
             />
           </aside>
 

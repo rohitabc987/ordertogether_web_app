@@ -25,6 +25,7 @@ interface PostFiltersProps {
   setRestaurantFilter: (value: string) => void;
   institutionFilter: string;
   setInstitutionFilter: (value: string) => void;
+  isInView: boolean;
 }
 
 const timeOptions = [
@@ -46,9 +47,17 @@ export function PostFilters({
   setRestaurantFilter,
   institutionFilter,
   setInstitutionFilter,
+  isInView,
 }: PostFiltersProps) {
+  const animateClass = isInView
+    ? 'scale-100 opacity-100'
+    : 'scale-0 opacity-0';
+
   return (
-    <div className="sticky top-20">
+    <div className={cn(
+      "sticky top-20 transition-all duration-500 ease-out origin-center",
+      animateClass
+    )}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
