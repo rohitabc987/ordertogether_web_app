@@ -21,7 +21,7 @@ export default function TermsOfServicePage() {
           </p>
           
           <h2 className="text-xl font-semibold text-foreground">3. User Conduct</h2>
-          <p>
+          <div>
             You agree not to use the Service to:
             <ul className="list-disc pl-5 space-y-2 mt-2">
               <li>Violate any local, state, national, or international law.</li>
@@ -29,7 +29,7 @@ export default function TermsOfServicePage() {
               <li>Post any content that is fraudulent, false, misleading, or deceptive.</li>
             </ul>
             We are not responsible for coordinating orders or payments. All transactions and communications are solely between users.
-          </p>
+          </div>
 
           <h2 className="text-xl font-semibold text-foreground">4. Termination</h2>
           <p>

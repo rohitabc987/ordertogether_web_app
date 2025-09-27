@@ -16,16 +16,16 @@ export default function PrivacyPolicyPage() {
           </p>
 
           <h2 className="text-xl font-semibold text-foreground">2. Information We Collect</h2>
-          <p>
+          <div>
             We may collect information about you in a variety of ways. The information we may collect on the App includes:
             <ul className="list-disc pl-5 space-y-2 mt-2">
               <li><strong>Personal Data:</strong> Personally identifiable information, such as your name, email address, and telephone number, that you voluntarily give to us when you register with the App.</li>
               <li><strong>Derivative Data:</strong> Information our servers automatically collect when you access the App, such as your IP address, your browser type, your operating system, your access times, and the pages you have viewed directly before and after accessing the App.</li>
             </ul>
-          </p>
+          </div>
 
           <h2 className="text-xl font-semibold text-foreground">3. Use of Your Information</h2>
-          <p>
+          <div>
             Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the App to:
             <ul className="list-disc pl-5 space-y-2 mt-2">
               <li>Create and manage your account.</li>
@@ -33,7 +33,7 @@ export default function PrivacyPolicyPage() {
               <li>Email you regarding your account or order.</li>
               <li>Increase the efficiency and operation of the App.</li>
             </ul>
-          </p>
+          </div>
 
           <h2 className="text-xl font-semibold text-foreground">4. Contact Us</h2>
           <p>
