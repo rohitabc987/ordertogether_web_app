@@ -25,6 +25,8 @@
     --secondary: 0 84% 97%; /* emerald green for accents */
     --secondary-foreground: 170 0 0% 8%;
 
+    --tertiary: 210 20% 90%;
+
     --muted: 210 20% 96%;
     --muted-foreground: 215 20% 45%;
 
@@ -57,6 +59,8 @@
 
     --secondary: 160 84% 39%;
     --secondary-foreground: 0 0% 98%;
+
+    --tertiary: 217 33% 25%;
 
     --muted: 217 33% 20%;
     --muted-foreground: 215 20% 70%;
