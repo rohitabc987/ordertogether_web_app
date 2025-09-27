@@ -29,6 +29,7 @@ export function useInView(
             observer.unobserve(element);
           }
         } else {
+          // If not intersecting and not a one-time animation, reset the state
           if (!once) {
             setIsInView(false);
           }

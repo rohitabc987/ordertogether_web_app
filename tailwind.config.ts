@@ -122,11 +122,11 @@ export default {
           },
         },
          'slide-in-from-top-left': {
-          '0%': { opacity: '0', transform: 'translate(-20px, -20px)' },
+          '0%': { opacity: '0', transform: 'translate(-100px, -100px)' },
           '100%': { opacity: '1', transform: 'translate(0, 0)' },
         },
         'slide-in-from-top-right': {
-          '0%': { opacity: '0', transform: 'translate(20px, -20px)' },
+          '0%': { opacity: '0', transform: 'translate(100px, -100px)' },
           '100%': { opacity: '1', transform: 'translate(0, 0)' },
         },
       },
