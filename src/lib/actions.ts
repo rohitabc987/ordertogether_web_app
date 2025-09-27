@@ -8,7 +8,6 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
 import { createPost, findUserByEmail, updateUser, createUserInDb, getUserById } from '@/lib/data';
-import { filterRestaurants } from '@/ai/flows/restaurant-filtering';
 import { auth as adminAuth } from 'firebase-admin';
 import { db } from './firebase-admin';
 
@@ -193,18 +192,4 @@ export async function subscribeAction(plan: 'daily' | 'weekly' | 'monthly', user
   revalidatePath('/pricing');
   revalidatePath('/');
   revalidatePath('/profile');
-}
-
-export async function getRestaurantSuggestions(location: string) {
-  try {
-    const result = await filterRestaurants({
-      location,
-      pastOrders: "Pizza, Burgers", // Mock data
-      currentTrends: "Italian, Fast Food", // Mock data
-    });
-    return result.suggestedRestaurants;
-  } catch (error) {
-    console.error("AI suggestion failed:", error);
-    return [];
-  }
 }
