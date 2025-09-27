@@ -27,12 +27,16 @@ export function useInView(
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-         // Update state based on whether the element is intersecting
-        setIsInView(entry.isIntersecting);
-
-        // If it's a one-time animation and it's intersecting, disconnect the observer
-        if (once && entry.isIntersecting) {
-            observer.unobserve(element);
+        if (entry.isIntersecting) {
+            setIsInView(true);
+            if (once) {
+                observer.unobserve(element);
+            }
+        } else {
+            // If we don't want to re-animate, we do nothing when it goes out of view
+            if (!once) {
+                setIsInView(false);
+            }
         }
       },
       { root, rootMargin, threshold }
@@ -41,7 +45,9 @@ export function useInView(
     observer.observe(element);
 
     return () => {
-      observer.unobserve(element);
+        if (element) {
+            observer.unobserve(element);
+        }
     };
   }, [ref, root, rootMargin, threshold, once]);
 

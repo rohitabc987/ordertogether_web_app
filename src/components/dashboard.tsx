@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useRef } from 'react';
@@ -65,8 +66,7 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
   const locationName = user?.institution?.institutionName || user?.location?.area || user?.location?.city || 'your area';
 
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { rootMargin: '0px' });
-
+  
   return (
     <div className="space-y-8">
       <AboutSection bannerImageUrl={bannerImageUrl} />
@@ -86,10 +86,7 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <aside className={cn(
-            "lg:col-span-1 opacity-0",
-            isInView && "animate-slide-in-from-top-left"
-          )}>
+          <aside className="lg:col-span-1">
             <PostFilters
               timeFilter={timeFilter}
               setTimeFilter={setTimeFilter}
@@ -104,15 +101,12 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
             />
           </aside>
 
-          <div className={cn(
-            "lg:col-span-3 opacity-0",
-             isInView && "animate-slide-in-from-top-right"
-          )}>
+          <div className="lg:col-span-3">
             {paginatedPosts.length > 0 ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4">
-                  {paginatedPosts.map(post => (
-                    <PostCard key={post.id} post={post} />
+                  {paginatedPosts.map((post, index) => (
+                    <PostCard key={post.id} post={post} index={index} />
                   ))}
                 </div>
                 {totalPages > 1 && (

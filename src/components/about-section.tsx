@@ -14,7 +14,7 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
 
   return (
     <div 
-      className="relative w-full h-[60vh] bg-cover bg-center bg-no-repeat"
+      className="relative w-full h-[70vh] bg-cover bg-center bg-no-repeat"
       style={heroStyle}
     >
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/25 to-transparent"></div>
