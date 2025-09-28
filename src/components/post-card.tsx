@@ -79,12 +79,15 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     <div
       ref={ref}
       className={cn(
-        "bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm transition-all duration-500 ease-out origin-center",
+        "bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm transition-all duration-500 ease-out transform-gpu",
         animateClass
       )}
-      style={{ transitionDelay: `${index * 150}ms` }}
+      style={{
+        transitionDelay: `${index * 150}ms`,
+        transformOrigin: 'center'
+      }}
     >
-      <Card>
+      <Card className="bg-transparent border-0 shadow-none">
         <CardContent className="p-4 space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3 flex-1 min-w-0">
