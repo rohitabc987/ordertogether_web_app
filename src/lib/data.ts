@@ -55,19 +55,29 @@ export const getUserById = cache(async (userId: string): Promise<User | undefine
 });
 
 async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
-  const authorIds = [...new Set(posts.map(p => p.authorId))];
-  if (authorIds.length === 0) return convertTimestamps(posts) as Post[];
+  if (posts.length === 0) return [];
 
+  // 1. Get all unique author IDs from the posts
+  const authorIds = [...new Set(posts.map(p => p.authorId).filter(Boolean))];
+
+  if (authorIds.length === 0) {
+    return convertTimestamps(posts) as Post[];
+  }
+
+  // 2. Fetch all authors in a single batch query
   const authorSnapshots = await db.collection('users').where(FieldPath.documentId(), 'in', authorIds).get();
+  
+  // 3. Create a map for quick lookups
   const authors = {};
   authorSnapshots.forEach(doc => {
     authors[doc.id] = { id: doc.id, ...doc.data() };
   });
 
+  // 4. Join the author data to each post
   const joinedPosts = posts.map(post => ({
     ...post,
     author: authors[post.authorId] || null,
-  })).filter(p => p.author !== null); // Filter out posts where author was not found
+  })).filter(p => p.author !== null); // Filter out posts where author was not found or is missing
 
   return convertTimestamps(joinedPosts) as Post[];
 }
