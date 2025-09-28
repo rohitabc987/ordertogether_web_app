@@ -20,9 +20,11 @@ export function EditPostForm({ post }: { post: Post }) {
 
   const remainingNeeded = Math.max(0, totalAmount - contributionAmount);
   
+  // Create a Date object from the serialized string prop.
+  const deadlineDate = post.deadline ? new Date(post.deadline) : null;
   // Format deadline for datetime-local input. Handles timezone offset.
-  const deadlineForInput = post.deadline 
-    ? new Date(post.deadline.getTime() - (post.deadline.getTimezoneOffset() * 60000)).toISOString().slice(0, 16)
+  const deadlineForInput = deadlineDate
+    ? new Date(deadlineDate.getTime() - (deadlineDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16)
     : '';
 
   return (
