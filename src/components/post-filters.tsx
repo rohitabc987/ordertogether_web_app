@@ -90,8 +90,8 @@ export function PostFilters({
           <div className="space-y-2">
               <div className="flex justify-between items-center">
                   <Label>Amount Needed</Label>
-                  <div className="text-sm font-medium">
-                      {formatCurrency(amountFilter[0])} - {formatCurrency(amountFilter[1])}
+                  <div className="text-sm font-medium text-muted-foreground">
+                      {formatCurrency(amountFilter[0])} - {amountFilter[1] >= 10000 ? 'Any' : formatCurrency(amountFilter[1])}
                   </div>
               </div>
               <Slider
