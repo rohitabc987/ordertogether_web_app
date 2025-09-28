@@ -17,12 +17,12 @@ export function AboutSection({ bannerImageUrl }: { bannerImageUrl: string | null
       className="relative w-full h-[70vh] bg-cover bg-center bg-no-repeat"
       style={heroStyle}
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/25 to-transparent"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
       <div className="relative h-full flex items-center justify-start text-left">
         <div className="container mx-auto px-4">
           <div className="z-10 max-w-3xl">
               <RotatingHeadlines />
-              <div className="flex flex-wrap justify-start items-center gap-4 pt-4">
+              <div className="flex flex-wrap justify-start items-center gap-4 pt-4 mt-4">
                 <Button asChild size="lg">
                   <Link href="/create-post">
                     <PlusCircle />

@@ -14,7 +14,14 @@ import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
 import { Progress } from './ui/progress';
 import { useInView } from '@/hooks/use-in-view';
-import { Modal } from './ui/modal';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+
 
 const RestaurantIcon = ({ name }: { name: string }) => {
   const lowerCaseName = name.toLowerCase();
@@ -198,28 +205,36 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
       )}
 
       {showPrompt && (
-        <Modal open={!!showPrompt} onOpenChange={(open) => !open && closePrompt()}>
+        <Dialog open={!!showPrompt} onOpenChange={(open) => !open && closePrompt()}>
+          <DialogContent>
             {showPrompt === 'login' && (
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-4">Please Log In</h3>
-                <p className="mb-4 text-muted-foreground">You must log in to view contact details.</p>
+              <div className="text-center p-4">
+                <DialogHeader>
+                  <DialogTitle className="mb-4">Please Log In</DialogTitle>
+                </DialogHeader>
+                <DialogDescription className="mb-4">
+                  You must log in to view contact details.
+                </DialogDescription>
                 <Button asChild>
                   <Link href="/login">Log In</Link>
                 </Button>
               </div>
             )}
             {showPrompt === 'subscribe' && (
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-4">Subscribe to View Details</h3>
-                <p className="mb-4 text-muted-foreground">
+              <div className="text-center p-4">
+                <DialogHeader>
+                  <DialogTitle className="mb-4">Subscribe to View Details</DialogTitle>
+                </DialogHeader>
+                <DialogDescription className="mb-4">
                   You need an active subscription to view contact details.
-                </p>
+                </DialogDescription>
                 <Button asChild>
                   <Link href="/pricing">View Plans</Link>
                 </Button>
               </div>
             )}
-        </Modal>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

@@ -33,7 +33,7 @@ export function RotatingHeadlines() {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length);
         setIsAnimatingOut(false);
       }, 600); // Wait for fade-out animation
-    }, 5500); // Change every 8 seconds
+    }, 5500); // Change every 5.5 seconds
 
     return () => clearInterval(interval);
   }, []);
