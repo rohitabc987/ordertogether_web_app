@@ -38,7 +38,7 @@ export function EditPostForm({ post }: { post: Post }) {
             <AlertTitle className="text-yellow-700 dark:text-yellow-300">One-Time Update Only</AlertTitle>
             <AlertDescription className="text-yellow-600 dark:text-yellow-500">
               You can only update your post once. Please double-check all details before saving.
-            </Description>
+            </AlertDescription>
           </Alert>
         )}
         <form 
