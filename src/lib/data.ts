@@ -63,6 +63,7 @@ async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
     return convertTimestamps(posts) as Post[];
   }
   
+  // Use a single 'in' query to fetch all authors in one batch
   const authorSnapshots = await db.collection('users').where(FieldPath.documentId(), 'in', authorIds).get();
   
   const authors = {};
@@ -79,19 +80,22 @@ async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
 }
 
 export async function getPostsForUser(user: User | null): Promise<Post[]> {
-  let query: Query = postsCollection;
+  // Start with a base query ordered by creation date
+  let query: Query = postsCollection.orderBy('createdAt', 'desc');
 
-  // If user is logged in, filter by their location.
-  if (user?.institution?.institutionName) {
-    query = query.where("institutionName", "==", user.institution.institutionName);
-  } else if (user?.location?.area) {
-     query = query.where("area", "==", user.location.area);
-  } else if (user?.location?.city) {
-     query = query.where("city", "==", user.location.city);
+  // If user is logged in, add a filter for their location.
+  if (user) {
+    if (user.institution?.institutionName) {
+      query = query.where("institutionName", "==", user.institution.institutionName);
+    } else if (user.location?.area) {
+      query = query.where("area", "==", user.location.area);
+    } else if (user.location?.city) {
+      query = query.where("city", "==", user.location.city);
+    }
   }
 
-  // Always order by creation date and limit the results.
-  query = query.orderBy('createdAt', 'desc').limit(25);
+  // Always limit the results.
+  query = query.limit(25);
 
   const snapshot = await query.get();
   
