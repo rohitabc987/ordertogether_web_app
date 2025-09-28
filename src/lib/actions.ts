@@ -167,7 +167,7 @@ export async function updatePostAction(prevState: any, formData: FormData) {
 
   await updatePost(parsed.data.postId, parsed.data);
   revalidatePath('/my-posts');
-  redirect('/my-posts');
+  redirect('/my-posts?message=Changes saved successfully. You cannot edit this post again.');
 }
 
 export async function deletePostAction(postId: string) {

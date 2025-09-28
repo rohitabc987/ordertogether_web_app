@@ -2,7 +2,7 @@ import { MyPostCard } from '@/components/my-post-card';
 import { Button } from '@/components/ui/button';
 import { getPostsByAuthorId } from '@/lib/data';
 import { getCurrentUser } from '@/lib/session';
-import { PlusCircle, Info } from 'lucide-react';
+import { PlusCircle, Info, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -20,6 +20,8 @@ export default async function MyPostsPage({
 
   const posts = await getPostsByAuthorId(user.id);
 
+  const isSuccessMessage = searchParams.message?.includes('success');
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -33,10 +35,10 @@ export default async function MyPostsPage({
       </div>
 
        {searchParams.message && (
-        <Alert className="mb-6 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
-          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          <AlertTitle className="text-blue-700 dark:text-blue-300">Notification</AlertTitle>
-          <AlertDescription className="text-blue-600 dark:text-blue-500">
+        <Alert variant={isSuccessMessage ? 'success' : 'default'} className="mb-6">
+          {isSuccessMessage ? <CheckCircle className="h-4 w-4" /> : <Info className="h-4 w-4" />}
+          <AlertTitle>{isSuccessMessage ? 'Success' : 'Notification'}</AlertTitle>
+          <AlertDescription>
             {searchParams.message}
           </AlertDescription>
         </Alert>
