@@ -1,8 +1,7 @@
 
-
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { PostCard } from './post-card';
 import { PostFilters } from './post-filters';
 import type { Post } from '@/lib/types';
@@ -47,8 +46,8 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
       // Restaurant Filter
       const restaurantMatch = restaurantFilter === '' || post.restaurant.toLowerCase().includes(restaurantFilter.toLowerCase());
 
-      // Institution Filter
-      const institutionMatch = institutionFilter === '' || post.author.institution?.institutionName?.toLowerCase() === institutionFilter.toLowerCase();
+      // Institution Filter (now filters on denormalized data)
+      const institutionMatch = institutionFilter === '' || post.institutionName?.toLowerCase() === institutionFilter.toLowerCase();
       
       return timeMatch && amountMatch && genderMatch && restaurantMatch && institutionMatch;
     });
@@ -62,7 +61,7 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
   }, [filteredPosts, currentPage]);
 
   const locationName = user?.institution?.institutionName || user?.location?.area || user?.location?.city || 'your area';
-
+  
   return (
     <div className="space-y-8">
       <AboutSection bannerImageUrl={bannerImageUrl} />
@@ -83,18 +82,18 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <aside className="lg:col-span-1">
-            <PostFilters
-              timeFilter={timeFilter}
-              setTimeFilter={setTimeFilter}
-              amountFilter={amountFilter}
-              setAmountFilter={setAmountFilter}
-              genderFilter={genderFilter}
-              setGenderFilter={setGenderFilter}
-              restaurantFilter={restaurantFilter}
-              setRestaurantFilter={setRestaurantFilter}
-              institutionFilter={institutionFilter}
-              setInstitutionFilter={setInstitutionFilter}
-            />
+              <PostFilters
+                timeFilter={timeFilter}
+                setTimeFilter={setTimeFilter}
+                amountFilter={amountFilter}
+                setAmountFilter={setAmountFilter}
+                genderFilter={genderFilter}
+                setGenderFilter={setGenderFilter}
+                restaurantFilter={restaurantFilter}
+                setRestaurantFilter={setRestaurantFilter}
+                institutionFilter={institutionFilter}
+                setInstitutionFilter={setInstitutionFilter}
+              />
           </aside>
 
           <div className="lg:col-span-3">

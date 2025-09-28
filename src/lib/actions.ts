@@ -106,7 +106,9 @@ const postSchema = z.object({
 });
 
 export async function createPostAction(prevState: any, formData: FormData) {
-  const user = await getUserById(formData.get('authorId') as string);
+  const authorId = formData.get('authorId') as string;
+  const user = await getUserById(authorId);
+
   if (!user || !user.userProfile.name || !user.contact.phone || !user.userProfile.gender || user.userProfile.gender === 'prefer_not_to_say') {
     return { message: 'Please complete your profile (name, contact number, and gender) before posting.' };
   }
@@ -125,7 +127,15 @@ export async function createPostAction(prevState: any, formData: FormData) {
     return { message: 'Your contribution cannot be greater than the total order amount.' };
   }
 
-  await createPost(parsed.data);
+  // Denormalize user data into the post
+  const postDataWithDenormalization = {
+    ...parsed.data,
+    institutionName: user.institution?.institutionName || null,
+    area: user.location?.area || null,
+    city: user.location?.city || null,
+  };
+
+  await createPost(postDataWithDenormalization);
   revalidatePath('/');
   redirect('/');
 }

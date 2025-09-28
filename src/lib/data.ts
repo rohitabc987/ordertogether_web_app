@@ -3,7 +3,7 @@
 import type { User, Post } from './types';
 import { db } from './firebase-admin';
 import { cache } from 'react';
-import { Timestamp, FieldPath } from 'firebase-admin/firestore';
+import { Timestamp, FieldPath, type Query } from 'firebase-admin/firestore';
 
 const usersCollection = db.collection('users');
 const postsCollection = db.collection('posts');
@@ -57,73 +57,62 @@ export const getUserById = cache(async (userId: string): Promise<User | undefine
 async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
   if (posts.length === 0) return [];
 
-  // 1. Get all unique author IDs from the posts
   const authorIds = [...new Set(posts.map(p => p.authorId).filter(Boolean))];
 
   if (authorIds.length === 0) {
     return convertTimestamps(posts) as Post[];
   }
-
-  // 2. Fetch all authors in a single batch query
+  
   const authorSnapshots = await db.collection('users').where(FieldPath.documentId(), 'in', authorIds).get();
   
-  // 3. Create a map for quick lookups
   const authors = {};
   authorSnapshots.forEach(doc => {
     authors[doc.id] = { id: doc.id, ...doc.data() };
   });
 
-  // 4. Join the author data to each post
   const joinedPosts = posts.map(post => ({
     ...post,
     author: authors[post.authorId] || null,
-  })).filter(p => p.author !== null); // Filter out posts where author was not found or is missing
+  })).filter(p => p.author !== null);
 
   return convertTimestamps(joinedPosts) as Post[];
 }
 
-
 export async function getPostsForUser(user: User | null): Promise<Post[]> {
-  const query = postsCollection.orderBy('createdAt', 'desc').limit(50);
+  let query: Query = postsCollection;
+
+  // If user is logged in, filter by their location.
+  if (user?.institution?.institutionName) {
+    query = query.where("institutionName", "==", user.institution.institutionName);
+  } else if (user?.location?.area) {
+     query = query.where("area", "==", user.location.area);
+  } else if (user?.location?.city) {
+     query = query.where("city", "==", user.location.city);
+  }
+
+  // Always order by creation date and limit the results.
+  query = query.orderBy('createdAt', 'desc').limit(25);
+
   const snapshot = await query.get();
   
-  let allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  let posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-  // Exclude posts made by the current user
+  // Exclude posts made by the current user from their own feed
   if (user) {
-    allPosts = allPosts.filter(post => post.authorId !== user.id);
+    posts = posts.filter(post => post.authorId !== user.id);
   }
 
-  const postsWithAuthors = await joinAuthorToPosts(allPosts);
-
-  // If a user is logged in, sort to prioritize posts from their location
-  if (user) {
-    postsWithAuthors.sort((a, b) => {
-      const aIsLocal = (a.author.institution?.institutionName && a.author.institution.institutionName === user.institution?.institutionName) ||
-                       (a.author.location?.area && a.author.location.area === user.location?.area) ||
-                       (a.author.location?.city && a.author.location.city === user.location?.city);
-      const bIsLocal = (b.author.institution?.institutionName && b.author.institution.institutionName === user.institution?.institutionName) ||
-                       (b.author.location?.area && b.author.location.area === user.location?.area) ||
-                       (b.author.location?.city && b.author.location.city === user.location?.city);
-
-      if (aIsLocal && !bIsLocal) return -1; // a comes first
-      if (!aIsLocal && bIsLocal) return 1;  // b comes first
-      return 0; // maintain original order (by date)
-    });
-  }
-
+  const postsWithAuthors = await joinAuthorToPosts(posts);
+  
   return postsWithAuthors;
 }
 
 
 export async function getPostsByAuthorId(authorId: string): Promise<Post[]> {
-  const snapshot = await postsCollection.where('authorId', '==', authorId).get();
+  const snapshot = await postsCollection.where('authorId', '==', authorId).orderBy('createdAt', 'desc').get();
   const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   
   const postsWithAuthors = await joinAuthorToPosts(posts);
-
-  // Sort posts by creation date in descending order (newest first)
-  postsWithAuthors.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   
   return postsWithAuthors;
 }
@@ -190,7 +179,6 @@ export async function createUserInDb(data: { name: string; email: string; gender
 
 export const getBannerImageUrl = cache(async (): Promise<string | null> => {
   try {
-    // Assuming there's a single document with a known ID like 'config'
     const snapshot = await appDataCollection.limit(1).get();
     if (snapshot.empty) {
       console.log('data: No document found in app_data collection.');

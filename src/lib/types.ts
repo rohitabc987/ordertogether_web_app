@@ -39,6 +39,10 @@ export interface Post {
   deadline: Date;
   notes?: string;
   createdAt: Date;
+  // Denormalized fields for querying
+  institutionName?: string;
+  area?: string;
+  city?: string;
   // Author details are joined from the users collection
   author: User;
 }
