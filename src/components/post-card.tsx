@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef } from 'react';
@@ -38,7 +39,6 @@ const RestaurantIcon = ({ name }: { name: string }) => {
 export function PostCard({ post, index }: { post: Post; index: number }) {
   const { user } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
-
   const [showPrompt, setShowPrompt] = useState<'login' | 'subscribe' | null>(null);
 
   const deadline = post.deadline ? new Date(post.deadline) : null;
@@ -151,10 +151,11 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
         <Button 
             size="sm"
             onClick={handleToggle} 
+            disabled={deadlineInPast}
             className="transition-transform duration-300 hover:scale-105"
           >
-            Join
-            <ChevronDown className={cn("w-4 h-4 ml-1 transition-transform", isExpanded && "rotate-180")} />
+            {deadlineInPast ? 'Expired' : 'Join'}
+            {!deadlineInPast && <ChevronDown className={cn("w-4 h-4 ml-1 transition-transform", isExpanded && "rotate-180")} />}
           </Button>
       </div>
       
