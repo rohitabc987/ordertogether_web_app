@@ -108,11 +108,8 @@ export async function getPostsForUser(user: User | null): Promise<Post[]> {
 
 
 export async function getPostsByAuthorId(authorId: string): Promise<Post[]> {
-  const snapshot = await postsCollection.where('authorId', '==', authorId).get();
-  let posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-  // Manually sort by creation date after fetching
-  posts.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
+  const snapshot = await postsCollection.where('authorId', '==', authorId).orderBy('createdAt', 'desc').get();
+  const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   
   const postsWithAuthors = await joinAuthorToPosts(posts);
   
