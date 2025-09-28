@@ -200,7 +200,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
       {showPrompt && (
         <Modal open={!!showPrompt} onOpenChange={(open) => !open && closePrompt()}>
             {showPrompt === 'login' && (
-              <div className="p-6 text-center">
+              <div className="text-center">
                 <h3 className="text-lg font-semibold mb-4">Please Log In</h3>
                 <p className="mb-4 text-muted-foreground">You must log in to view contact details.</p>
                 <Button asChild>
@@ -209,7 +209,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
               </div>
             )}
             {showPrompt === 'subscribe' && (
-              <div className="p-6 text-center">
+              <div className="text-center">
                 <h3 className="text-lg font-semibold mb-4">Subscribe to View Details</h3>
                 <p className="mb-4 text-muted-foreground">
                   You need an active subscription to view contact details.
