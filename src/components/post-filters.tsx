@@ -103,16 +103,6 @@ export function PostFilters({
               />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="institution">Institution</Label>
-            <Combobox
-                options={institutions}
-                value={institutionFilter}
-                onChange={setInstitutionFilter}
-                placeholder="Select institution..."
-                searchPlaceholder="Search institution..."
-            />
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="gender">Poster's Gender</Label>
             <Select value={genderFilter} onValueChange={setGenderFilter}>
               <SelectTrigger>
@@ -133,6 +123,16 @@ export function PostFilters({
               placeholder="e.g. Zomato, Swiggy..."
               value={restaurantFilter}
               onChange={(e) => setRestaurantFilter(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="institution">Institution</Label>
+            <Combobox
+                options={institutions}
+                value={institutionFilter}
+                onChange={setInstitutionFilter}
+                placeholder="Select institution..."
+                searchPlaceholder="Search institution..."
             />
           </div>
         </CardContent>
