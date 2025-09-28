@@ -80,37 +80,34 @@ async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
 }
 
 export async function getPostsForUser(user: User | null): Promise<Post[]> {
-  // Start with a base query ordered by creation date, limited to 50 results
-  let query: Query = postsCollection.orderBy('createdAt', 'desc').limit(50);
+  let query: Query = postsCollection;
+
+  // If the user is logged in and has an institution, filter by it.
+  // This query requires a composite index on `institutionName` and `createdAt`.
+  if (user?.institution?.institutionName) {
+    query = query.where('institutionName', '==', user.institution.institutionName);
+  } else if (user?.location?.area) {
+     // You can add more 'else if' blocks here for area or city,
+     // but each will require its own composite index.
+     // For simplicity and to match the recommended index, we'll focus on institutionName.
+     query = query.where('area', '==', user.location.area);
+  } else if (user?.location?.city) {
+     query = query.where('city', '==', user.location.city);
+  }
+
+  // Always order by creation date to get the newest posts.
+  query = query.orderBy('createdAt', 'desc').limit(25);
 
   const snapshot = await query.get();
   
-  let allRecentPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  let posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-  let postsToDisplay = allRecentPosts;
-
-  // If user is logged in, filter the results in code
+  // Exclude posts made by the current user from their own feed
   if (user) {
-    const userInstitution = user.institution?.institutionName;
-    const userArea = user.location?.area;
-    const userCity = user.location?.city;
-
-    if (userInstitution) {
-      postsToDisplay = allRecentPosts.filter(post => post.institutionName === userInstitution);
-    } else if (userArea) {
-      postsToDisplay = allRecentPosts.filter(post => post.area === userArea);
-    } else if (userCity) {
-      postsToDisplay = allRecentPosts.filter(post => post.city === userCity);
-    }
-
-    // Exclude posts made by the current user from their own feed
-    postsToDisplay = postsToDisplay.filter(post => post.authorId !== user.id);
+    posts = posts.filter(post => post.authorId !== user.id);
   }
-  
-  // Take the first 25 after filtering
-  const finalPosts = postsToDisplay.slice(0, 25);
 
-  const postsWithAuthors = await joinAuthorToPosts(finalPosts);
+  const postsWithAuthors = await joinAuthorToPosts(posts);
   
   return postsWithAuthors;
 }
