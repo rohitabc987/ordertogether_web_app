@@ -2,11 +2,16 @@ import { MyPostCard } from '@/components/my-post-card';
 import { Button } from '@/components/ui/button';
 import { getPostsByAuthorId } from '@/lib/data';
 import { getCurrentUser } from '@/lib/session';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Info } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-export default async function MyPostsPage() {
+export default async function MyPostsPage({
+  searchParams,
+}: {
+  searchParams: { message?: string };
+}) {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -26,6 +31,16 @@ export default async function MyPostsPage() {
           </Link>
         </Button>
       </div>
+
+       {searchParams.message && (
+        <Alert className="mb-6 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <AlertTitle className="text-blue-700 dark:text-blue-300">Notification</AlertTitle>
+          <AlertDescription className="text-blue-600 dark:text-blue-500">
+            {searchParams.message}
+          </AlertDescription>
+        </Alert>
+      )}
 
       {posts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
