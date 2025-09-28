@@ -1,4 +1,4 @@
-import { PostCard } from '@/components/post-card';
+import { MyPostCard } from '@/components/my-post-card';
 import { Button } from '@/components/ui/button';
 import { getPostsByAuthorId } from '@/lib/data';
 import { getCurrentUser } from '@/lib/session';
@@ -30,7 +30,7 @@ export default async function MyPostsPage() {
       {posts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map(post => (
-            <PostCard key={post.id} post={post} />
+            <MyPostCard key={post.id} post={post} />
           ))}
         </div>
       ) : (

@@ -39,6 +39,7 @@ export interface Post {
   deadline: Date;
   notes?: string;
   createdAt: Date;
+  updatedAt?: Date; // To track if the post has been edited
   // Denormalized fields for querying
   institutionName?: string;
   area?: string;

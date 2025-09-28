@@ -127,6 +127,24 @@ export async function createPost(postData: Omit<Post, 'id' | 'createdAt' | 'auth
   return { id: docRef.id, ...newPostData } as Post;
 }
 
+export async function updatePost(postId: string, updates: Partial<Post>): Promise<void> {
+  await postsCollection.doc(postId).update({ ...updates, updatedAt: new Date() });
+}
+
+export async function deletePost(postId: string): Promise<void> {
+  await postsCollection.doc(postId).delete();
+}
+
+export const getPostById = cache(async (postId: string): Promise<Post | null> => {
+  const postDoc = await postsCollection.doc(postId).get();
+  if (!postDoc.exists) {
+    return null;
+  }
+  const postData = { id: postDoc.id, ...postDoc.data() };
+  const postsWithAuthor = await joinAuthorToPosts([postData]);
+  return convertTimestamps(postsWithAuthor[0]) as Post;
+});
+
 export async function updateUser(userId: string, updates: Record<string, any>): Promise<User> {
   await usersCollection.doc(userId).update(updates);
   const updatedUser = await getUserById(userId);

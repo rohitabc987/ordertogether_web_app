@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
-import { createPost, findUserByEmail, updateUser, createUserInDb, getUserById } from '@/lib/data';
+import { createPost, findUserByEmail, updateUser, createUserInDb, getUserById, deletePost, updatePost, getPostById } from '@/lib/data';
 import { auth as adminAuth } from 'firebase-admin';
 import { db } from './firebase-admin';
 
@@ -139,6 +139,42 @@ export async function createPostAction(prevState: any, formData: FormData) {
   revalidatePath('/');
   redirect('/');
 }
+
+const updatePostSchema = postSchema.omit({ authorId: true }).extend({
+  postId: z.string(),
+});
+
+export async function updatePostAction(prevState: any, formData: FormData) {
+  const data = Object.fromEntries(formData);
+  const parsed = updatePostSchema.safeParse(data);
+
+  if (!parsed.success) {
+      return { message: 'Invalid post data. Please check your inputs.' };
+  }
+  
+  const post = await getPostById(parsed.data.postId);
+  if (!post) {
+      return { message: 'Post not found.' };
+  }
+
+  if (post.updatedAt) {
+      return { message: 'This post has already been updated once and cannot be edited again.' };
+  }
+
+  if (parsed.data.contributionAmount > parsed.data.totalAmount) {
+      return { message: 'Your contribution cannot be greater than the total order amount.' };
+  }
+
+  await updatePost(parsed.data.postId, parsed.data);
+  revalidatePath('/my-posts');
+  redirect('/my-posts');
+}
+
+export async function deletePostAction(postId: string) {
+  await deletePost(postId);
+  revalidatePath('/my-posts');
+}
+
 
 const profileSchema = z.object({
   id: z.string(),
