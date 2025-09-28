@@ -16,7 +16,8 @@ function convertTimestamps(obj: any): any {
     return obj.map(convertTimestamps);
   }
   if (obj instanceof Timestamp) {
-    return obj.toDate();
+    // When serializing for the client, toISOString() is a good, standard format.
+    return obj.toDate().toISOString();
   }
   if (typeof obj === 'object') {
     const newObj: { [key: string]: any } = {};
@@ -142,7 +143,7 @@ export const getPostById = cache(async (postId: string): Promise<Post | null> =>
   }
   const postData = { id: postDoc.id, ...postDoc.data() };
   const postsWithAuthor = await joinAuthorToPosts([postData]);
-  return convertTimestamps(postsWithAuthor[0]) as Post;
+  return postsWithAuthor[0] as Post;
 });
 
 export async function updateUser(userId: string, updates: Record<string, any>): Promise<User> {
