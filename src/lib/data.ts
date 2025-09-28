@@ -52,6 +52,8 @@ export const getUserById = cache(async (userId: string): Promise<User | undefine
   }
   const userData = { id: userDoc.id, ...userDoc.data() } as User;
   console.log(`data: User found:`, userData);
+  // We return the raw data here, and expect the caller to handle timestamp conversion if needed for client-side use.
+  // For server components, raw objects are fine.
   return userData;
 });
 
@@ -80,7 +82,7 @@ async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
   return convertTimestamps(joinedPosts) as Post[];
 }
 
-export async function getPostsForUser(user: User | null): Promise<Post[]> {
+export const getPostsForUser = cache(async (user: User | null): Promise<Post[]> => {
   let query: Query = postsCollection;
 
   // This query requires a composite index on `institutionName` and `createdAt`.
@@ -105,17 +107,17 @@ export async function getPostsForUser(user: User | null): Promise<Post[]> {
   const postsWithAuthors = await joinAuthorToPosts(posts);
   
   return postsWithAuthors;
-}
+});
 
 
-export async function getPostsByAuthorId(authorId: string): Promise<Post[]> {
+export const getPostsByAuthorId = cache(async (authorId: string): Promise<Post[]> => {
   const snapshot = await postsCollection.where('authorId', '==', authorId).orderBy('createdAt', 'desc').get();
   const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   
   const postsWithAuthors = await joinAuthorToPosts(posts);
   
   return postsWithAuthors;
-}
+});
 
 
 export async function createPost(postData: Omit<Post, 'id' | 'createdAt' | 'author'>): Promise<Post> {
@@ -143,7 +145,7 @@ export const getPostById = cache(async (postId: string): Promise<Post | null> =>
   }
   const postData = { id: postDoc.id, ...postDoc.data() };
   const postsWithAuthor = await joinAuthorToPosts([postData]);
-  return postsWithAuthor[0] as Post;
+  return postsWithAuthor[0] || null; // Return null if author join fails
 });
 
 export async function updateUser(userId: string, updates: Record<string, any>): Promise<User> {
