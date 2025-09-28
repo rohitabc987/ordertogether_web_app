@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useActionState, useState } from 'react';
@@ -22,8 +23,10 @@ export function EditPostForm({ post }: { post: Post }) {
   
   // Create a Date object from the serialized string prop.
   const deadlineDate = post.deadline ? new Date(post.deadline) : null;
+
   // Format deadline for datetime-local input. Handles timezone offset.
-  const deadlineForInput = deadlineDate
+  // Check if deadlineDate is a valid date before calling methods on it.
+  const deadlineForInput = (deadlineDate && !isNaN(deadlineDate.getTime()))
     ? new Date(deadlineDate.getTime() - (deadlineDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16)
     : '';
 
