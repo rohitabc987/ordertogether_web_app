@@ -12,8 +12,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { formatCurrency } from '@/lib/utils';
 import { AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export function EditPostForm({ post }: { post: Post }) {
+  const router = useRouter();
   const [state, formAction] = useActionState(updatePostAction, null);
   const [totalAmount, setTotalAmount] = useState(post.totalAmount);
   const [contributionAmount, setContributionAmount] = useState(post.contributionAmount);
@@ -26,9 +29,11 @@ export function EditPostForm({ post }: { post: Post }) {
 
   // Format deadline for datetime-local input. Handles timezone offset.
   // Check if deadlineDate is a valid date before calling methods on it.
-  const deadlineForInput = (deadlineDate && !isNaN(deadlineDate.getTime()))
+  const initialDeadlineForInput = (deadlineDate && !isNaN(deadlineDate.getTime()))
     ? new Date(deadlineDate.getTime() - (deadlineDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16)
     : '';
+
+  const [deadline, setDeadline] = useState(initialDeadlineForInput);
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -91,7 +96,14 @@ export function EditPostForm({ post }: { post: Post }) {
 
           <div className="space-y-2">
             <Label htmlFor="deadline">Deadline</Label>
-            <Input id="deadline" name="deadline" type="datetime-local" defaultValue={deadlineForInput} required />
+            <Input 
+              id="deadline" 
+              name="deadline" 
+              type="datetime-local" 
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              required 
+            />
           </div>
 
           <div className="space-y-2">
@@ -101,9 +113,14 @@ export function EditPostForm({ post }: { post: Post }) {
           
           {state?.message && <p className="text-sm text-destructive">{state.message}</p>}
 
-          <Button type="submit" className="w-full">
-            Save Changes
-          </Button>
+          <div className="flex justify-end gap-4">
+            <Button asChild variant="outline">
+              <Link href="/my-posts">Cancel</Link>
+            </Button>
+            <Button type="submit">
+              Save Changes
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

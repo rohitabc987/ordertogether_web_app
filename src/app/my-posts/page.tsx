@@ -57,7 +57,7 @@ export default async function MyPostsPage({
             You haven't created any posts yet.
           </h2>
           <p className="text-muted-foreground mt-2">
-            Why not start a new group order?
+          Want free delivery and great coupons? Create a group order today
           </p>
         </div>
       )}
