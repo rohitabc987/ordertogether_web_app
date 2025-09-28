@@ -14,37 +14,56 @@ const AuthContext = createContext<AuthContextType>({ user: null });
 
 async function fetchWithRetry(url: string, retries = 3, delay = 300): Promise<Response> {
   for (let i = 0; i < retries; i++) {
-    const response = await fetch(url);
-    const data = await response.clone().json();
-    if (response.ok && data.user) {
-      return response;
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.clone().json();
+        if (data.user) {
+          return response;
+        }
+      }
+      // Don't retry on 404 or other client errors that indicate no session
+      if (response.status >= 400 && response.status < 500) {
+        return response;
+      }
+    } catch (error) {
+       // Only retry on network errors
+       console.warn(`Fetch attempt ${i + 1} failed. Retrying...`);
     }
     await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
   }
   return fetch(url); // Final attempt
 }
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
+  const [user, setUser] = useState<User | null>(initialUser);
+  
+  // No initial loading state if we have user data from the server
+  const [loading, setLoading] = useState(!initialUser);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        // User is signed in with Firebase, poll for our app user data from the API
-        try {
-          const response = await fetchWithRetry('/api/session');
-          if (response.ok) {
-            const session = await response.json();
-            setUser(session.user || null);
-          } else {
+        // If the server didn't provide a user, we might need to fetch it.
+        // This happens on client-side navigation after login.
+        if (!user) {
+          try {
+            const response = await fetchWithRetry('/api/session');
+            if (response.ok) {
+              const session = await response.json();
+              setUser(session.user || null);
+            } else {
+              setUser(null);
+            }
+          } catch (error) {
+            console.error('Failed to fetch session:', error);
             setUser(null);
+          } finally {
+            setLoading(false);
           }
-        } catch (error) {
-          console.error('Failed to fetch session:', error);
-          setUser(null);
-        } finally {
-          setLoading(false);
+        } else {
+            // User data is already present from server hydration
+            setLoading(false);
         }
       } else {
         // User is signed out
@@ -55,11 +74,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Cleanup subscription on unmount
     return () => unsubscribeAuth();
-  }, []);
+  }, [user]);
+
+  // Don't render children until we have determined the auth state
+  // to avoid flashing content.
+  if (loading) {
+      return null;
+  }
 
   return (
     <AuthContext.Provider value={{ user }}>
-      {loading ? null : children}
+      {children}
     </AuthContext.Provider>
   );
 }
@@ -72,6 +97,6 @@ export function useAuth() {
   return context;
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
-  return <AuthProvider>{children}</AuthProvider>;
+export function Providers({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
+  return <AuthProvider initialUser={initialUser}>{children}</AuthProvider>;
 }
