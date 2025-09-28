@@ -80,33 +80,37 @@ async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
 }
 
 export async function getPostsForUser(user: User | null): Promise<Post[]> {
-  // Start with a base query ordered by creation date
-  let query: Query = postsCollection.orderBy('createdAt', 'desc');
-
-  // If user is logged in, add a filter for their location.
-  if (user) {
-    if (user.institution?.institutionName) {
-      query = query.where("institutionName", "==", user.institution.institutionName);
-    } else if (user.location?.area) {
-      query = query.where("area", "==", user.location.area);
-    } else if (user.location?.city) {
-      query = query.where("city", "==", user.location.city);
-    }
-  }
-
-  // Always limit the results.
-  query = query.limit(25);
+  // Start with a base query ordered by creation date, limited to 50 results
+  let query: Query = postsCollection.orderBy('createdAt', 'desc').limit(50);
 
   const snapshot = await query.get();
   
-  let posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  let allRecentPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-  // Exclude posts made by the current user from their own feed
+  let postsToDisplay = allRecentPosts;
+
+  // If user is logged in, filter the results in code
   if (user) {
-    posts = posts.filter(post => post.authorId !== user.id);
-  }
+    const userInstitution = user.institution?.institutionName;
+    const userArea = user.location?.area;
+    const userCity = user.location?.city;
 
-  const postsWithAuthors = await joinAuthorToPosts(posts);
+    if (userInstitution) {
+      postsToDisplay = allRecentPosts.filter(post => post.institutionName === userInstitution);
+    } else if (userArea) {
+      postsToDisplay = allRecentPosts.filter(post => post.area === userArea);
+    } else if (userCity) {
+      postsToDisplay = allRecentPosts.filter(post => post.city === userCity);
+    }
+
+    // Exclude posts made by the current user from their own feed
+    postsToDisplay = postsToDisplay.filter(post => post.authorId !== user.id);
+  }
+  
+  // Take the first 25 after filtering
+  const finalPosts = postsToDisplay.slice(0, 25);
+
+  const postsWithAuthors = await joinAuthorToPosts(finalPosts);
   
   return postsWithAuthors;
 }
