@@ -3,7 +3,6 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail, Utensils } from 'lucide-react';
@@ -78,126 +77,121 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
   return (
     <div
       ref={ref}
+      style={{ transitionDelay: `${index * 150}ms` }}
       className={cn(
-        "bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm transition-all duration-500 ease-out transform-gpu",
+        "bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm p-4 space-y-4",
+        "transition-all duration-500 ease-out transform-gpu origin-center",
         animateClass
       )}
-      style={{
-        transitionDelay: `${index * 150}ms`,
-        transformOrigin: 'center'
-      }}
     >
-      <Card className="bg-transparent border-0 shadow-none">
-        <CardContent className="p-4 space-y-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-3 flex-1 min-w-0">
-               <Avatar>
-                  <AvatarFallback>{authorInitials}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2 flex-wrap">
-                  <p className="font-semibold text-base text-primary">Save {formatCurrency(remainingNeeded)} with a group order!</p>
-                  <p className="text-sm text-muted-foreground">(Min Order: {formatCurrency(post.totalAmount)})</p>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap mt-1">
-                   <Badge variant="outline" className="capitalize">
-                      <UserIcon className="w-3 h-3 mr-1" />
-                      {post.author.userProfile.gender}
-                  </Badge>
-                  <p className="text-sm text-muted-foreground truncate">Contributing: {formatCurrency(post.contributionAmount)}</p>
-                </div>
-              </div>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+            <Avatar>
+              <AvatarImage src={post.author.userProfile.photoURL ?? undefined} />
+              <AvatarFallback>{authorInitials}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <p className="font-semibold text-base text-primary">Save {formatCurrency(remainingNeeded)} with a group order!</p>
+              <p className="text-sm text-muted-foreground">(Min Order: {formatCurrency(post.totalAmount)})</p>
             </div>
-
-            <div className="flex flex-col items-end gap-2 text-sm text-muted-foreground text-right flex-shrink-0">
-              <div className="flex items-center gap-1.5">
-                  <RestaurantIcon name={post.restaurant} />
-                  <span className="font-medium truncate">{post.restaurant}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
-                  <span>{deadline ? formatDistanceToNow(deadline, { addSuffix: true }) : 'N/A'}</span>
-              </div>
+            <div className="flex items-center gap-2 flex-wrap mt-1">
+                <Badge variant="outline" className="capitalize">
+                  <UserIcon className="w-3 h-3 mr-1" />
+                  {post.author.userProfile.gender}
+              </Badge>
+              <p className="text-sm text-muted-foreground truncate">Contributing: {formatCurrency(post.contributionAmount)}</p>
             </div>
           </div>
+        </div>
 
-          <div className="space-y-2">
-              <div className="flex justify-between items-center text-xs text-muted-foreground">
-                  <span>{formatCurrency(post.contributionAmount)}</span>
-                  <span>{formatCurrency(post.totalAmount)}</span>
+        <div className="flex flex-col items-end gap-2 text-sm text-muted-foreground text-right flex-shrink-0">
+          <div className="flex items-center gap-1.5">
+              <RestaurantIcon name={post.restaurant} />
+              <span className="font-medium truncate">{post.restaurant}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+              <Clock className="w-4 h-4" />
+              <span>{deadline ? formatDistanceToNow(deadline, { addSuffix: true }) : 'N/A'}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+          <div className="flex justify-between items-center text-xs text-muted-foreground">
+              <span>{formatCurrency(post.contributionAmount)}</span>
+              <span>{formatCurrency(post.totalAmount)}</span>
+          </div>
+          <Progress value={progressPercentage} className="h-2" />
+          {allNotes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{allNotes}</span></p>}
+      </div>
+
+      <div className="flex justify-start">
+        <Button 
+            size="sm"
+            onClick={toggleExpand} 
+            disabled={deadlineInPast || !user}
+            className="transition-transform duration-300 hover:scale-105"
+          >
+            Join
+            <ChevronDown className={cn("w-4 h-4 ml-1 transition-transform", isExpanded && "rotate-180")} />
+          </Button>
+      </div>
+      
+      {isExpanded && (
+        <div className="border-t pt-4">
+          <div className={cn(!isSubscribed && "relative")}>
+            { !isSubscribed && <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm z-10 rounded-lg"></div> }
+            <div className={cn(
+              "text-center transition-opacity duration-300",
+              !isSubscribed ? 'opacity-100' : 'opacity-0'
+            )}>
+              <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+                  <h4 className="font-semibold">Subscribe to Join Orders</h4>
+                  <p className="text-muted-foreground text-sm mt-1 mb-3">
+                      You need an active subscription to view contact details.
+                  </p>
+                  <Button asChild size="sm">
+                      <Link href="/pricing">View Plans</Link>
+                  </Button>
               </div>
-              <Progress value={progressPercentage} className="h-2" />
-              {allNotes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{allNotes}</span></p>}
-          </div>
-
-          <div className="flex justify-start">
-            <Button 
-                size="sm"
-                onClick={toggleExpand} 
-                disabled={deadlineInPast || !user}
-                className="transition-transform duration-300 hover:scale-105"
-              >
-                Join
-                <ChevronDown className={cn("w-4 h-4 ml-1 transition-transform", isExpanded && "rotate-180")} />
-              </Button>
-          </div>
-          
-          {isExpanded && (
-            <div className="border-t pt-4">
-              <div className={cn(!isSubscribed && "relative")}>
-                { !isSubscribed && <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm z-10 rounded-lg"></div> }
-                <div className={cn(
-                  "text-center transition-opacity duration-300",
-                  !isSubscribed ? 'opacity-100' : 'opacity-0'
-                )}>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-                      <h4 className="font-semibold">Subscribe to Join Orders</h4>
-                      <p className="text-muted-foreground text-sm mt-1 mb-3">
-                          You need an active subscription to view contact details.
-                      </p>
-                      <Button asChild size="sm">
-                          <Link href="/pricing">View Plans</Link>
-                      </Button>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-3">Contact {authorName} to Coordinate</h4>
-                  <div className="p-3 rounded-lg bg-muted/50 border">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={post.author.userProfile.photoURL ?? undefined} />
-                        <AvatarFallback className="text-2xl">{authorInitials}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-grow space-y-1 text-sm">
-                        <p className="font-bold text-base">{authorName}</p>
-                        {post.author.contact.email && (
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Mail className="w-4 h-4" />
-                            <a href={`mailto:${post.author.contact.email}`} className="hover:underline">{post.author.contact.email}</a>
-                          </div>
-                        )}
-                        {post.author.contact.phone && (
-                           <div className="flex items-center gap-2 text-muted-foreground">
-                            <Phone className="w-4 h-4" />
-                            <a href={`tel:${post.author.contact.phone}`} className="hover:underline">{post.author.contact.phone}</a>
-                          </div>
-                        )}
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3">Contact {authorName} to Coordinate</h4>
+              <div className="p-3 rounded-lg bg-muted/50 border">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={post.author.userProfile.photoURL ?? undefined} />
+                    <AvatarFallback className="text-2xl">{authorInitials}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-grow space-y-1 text-sm">
+                    <p className="font-bold text-base">{authorName}</p>
+                    {post.author.contact.email && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Mail className="w-4 h-4" />
+                        <a href={`mailto:${post.author.contact.email}`} className="hover:underline">{post.author.contact.email}</a>
                       </div>
-                       {post.author.contact.phone && (
-                        <Button asChild variant="ghost" size="icon" className="h-12 w-12 flex-shrink-0">
-                          <a href={`https://wa.me/${post.author.contact.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" title="Chat on WhatsApp">
-                            <MessageSquare className="w-6 h-6 text-green-500" />
-                          </a>
-                        </Button>
-                      )}
-                    </div>
+                    )}
+                    {post.author.contact.phone && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                        <Phone className="w-4 h-4" />
+                        <a href={`tel:${post.author.contact.phone}`} className="hover:underline">{post.author.contact.phone}</a>
+                      </div>
+                    )}
                   </div>
+                    {post.author.contact.phone && (
+                    <Button asChild variant="ghost" size="icon" className="h-12 w-12 flex-shrink-0">
+                      <a href={`https://wa.me/${post.author.contact.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" title="Chat on WhatsApp">
+                        <MessageSquare className="w-6 h-6 text-green-500" />
+                      </a>
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
