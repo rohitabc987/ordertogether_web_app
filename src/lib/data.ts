@@ -82,21 +82,15 @@ async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
 export async function getPostsForUser(user: User | null): Promise<Post[]> {
   let query: Query = postsCollection;
 
-  // If the user is logged in and has an institution, filter by it.
   // This query requires a composite index on `institutionName` and `createdAt`.
   if (user?.institution?.institutionName) {
-    query = query.where('institutionName', '==', user.institution.institutionName);
-  } else if (user?.location?.area) {
-     // You can add more 'else if' blocks here for area or city,
-     // but each will require its own composite index.
-     // For simplicity and to match the recommended index, we'll focus on institutionName.
-     query = query.where('area', '==', user.location.area);
-  } else if (user?.location?.city) {
-     query = query.where('city', '==', user.location.city);
+    query = query.where('institutionName', '==', user.institution.institutionName).orderBy('createdAt', 'desc');
+  } else {
+    // Fallback for users without an institution or not logged in
+    query = query.orderBy('createdAt', 'desc');
   }
 
-  // Always order by creation date to get the newest posts.
-  query = query.orderBy('createdAt', 'desc').limit(25);
+  query = query.limit(25);
 
   const snapshot = await query.get();
   
@@ -114,8 +108,11 @@ export async function getPostsForUser(user: User | null): Promise<Post[]> {
 
 
 export async function getPostsByAuthorId(authorId: string): Promise<Post[]> {
-  const snapshot = await postsCollection.where('authorId', '==', authorId).orderBy('createdAt', 'desc').get();
-  const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const snapshot = await postsCollection.where('authorId', '==', authorId).get();
+  let posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  // Manually sort by creation date after fetching
+  posts.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
   
   const postsWithAuthors = await joinAuthorToPosts(posts);
   
