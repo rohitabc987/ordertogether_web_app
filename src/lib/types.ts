@@ -27,7 +27,6 @@ export interface User {
     plan: 'single-post' | 'daily' | 'weekly' | 'monthly' | 'Premium' | null;
     startDate?: string;
     expiry?: string;
-    postsViewed?: number; // Count of posts viewed in current subscription
   };
 }
 

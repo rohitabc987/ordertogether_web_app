@@ -11,7 +11,6 @@ import { revalidatePath } from 'next/cache';
 import { createPost, findUserByEmail, updateUser, createUserInDb, getUserById, deletePost, updatePost, getPostById } from '@/lib/data';
 import { auth as adminAuth, firestore } from 'firebase-admin';
 import { db } from './firebase-admin';
-const { FieldValue } = firestore;
 
 export async function verifyAndSignInAction(idToken: string) {
   console.log('actions: verifyAndSignInAction started.');
@@ -228,7 +227,6 @@ export async function subscribeAction(plan: 'single-post' | 'daily' | 'weekly' |
   const updates: Record<string, any> = {
     'subscription.status': 'active',
     'subscription.plan': plan,
-    'subscription.postsViewed': 0, // Reset view count on any new subscription
   };
 
   if (plan === 'single-post') {
@@ -250,12 +248,13 @@ export async function subscribeAction(plan: 'single-post' | 'daily' | 'weekly' |
   revalidatePath('/profile');
 }
 
-export async function incrementPostViewCountAction(userId: string) {
+export async function deactivateSinglePostPassAction(userId: string) {
   await updateUser(userId, {
-    'subscription.postsViewed': FieldValue.increment(1),
+    'subscription.status': 'inactive',
   });
-  // Revalidate the homepage where post cards are displayed to reflect new state
+  // Revalidate pages where subscription status is important
   revalidatePath('/');
+  revalidatePath('/profile');
 }
 
 
@@ -287,5 +286,4 @@ export async function submitFeedbackAction(prevState: any, formData: FormData) {
     return { success: false, message: 'Something went wrong. Please try again.' };
   }
 }
-
     

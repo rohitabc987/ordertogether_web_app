@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { incrementPostViewCountAction } from '@/lib/actions';
+import { deactivateSinglePostPassAction } from '@/lib/actions';
 
 
 const RestaurantIcon = ({ name }: { name: string }) => {
@@ -49,7 +49,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
   const { user } = useAuth();
   const [isPending, startTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showPrompt, setShowPrompt] = useState<'login' | 'subscribe' | 'single_used' | null>(null);
+  const [showPrompt, setShowPrompt] = useState<'login' | 'subscribe' | null>(null);
 
   const deadline = post.deadline ? new Date(post.deadline) : null;
   const deadlineInPast = deadline ? deadline < new Date() : true;
@@ -96,28 +96,24 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
       setShowPrompt('login');
       return;
     }
-
-    const subscription = user.subscription;
-
-    if (subscription?.plan === 'single-post') {
-      const postsViewed = subscription.postsViewed || 0;
-      if (postsViewed >= 1) {
-        setShowPrompt('single_used');
-        return;
-      }
-      startTransition(async () => {
-        await incrementPostViewCountAction(user.id);
-      });
-    } else {
-      const isSubscribed = subscription?.status === 'active';
-      if (!isSubscribed) {
-        setShowPrompt('subscribe');
-        return;
-      }
-    }
-
+    
     if (deadlineInPast) {
       return;
+    }
+
+    const subscription = user.subscription;
+    const isSubscribed = subscription?.status === 'active';
+
+    if (!isSubscribed) {
+      setShowPrompt('subscribe');
+      return;
+    }
+    
+    // If the user has a single-post plan, deactivate it after use.
+    if (subscription.plan === 'single-post') {
+      startTransition(async () => {
+        await deactivateSinglePostPassAction(user.id);
+      });
     }
 
     setIsExpanded(true);
@@ -251,20 +247,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
                   <DialogTitle className="mb-4">Subscribe to View Details</DialogTitle>
                 </DialogHeader>
                 <DialogDescription className="mb-4">
-                  You need an active subscription to view contact details.
-                </DialogDescription>
-                <Button asChild>
-                  <Link href="/pricing">View Plans</Link>
-                </Button>
-              </div>
-            )}
-             {showPrompt === 'single_used' && (
-              <div className="text-center p-4">
-                <DialogHeader>
-                  <DialogTitle className="mb-4">Single Post View Used</DialogTitle>
-                </DialogHeader>
-                <DialogDescription className="mb-4">
-                  You have already used your single post view. Please subscribe again to see details of another post.
+                  You need an active subscription to view contact details. For just ₹1, you can view the details of a single post.
                 </DialogDescription>
                 <Button asChild>
                   <Link href="/pricing">View Plans</Link>
