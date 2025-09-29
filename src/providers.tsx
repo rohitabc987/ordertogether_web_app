@@ -15,11 +15,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({ user: null });
 
 interface PostViewContextType {
-  incrementViewCount: () => void;
+  trackViewedPost: (postId: string) => void;
 }
 
 export const PostViewContext = createContext<PostViewContextType>({
-  incrementViewCount: () => {},
+  trackViewedPost: () => {},
 });
 
 async function fetchWithRetry(url: string, retries = 3, delay = 300): Promise<Response> {
@@ -47,18 +47,18 @@ async function fetchWithRetry(url: string, retries = 3, delay = 300): Promise<Re
 
 function PostViewProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const viewCountRef = useRef(0);
+  const viewedPostIdsInSession = useRef(new Set<string>());
 
-  const incrementViewCount = () => {
-    viewCountRef.current += 1;
+  const trackViewedPost = (postId: string) => {
+    viewedPostIdsInSession.current.add(postId);
   };
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden' && viewCountRef.current > 0) {
+      if (document.visibilityState === 'hidden' && viewedPostIdsInSession.current.size > 0) {
         if (user?.id) {
-          updatePostViewCountAction(user.id, viewCountRef.current);
-          viewCountRef.current = 0; // Reset after sending
+          updatePostViewCountAction(user.id, viewedPostIdsInSession.current.size);
+          viewedPostIdsInSession.current.clear(); // Reset after sending
         }
       }
     };
@@ -68,14 +68,14 @@ function PostViewProvider({ children }: { children: React.ReactNode }) {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       // Fallback: try to update when the component unmounts
-      if (viewCountRef.current > 0 && user?.id) {
-        updatePostViewCountAction(user.id, viewCountRef.current);
+      if (viewedPostIdsInSession.current.size > 0 && user?.id) {
+        updatePostViewCountAction(user.id, viewedPostIdsInSession.current.size);
       }
     };
   }, [user]);
 
   return (
-    <PostViewContext.Provider value={{ incrementViewCount }}>
+    <PostViewContext.Provider value={{ trackViewedPost }}>
       {children}
     </PostViewContext.Provider>
   );

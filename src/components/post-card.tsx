@@ -47,7 +47,7 @@ const RestaurantIcon = ({ name }: { name: string }) => {
 
 export function PostCard({ post, index }: { post: Post; index: number }) {
   const { user } = useAuth();
-  const { incrementViewCount } = useContext(PostViewContext);
+  const { trackViewedPost } = useContext(PostViewContext);
   const [isPending, startTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showPrompt, setShowPrompt] = useState<'login' | 'subscribe' | 'limit-reached' | null>(null);
@@ -112,19 +112,10 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
 
     // Handle single-post plan logic
     if (subscription.plan === 'single-post') {
-      // The local postsViewed might not be persisted yet, so we check the DB value.
-      // A small inconsistency is acceptable here for performance.
-      const alreadyViewed = (user.subscription?.postsViewed || 0) > 0;
-
-      if (alreadyViewed) {
-        setShowPrompt('limit-reached');
-        return;
-      }
-      
       startTransition(async () => {
         const result = await deactivateSinglePostPassAction(user.id);
         if (result.success) {
-          incrementViewCount();
+          trackViewedPost(post.id);
           setIsExpanded(true);
         } else {
           // Handle error if deactivation fails
@@ -132,7 +123,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
       });
     } else {
       // For other active plans, just expand and count the view.
-      incrementViewCount();
+      trackViewedPost(post.id);
       setIsExpanded(true);
     }
   };
