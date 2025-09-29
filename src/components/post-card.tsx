@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useTransition } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail, Utensils } from 'lucide-react';
@@ -21,6 +22,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { useSinglePostViewAction } from '@/lib/actions';
 
 
 const RestaurantIcon = ({ name }: { name: string }) => {
@@ -45,8 +47,9 @@ const RestaurantIcon = ({ name }: { name: string }) => {
 
 export function PostCard({ post, index }: { post: Post; index: number }) {
   const { user } = useAuth();
+  const [isPending, startTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showPrompt, setShowPrompt] = useState<'login' | 'subscribe' | null>(null);
+  const [showPrompt, setShowPrompt] = useState<'login' | 'subscribe' | 'single_used' | null>(null);
 
   const deadline = post.deadline ? new Date(post.deadline) : null;
   const deadlineInPast = deadline ? deadline < new Date() : true;
@@ -93,11 +96,28 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
       setShowPrompt('login');
       return;
     }
-    
-    const isSubscribed = user.subscription?.status === 'active';
-    if (!isSubscribed) {
-      setShowPrompt('subscribe');
-      return;
+
+    const subscription = user.subscription;
+
+    if (subscription?.plan === 'single-post') {
+      const viewedPostId = subscription.viewedPostId;
+      // Allow viewing if they haven't viewed any post yet, or if they are re-viewing the same post.
+      if (viewedPostId && viewedPostId !== post.id) {
+        setShowPrompt('single_used');
+        return;
+      }
+      // If they are viewing for the first time, mark it as viewed.
+      if (!viewedPostId) {
+        startTransition(async () => {
+          await useSinglePostViewAction(user.id, post.id);
+        });
+      }
+    } else {
+      const isSubscribed = subscription?.status === 'active';
+      if (!isSubscribed) {
+        setShowPrompt('subscribe');
+        return;
+      }
     }
 
     if (deadlineInPast) {
@@ -167,11 +187,11 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
         <Button 
             size="sm"
             onClick={handleToggle} 
-            disabled={deadlineInPast}
+            disabled={deadlineInPast || isPending}
             className="transition-transform duration-300 hover:scale-105"
           >
-            {deadlineInPast ? 'Expired' : 'Join'}
-            {!deadlineInPast && <ChevronDown className={cn("w-4 h-4 ml-1 transition-transform", isExpanded && "rotate-180")} />}
+            {isPending ? 'Processing...' : deadlineInPast ? 'Expired' : 'Join'}
+            {!deadlineInPast && !isPending && <ChevronDown className={cn("w-4 h-4 ml-1 transition-transform", isExpanded && "rotate-180")} />}
           </Button>
       </div>
       
@@ -242,11 +262,22 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
                 </Button>
               </div>
             )}
+             {showPrompt === 'single_used' && (
+              <div className="text-center p-4">
+                <DialogHeader>
+                  <DialogTitle className="mb-4">Single Post View Used</DialogTitle>
+                </DialogHeader>
+                <DialogDescription className="mb-4">
+                  You have already used your single post view. Please subscribe again to see details of another post.
+                </DialogDescription>
+                <Button asChild>
+                  <Link href="/pricing">View Plans</Link>
+                </Button>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       )}
     </div>
   );
 }
-
-    

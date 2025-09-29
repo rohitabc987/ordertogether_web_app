@@ -1,4 +1,5 @@
 
+
 // @ts-nocheck
 'use server';
 
@@ -223,29 +224,39 @@ export async function updateProfileAction(prevState: any, formData: FormData) {
 }
 
 export async function subscribeAction(plan: 'single-post' | 'daily' | 'weekly' | 'monthly', userId: string) {
-  let expiryDate = new Date();
+  const updates: Record<string, any> = {
+    'subscription.status': 'active',
+    'subscription.plan': plan,
+  };
 
   if (plan === 'single-post') {
-    // Give a 5 minute window to view the contact
-    expiryDate.setMinutes(expiryDate.getMinutes() + 5);
+    updates['subscription.expiry'] = null;
+    updates['subscription.viewedPostId'] = null; // Reset single view on new purchase
   } else {
+    let expiryDate = new Date();
     let expiryDays = 0;
     if (plan === 'daily') expiryDays = 1;
     if (plan === 'weekly') expiryDays = 7;
     if (plan === 'monthly') expiryDays = 30;
     expiryDate.setDate(expiryDate.getDate() + expiryDays);
+    updates['subscription.expiry'] = expiryDate.toISOString();
+    updates['subscription.viewedPostId'] = null; // Clear single view when upgrading
   }
 
-  await updateUser(userId, {
-    'subscription.status': 'active',
-    'subscription.plan': plan,
-    'subscription.expiry': expiryDate.toISOString(),
-  });
+  await updateUser(userId, updates);
 
   revalidatePath('/pricing');
   revalidatePath('/');
   revalidatePath('/profile');
 }
+
+export async function useSinglePostViewAction(userId: string, postId: string) {
+  await updateUser(userId, {
+    'subscription.viewedPostId': postId,
+  });
+  revalidatePath('/');
+}
+
 
 const feedbackSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),

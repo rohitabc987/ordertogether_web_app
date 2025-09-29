@@ -1,4 +1,5 @@
 
+
 export interface User {
   id: string;
   updatedAt?: string; // For cache invalidation
@@ -23,9 +24,10 @@ export interface User {
   };
   subscription?: {
     status: 'active' | 'inactive';
-    plan: 'single-post' | 'daily' | 'weekly' | 'monthly' | 'Premium';
+    plan: 'single-post' | 'daily' | 'weekly' | 'monthly' | 'Premium' | null;
     startDate?: string;
     expiry?: string;
+    viewedPostId?: string | null; // For single-post plan
   };
 }
 
