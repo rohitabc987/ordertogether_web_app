@@ -27,6 +27,7 @@ export interface User {
     plan: 'single-post' | 'daily' | 'weekly' | 'monthly' | 'Premium' | null;
     startDate?: string | null;
     expiry?: string | null;
+    postsViewed?: number;
   };
 }
 

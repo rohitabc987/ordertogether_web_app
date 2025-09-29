@@ -2,12 +2,12 @@
 
 'use client';
 
-import { useState, useRef, useTransition } from 'react';
+import { useState, useRef, useTransition, useContext } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail, Utensils } from 'lucide-react';
 import type { Post } from '@/lib/types';
-import { useAuth } from '@/providers';
+import { useAuth, PostViewContext } from '@/providers';
 import { formatDistanceToNow } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
@@ -47,9 +47,10 @@ const RestaurantIcon = ({ name }: { name: string }) => {
 
 export function PostCard({ post, index }: { post: Post; index: number }) {
   const { user } = useAuth();
+  const { incrementViewCount } = useContext(PostViewContext);
   const [isPending, startTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showPrompt, setShowPrompt] = useState<'login' | 'subscribe' | null>(null);
+  const [showPrompt, setShowPrompt] = useState<'login' | 'subscribe' | 'limit-reached' | null>(null);
 
   const deadline = post.deadline ? new Date(post.deadline) : null;
   const deadlineInPast = deadline ? deadline < new Date() : true;
@@ -108,15 +109,32 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
       setShowPrompt('subscribe');
       return;
     }
-    
-    // If the user has a single-post plan, deactivate it after use.
-    if (subscription.plan === 'single-post') {
-      startTransition(async () => {
-        await deactivateSinglePostPassAction(user.id);
-      });
-    }
 
-    setIsExpanded(true);
+    // Handle single-post plan logic
+    if (subscription.plan === 'single-post') {
+      // The local postsViewed might not be persisted yet, so we check the DB value.
+      // A small inconsistency is acceptable here for performance.
+      const alreadyViewed = (user.subscription?.postsViewed || 0) > 0;
+
+      if (alreadyViewed) {
+        setShowPrompt('limit-reached');
+        return;
+      }
+      
+      startTransition(async () => {
+        const result = await deactivateSinglePostPassAction(user.id);
+        if (result.success) {
+          incrementViewCount();
+          setIsExpanded(true);
+        } else {
+          // Handle error if deactivation fails
+        }
+      });
+    } else {
+      // For other active plans, just expand and count the view.
+      incrementViewCount();
+      setIsExpanded(true);
+    }
   };
 
   const closePrompt = () => {
@@ -147,8 +165,8 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
             <div className="flex items-center gap-2 flex-wrap mt-1">
               <p className="text-sm text-muted-foreground truncate">Contributing: {formatCurrency(post.contributionAmount)} </p>
               {post.gender && (
-                <Badge variant="outline" className="capitalize">
-                  <UserIcon className="w-3 h-3 mr-1" />
+                 <Badge variant="outline" className="capitalize flex items-center gap-1">
+                  <UserIcon className="w-3 h-3" />
                   {post.gender}
                 </Badge>
               )}
@@ -250,6 +268,19 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
                 </DialogHeader>
                 <DialogDescription className="mb-4">
                   You need an active subscription to view contact details. For just ₹1, you can view the details of a single post.
+                </DialogDescription>
+                <Button asChild>
+                  <Link href="/pricing">View Plans</Link>
+                </Button>
+              </div>
+            )}
+             {showPrompt === 'limit-reached' && (
+              <div className="text-center p-4">
+                <DialogHeader>
+                  <DialogTitle className="mb-4">Single Post View Used</DialogTitle>
+                </DialogHeader>
+                <DialogDescription className="mb-4">
+                  You have already used your single post view for this subscription. Please subscribe again to see more posts.
                 </DialogDescription>
                 <Button asChild>
                   <Link href="/pricing">View Plans</Link>

@@ -1,16 +1,26 @@
 
+
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import type { User } from '@/lib/types';
+import { updatePostViewCountAction } from '@/lib/actions';
 
 interface AuthContextType {
   user: User | null;
 }
 
 const AuthContext = createContext<AuthContextType>({ user: null });
+
+interface PostViewContextType {
+  incrementViewCount: () => void;
+}
+
+export const PostViewContext = createContext<PostViewContextType>({
+  incrementViewCount: () => {},
+});
 
 async function fetchWithRetry(url: string, retries = 3, delay = 300): Promise<Response> {
   for (let i = 0; i < retries; i++) {
@@ -34,6 +44,43 @@ async function fetchWithRetry(url: string, retries = 3, delay = 300): Promise<Re
   }
   return fetch(url); // Final attempt
 }
+
+function PostViewProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const viewCountRef = useRef(0);
+
+  const incrementViewCount = () => {
+    viewCountRef.current += 1;
+  };
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && viewCountRef.current > 0) {
+        if (user?.id) {
+          updatePostViewCountAction(user.id, viewCountRef.current);
+          viewCountRef.current = 0; // Reset after sending
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      // Fallback: try to update when the component unmounts
+      if (viewCountRef.current > 0 && user?.id) {
+        updatePostViewCountAction(user.id, viewCountRef.current);
+      }
+    };
+  }, [user]);
+
+  return (
+    <PostViewContext.Provider value={{ incrementViewCount }}>
+      {children}
+    </PostViewContext.Provider>
+  );
+}
+
 
 export function AuthProvider({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
   const [user, setUser] = useState<User | null>(initialUser);
@@ -84,7 +131,7 @@ export function AuthProvider({ children, initialUser }: { children: React.ReactN
 
   return (
     <AuthContext.Provider value={{ user }}>
-      {children}
+      <PostViewProvider>{children}</PostViewProvider>
     </AuthContext.Provider>
   );
 }

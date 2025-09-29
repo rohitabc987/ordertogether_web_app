@@ -230,6 +230,7 @@ export async function subscribeAction(plan: 'single-post' | 'daily' | 'weekly' |
       'subscription.status': 'active',
       'subscription.plan': plan,
       'subscription.startDate': new Date().toISOString(),
+      'subscription.postsViewed': 0, // Reset view count on new subscription
     };
 
     if (plan === 'single-post') {
@@ -255,12 +256,32 @@ export async function subscribeAction(plan: 'single-post' | 'daily' | 'weekly' |
   }
 }
 
+
 export async function deactivateSinglePostPassAction(userId: string) {
-  await updateUser(userId, {
-    'subscription.status': 'inactive',
-  });
-  revalidatePath('/');
-  revalidatePath('/profile');
+  try {
+    await updateUser(userId, {
+      'subscription.status': 'inactive',
+    });
+    revalidatePath('/');
+    revalidatePath('/profile');
+    return { success: true };
+  } catch (error) {
+    console.error('deactivateSinglePostPassAction failed:', error);
+    return { success: false };
+  }
+}
+
+export async function updatePostViewCountAction(userId: string, count: number) {
+  if (!userId || count <= 0) {
+    return;
+  }
+  try {
+    await db.collection('users').doc(userId).update({
+      'subscription.postsViewed': FieldValue.increment(count),
+    });
+  } catch (error) {
+    console.error('Failed to update post view count:', error);
+  }
 }
 
 
