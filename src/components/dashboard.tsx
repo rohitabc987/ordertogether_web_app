@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useRef } from 'react';
@@ -16,6 +17,7 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
   const [posts] = useState<Post[]>(initialPosts);
   
   // Filter states
+  const [statusFilter, setStatusFilter] = useState<'recent' | 'active' | 'expired'>('recent');
   const [timeFilter, setTimeFilter] = useState('all');
   const [amountFilter, setAmountFilter] = useState([0, 10000]);
   const [genderFilter, setGenderFilter] = useState('all');
@@ -26,9 +28,23 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
 
   const filteredPosts = useMemo(() => {
     return posts.filter(post => {
-      // Time Filter
-      const deadline = new Date(post.deadline);
       const now = new Date();
+      const deadline = new Date(post.deadline);
+      const isExpired = deadline < now;
+
+      // Status Filter
+      let statusMatch = false;
+      if (statusFilter === 'active') {
+        statusMatch = !isExpired;
+      } else if (statusFilter === 'expired') {
+        const today = now.toDateString();
+        statusMatch = isExpired && deadline.toDateString() === today;
+      } else { // 'recent'
+        const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+        statusMatch = deadline >= threeHoursAgo;
+      }
+
+      // Time Filter
       let timeMatch = true;
       if (timeFilter !== 'all') {
         const hours = parseInt(timeFilter);
@@ -49,9 +65,9 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
       // Institution Filter (now filters on denormalized data)
       const institutionMatch = institutionFilter === '' || post.institutionName?.toLowerCase() === institutionFilter.toLowerCase();
       
-      return timeMatch && amountMatch && genderMatch && restaurantMatch && institutionMatch;
+      return statusMatch && timeMatch && amountMatch && genderMatch && restaurantMatch && institutionMatch;
     });
-  }, [posts, timeFilter, amountFilter, genderFilter, restaurantFilter, institutionFilter]);
+  }, [posts, statusFilter, timeFilter, amountFilter, genderFilter, restaurantFilter, institutionFilter]);
 
   const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
   const paginatedPosts = useMemo(() => {
@@ -61,6 +77,16 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
   }, [filteredPosts, currentPage]);
 
   const locationName = user?.institution?.institutionName || user?.location?.area || user?.location?.city || 'your area';
+
+  const resetFilters = () => {
+    setStatusFilter('recent');
+    setTimeFilter('all');
+    setAmountFilter([0, 10000]);
+    setGenderFilter('all');
+    setRestaurantFilter('');
+    setInstitutionFilter('iit-dharwad');
+    setCurrentPage(1);
+  };
   
   return (
     <div className="space-y-8">
@@ -83,6 +109,8 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <aside className="lg:col-span-1">
               <PostFilters
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
                 timeFilter={timeFilter}
                 setTimeFilter={setTimeFilter}
                 amountFilter={amountFilter}
@@ -93,6 +121,7 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
                 setRestaurantFilter={setRestaurantFilter}
                 institutionFilter={institutionFilter}
                 setInstitutionFilter={setInstitutionFilter}
+                onReset={resetFilters}
               />
           </aside>
 
@@ -132,11 +161,14 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
                   <img src="/images/empty-state.svg" alt="No Orders" className="w-48 h-48"/>
                 </div>
                 <h2 className="text-2xl font-headline text-primary">
-                  {user ? `No active orders in ${locationName} yet.` : 'No orders found'}
+                  No Matching Orders Found
                 </h2>
-                <p className="text-muted-foreground mt-2">
-                  Adjust your filters or be the first to start a group order!
+                <p className="text-muted-foreground mt-2 mb-4">
+                  Try adjusting or clearing your filters to see more results.
                 </p>
+                 <Button variant="outline" onClick={resetFilters}>
+                  Clear All Filters
+                </Button>
               </div>
             )}
           </div>

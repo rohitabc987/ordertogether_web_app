@@ -1,10 +1,11 @@
 
+
 'use client';
 
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { formatCurrency } from '@/lib/utils';
-import { Filter } from 'lucide-react';
+import { Filter, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Input } from './ui/input';
@@ -16,6 +17,8 @@ import { useRef } from 'react';
 import { useInView } from '@/hooks/use-in-view';
 
 interface PostFiltersProps {
+  statusFilter: 'recent' | 'active' | 'expired';
+  setStatusFilter: (value: 'recent' | 'active' | 'expired') => void;
   timeFilter: string;
   setTimeFilter: (value: string) => void;
   amountFilter: number[];
@@ -26,6 +29,7 @@ interface PostFiltersProps {
   setRestaurantFilter: (value: string) => void;
   institutionFilter: string;
   setInstitutionFilter: (value: string) => void;
+  onReset: () => void;
 }
 
 const timeOptions = [
@@ -36,7 +40,15 @@ const timeOptions = [
     { value: '24', label: 'Next 24 hours' },
 ];
 
+const statusOptions: { value: 'recent' | 'active' | 'expired'; label: string }[] = [
+  { value: 'recent', label: 'Recent' },
+  { value: 'active', label: 'Active' },
+  { value: 'expired', label: 'Expired (Today)' },
+];
+
 export function PostFilters({
+  statusFilter,
+  setStatusFilter,
   timeFilter,
   setTimeFilter,
   amountFilter,
@@ -47,6 +59,7 @@ export function PostFilters({
   setRestaurantFilter,
   institutionFilter,
   setInstitutionFilter,
+  onReset
 }: PostFiltersProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: false, threshold: 0.2 });
@@ -63,13 +76,34 @@ export function PostFilters({
         animateClass
     )}>
       <Card>
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Filter className="w-5 h-5" />
             <span>Filters</span>
           </CardTitle>
+          <Button variant="ghost" size="sm" onClick={onReset} className="flex items-center gap-2">
+            <RefreshCw className="w-4 h-4" />
+            Clear
+          </Button>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* for status */}
+          <div className="space-y-2">
+            <Label>Post Status</Label>
+            <div className="flex flex-wrap gap-2">
+              {statusOptions.map(option => (
+                <Button
+                  key={option.value}
+                  size="sm"
+                  variant={statusFilter === option.value ? 'default' : 'outline'}
+                  onClick={() => setStatusFilter(option.value)}
+                  className="flex-grow"
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </div>
+          </div>
           {/* for deadline  */}
           <div className="space-y-2">
               <Label>Deadline</Label>
