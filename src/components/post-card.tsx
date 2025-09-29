@@ -2,13 +2,13 @@
 
 'use client';
 
-import { useState, useRef, useTransition, useContext } from 'react';
+import { useState, useRef, useTransition, useContext, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail, Utensils } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { useAuth, PostViewContext } from '@/providers';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, differenceInHours } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 import { Badge } from './ui/badge';
@@ -23,6 +23,8 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { deactivateSinglePostPassAction } from '@/lib/actions';
+import { generatePostTitle, GeneratePostTitleInput } from '@/ai/flows/generate-post-title-flow';
+import { Skeleton } from './ui/skeleton';
 
 
 const RestaurantIcon = ({ name }: { name: string }) => {
@@ -44,6 +46,48 @@ const RestaurantIcon = ({ name }: { name: string }) => {
   }
   return <Utensils className="w-4 h-4" />;
 };
+
+
+function CatchyPostTitle({ post }: { post: Post }) {
+  const [title, setTitle] = useState(post.title);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const generate = async () => {
+      try {
+        const remainingAmount = post.totalAmount - post.contributionAmount;
+        const deadlineHours = differenceInHours(new Date(post.deadline), new Date());
+
+        const input: GeneratePostTitleInput = {
+          userInputTitle: post.title,
+          restaurantName: post.restaurant,
+          remainingAmount: remainingAmount > 0 ? remainingAmount : 0,
+          deadlineHours: deadlineHours > 0 ? deadlineHours : 0,
+          discountInfo: post.notes || '',
+        };
+
+        const result = await generatePostTitle(input);
+        if (result.catchyTitle) {
+          setTitle(result.catchyTitle);
+        }
+      } catch (error) {
+        console.error("Failed to generate catchy title:", error);
+        // Fallback to original title
+        setTitle(post.title);
+      } finally {
+        setLoading(false);
+      }
+    };
+    generate();
+  }, [post]);
+
+  if (loading) {
+    return <Skeleton className="h-6 w-3/4" />;
+  }
+
+  return <p className="font-semibold text-base text-primary">{title}</p>;
+}
+
 
 export function PostCard({ post, index }: { post: Post; index: number }) {
   const { user } = useAuth();
@@ -150,7 +194,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 flex-wrap">
-              <p className="font-semibold text-base text-primary">Save {formatCurrency(remainingNeeded)} with a group order!</p>
+              <CatchyPostTitle post={post} />
               <p className="text-sm text-muted-foreground">(Min Order: {formatCurrency(post.totalAmount)})</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap mt-1">
