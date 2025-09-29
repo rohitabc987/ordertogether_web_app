@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useRef, useTransition, useContext, useEffect } from 'react';
@@ -8,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail, Utensils } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { useAuth, PostViewContext } from '@/providers';
-import { formatDistanceToNow, differenceInHours } from 'date-fns';
-import { formatCurrency } from '@/lib/utils';
+import { formatDistanceToNow } from 'date-fns';
+import { formatCurrency, generateCatchyTitle } from '@/lib/utils';
 import Link from 'next/link';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
@@ -23,8 +21,6 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { deactivateSinglePostPassAction } from '@/lib/actions';
-import { generatePostTitle, GeneratePostTitleInput } from '@/ai/flows/generate-post-title-flow';
-import { Skeleton } from './ui/skeleton';
 
 
 const RestaurantIcon = ({ name }: { name: string }) => {
@@ -46,48 +42,6 @@ const RestaurantIcon = ({ name }: { name: string }) => {
   }
   return <Utensils className="w-4 h-4" />;
 };
-
-
-function CatchyPostTitle({ post }: { post: Post }) {
-  const [title, setTitle] = useState(post.title);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const generate = async () => {
-      try {
-        const remainingAmount = post.totalAmount - post.contributionAmount;
-        const deadlineHours = differenceInHours(new Date(post.deadline), new Date());
-
-        const input: GeneratePostTitleInput = {
-          userInputTitle: post.title,
-          restaurantName: post.restaurant,
-          remainingAmount: remainingAmount > 0 ? remainingAmount : 0,
-          deadlineHours: deadlineHours > 0 ? deadlineHours : 0,
-          discountInfo: post.notes || '',
-        };
-
-        const result = await generatePostTitle(input);
-        if (result.catchyTitle) {
-          setTitle(result.catchyTitle);
-        }
-      } catch (error) {
-        console.error("Failed to generate catchy title:", error);
-        // Fallback to original title
-        setTitle(post.title);
-      } finally {
-        setLoading(false);
-      }
-    };
-    generate();
-  }, [post]);
-
-  if (loading) {
-    return <Skeleton className="h-6 w-3/4" />;
-  }
-
-  return <p className="font-semibold text-base text-primary">{title}</p>;
-}
-
 
 export function PostCard({ post, index }: { post: Post; index: number }) {
   const { user } = useAuth();
@@ -120,7 +74,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
   const remainingNeeded = post.totalAmount - post.contributionAmount;
   const progressPercentage = (post.contributionAmount / post.totalAmount) * 100;
 
-  const allNotes = [post.title, post.notes].filter(Boolean).join(' - ');
+  const catchyTitle = generateCatchyTitle(post);
 
   // Use the live, joined author name for the contact details to ensure it's up-to-date.
   const liveAuthorName = post.author.userProfile.name;
@@ -194,7 +148,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 flex-wrap">
-              <CatchyPostTitle post={post} />
+              <p className="font-semibold text-base text-primary">{catchyTitle}</p>
               <p className="text-sm text-muted-foreground">(Min Order: {formatCurrency(post.totalAmount)})</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap mt-1">
@@ -227,7 +181,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
               <span>{formatCurrency(post.totalAmount)}</span>
           </div>
           <Progress value={progressPercentage} className="h-2" />
-          {allNotes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{allNotes}</span></p>}
+          {post.notes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{post.notes}</span></p>}
       </div>
 
       <div className="flex justify-start">
