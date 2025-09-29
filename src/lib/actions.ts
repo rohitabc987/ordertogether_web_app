@@ -9,8 +9,9 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
 import { createPost, findUserByEmail, updateUser, createUserInDb, getUserById, deletePost, updatePost, getPostById } from '@/lib/data';
-import { auth as adminAuth } from 'firebase-admin';
+import { auth as adminAuth, firestore } from 'firebase-admin';
 import { db } from './firebase-admin';
+const { FieldValue } = firestore;
 
 export async function verifyAndSignInAction(idToken: string) {
   console.log('actions: verifyAndSignInAction started.');
@@ -227,11 +228,11 @@ export async function subscribeAction(plan: 'single-post' | 'daily' | 'weekly' |
   const updates: Record<string, any> = {
     'subscription.status': 'active',
     'subscription.plan': plan,
+    'subscription.postsViewed': 0, // Reset view count on any new subscription
   };
 
   if (plan === 'single-post') {
     updates['subscription.expiry'] = null;
-    updates['subscription.viewedPostId'] = null; // Reset single view on new purchase
   } else {
     let expiryDate = new Date();
     let expiryDays = 0;
@@ -240,7 +241,6 @@ export async function subscribeAction(plan: 'single-post' | 'daily' | 'weekly' |
     if (plan === 'monthly') expiryDays = 30;
     expiryDate.setDate(expiryDate.getDate() + expiryDays);
     updates['subscription.expiry'] = expiryDate.toISOString();
-    updates['subscription.viewedPostId'] = null; // Clear single view when upgrading
   }
 
   await updateUser(userId, updates);
@@ -250,10 +250,11 @@ export async function subscribeAction(plan: 'single-post' | 'daily' | 'weekly' |
   revalidatePath('/profile');
 }
 
-export async function useSinglePostViewAction(userId: string, postId: string) {
+export async function incrementPostViewCountAction(userId: string) {
   await updateUser(userId, {
-    'subscription.viewedPostId': postId,
+    'subscription.postsViewed': FieldValue.increment(1),
   });
+  // Revalidate the homepage where post cards are displayed to reflect new state
   revalidatePath('/');
 }
 
@@ -286,3 +287,5 @@ export async function submitFeedbackAction(prevState: any, formData: FormData) {
     return { success: false, message: 'Something went wrong. Please try again.' };
   }
 }
+
+    

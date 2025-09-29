@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { useSinglePostViewAction } from '@/lib/actions';
+import { incrementPostViewCountAction } from '@/lib/actions';
 
 
 const RestaurantIcon = ({ name }: { name: string }) => {
@@ -100,18 +100,14 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     const subscription = user.subscription;
 
     if (subscription?.plan === 'single-post') {
-      const viewedPostId = subscription.viewedPostId;
-      // Allow viewing if they haven't viewed any post yet, or if they are re-viewing the same post.
-      if (viewedPostId && viewedPostId !== post.id) {
+      const postsViewed = subscription.postsViewed || 0;
+      if (postsViewed >= 1) {
         setShowPrompt('single_used');
         return;
       }
-      // If they are viewing for the first time, mark it as viewed.
-      if (!viewedPostId) {
-        startTransition(async () => {
-          await useSinglePostViewAction(user.id, post.id);
-        });
-      }
+      startTransition(async () => {
+        await incrementPostViewCountAction(user.id);
+      });
     } else {
       const isSubscribed = subscription?.status === 'active';
       if (!isSubscribed) {
@@ -281,3 +277,5 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     </div>
   );
 }
+
+    

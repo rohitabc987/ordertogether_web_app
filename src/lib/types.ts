@@ -27,7 +27,7 @@ export interface User {
     plan: 'single-post' | 'daily' | 'weekly' | 'monthly' | 'Premium' | null;
     startDate?: string;
     expiry?: string;
-    viewedPostId?: string | null; // For single-post plan
+    postsViewed?: number; // Count of posts viewed in current subscription
   };
 }
 
@@ -51,3 +51,5 @@ export interface Post {
   // Author details are joined from the users collection for contact info
   author: User;
 }
+
+    
