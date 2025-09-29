@@ -62,8 +62,8 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     return null;
   }
 
-  const authorName = post.authorName || 'Anonymous';
-  const authorInitials = authorName
+  // Use denormalized name for the main card for performance.
+  const authorInitials = (post.authorName || 'A')
     .split(' ')
     .map((n) => n[0])
     .join('')
@@ -73,6 +73,15 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
   const progressPercentage = (post.contributionAmount / post.totalAmount) * 100;
 
   const allNotes = [post.title, post.notes].filter(Boolean).join(' - ');
+
+  // Use the live, joined author name for the contact details to ensure it's up-to-date.
+  const liveAuthorName = post.author.userProfile.name;
+  const liveAuthorInitials = (liveAuthorName || 'A')
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase();
+
 
   const handleToggle = () => {
     if (isExpanded) {
@@ -169,15 +178,15 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
       {isExpanded && (
         <div className="border-t pt-4">
             <div>
-              <h4 className="font-semibold mb-3">Contact {authorName} to Coordinate</h4>
+              <h4 className="font-semibold mb-3">Contact {liveAuthorName} to Coordinate</h4>
               <div className="p-3 rounded-lg bg-muted/50 border">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16">
                     <AvatarImage src={post.author.userProfile.photoURL ?? undefined} />
-                    <AvatarFallback className="text-2xl">{authorInitials}</AvatarFallback>
+                    <AvatarFallback className="text-2xl">{liveAuthorInitials}</AvatarFallback>
                   </Avatar>
                   <div className="flex-grow space-y-1 text-sm">
-                    <p className="font-bold text-base">{authorName}</p>
+                    <p className="font-bold text-base">{liveAuthorName}</p>
                     {post.author.contact.email && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Mail className="w-4 h-4" />
@@ -239,3 +248,5 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     </div>
   );
 }
+
+    
