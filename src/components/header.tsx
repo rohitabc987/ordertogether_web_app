@@ -12,7 +12,7 @@ import {
   LogOut,
   User,
   PlusCircle,
-  DollarSign,
+  IndianRupee,
   LogIn,
   Info,
   ListOrdered,
@@ -50,7 +50,7 @@ export function Header() {
     { href: '/', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/about', label: 'About', icon: Info },
     { href: '/create-post', label: 'Create Post', icon: PlusCircle },
-    { href: '/pricing', label: 'Pricing', icon: DollarSign },
+    { href: '/pricing', label: 'Pricing', icon: IndianRupee },
   ];
 
   return (
