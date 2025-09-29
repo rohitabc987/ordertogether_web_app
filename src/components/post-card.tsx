@@ -145,11 +145,11 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
               <p className="text-sm text-muted-foreground">(Min Order: {formatCurrency(post.totalAmount)})</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap mt-1">
-              <p className="text-sm text-muted-foreground truncate">Contributing: {formatCurrency(post.contributionAmount)} by {post.authorName}</p>
-              {post.authorGender && (
+              <p className="text-sm text-muted-foreground truncate">Contributing: {formatCurrency(post.contributionAmount)} </p>
+              {post.gender && (
                 <Badge variant="outline" className="capitalize">
                   <UserIcon className="w-3 h-3 mr-1" />
-                  {post.authorGender}
+                  {post.gender}
                 </Badge>
               )}
             </div>

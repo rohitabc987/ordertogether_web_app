@@ -136,7 +136,7 @@ export async function createPostAction(prevState: any, formData: FormData) {
     area: user.location?.area || null,
     city: user.location?.city || null,
     authorName: user.userProfile.name,
-    authorGender: user.userProfile.gender,
+    gender: user.userProfile.gender,
   };
 
   await createPost(postDataWithDenormalization);
