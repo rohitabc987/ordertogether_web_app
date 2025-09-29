@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useTransition } from 'react';
@@ -10,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 interface PricingCardProps {
   plan: {
-    id: 'daily' | 'weekly' | 'monthly';
+    id: 'single-post' | 'daily' | 'weekly' | 'monthly';
     name: string;
     price: string;
     description: string;

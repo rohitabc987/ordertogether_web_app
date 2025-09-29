@@ -222,14 +222,19 @@ export async function updateProfileAction(prevState: any, formData: FormData) {
   return { message: 'Profile updated successfully!' };
 }
 
-export async function subscribeAction(plan: 'daily' | 'weekly' | 'monthly', userId: string) {
-  let expiryDays = 0;
-  if (plan === 'daily') expiryDays = 1;
-  if (plan === 'weekly') expiryDays = 7;
-  if (plan === 'monthly') expiryDays = 30;
+export async function subscribeAction(plan: 'single-post' | 'daily' | 'weekly' | 'monthly', userId: string) {
+  let expiryDate = new Date();
 
-  const expiryDate = new Date();
-  expiryDate.setDate(expiryDate.getDate() + expiryDays);
+  if (plan === 'single-post') {
+    // Give a 5 minute window to view the contact
+    expiryDate.setMinutes(expiryDate.getMinutes() + 5);
+  } else {
+    let expiryDays = 0;
+    if (plan === 'daily') expiryDays = 1;
+    if (plan === 'weekly') expiryDays = 7;
+    if (plan === 'monthly') expiryDays = 30;
+    expiryDate.setDate(expiryDate.getDate() + expiryDays);
+  }
 
   await updateUser(userId, {
     'subscription.status': 'active',

@@ -1,8 +1,16 @@
+
 import { PricingCard } from '@/components/pricing-card';
 import { getCurrentUser } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
 const plans = [
+  {
+    id: 'single-post' as const,
+    name: 'Single Post Pass',
+    price: '₹1',
+    description: 'Quick access to view one contact.',
+    features: ['View contacts for 5 minutes', 'Perfect for a one-time need'],
+  },
   {
     id: 'daily' as const,
     name: 'Daily Pass',
@@ -41,7 +49,7 @@ export default async function PricingPage() {
         <h1 className="text-4xl font-bold font-headline">Choose Your Plan</h1>
         <p className="text-lg text-muted-foreground mt-2">Unlock contact details and connect with others.</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
         {plans.map(plan => (
           <PricingCard key={plan.id} plan={plan} isCurrentPlan={currentPlanId === plan.id} />
         ))}

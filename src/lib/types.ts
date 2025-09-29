@@ -23,7 +23,7 @@ export interface User {
   };
   subscription?: {
     status: 'active' | 'inactive';
-    plan: 'daily' | 'weekly' | 'monthly' | 'Premium';
+    plan: 'single-post' | 'daily' | 'weekly' | 'monthly' | 'Premium';
     startDate?: string;
     expiry?: string;
   };
