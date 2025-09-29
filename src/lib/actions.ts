@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { FieldValue } from 'firebase-admin/firestore';
 
 import { createPost, findUserByEmail, updateUser, createUserInDb, getUserById, deletePost, updatePost, getPostById } from '@/lib/data';
 import { auth as adminAuth, firestore } from 'firebase-admin';

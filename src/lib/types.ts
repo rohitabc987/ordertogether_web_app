@@ -5,28 +5,28 @@ export interface User {
   updatedAt?: string; // For cache invalidation
   userProfile: {
     name: string;
-    photoURL?: string;
+    photoURL?: string | null;
     gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
   };
   contact: {
     email: string;
-    phone?: string;
-    whatsapp?: string;
+    phone?: string | null;
+    whatsapp?: string | null;
   };
   institution: {
-    institutionType?: 'College/University' | 'Hostel/PG/Apartment';
-    institutionName?: string;
+    institutionType?: 'College/University' | 'Hostel/PG/Apartment' | null;
+    institutionName?: string | null;
   };
   location: {
-    area?: string;
-    city?: string;
-    pinCode?: string;
+    area?: string | null;
+    city?: string | null;
+    pinCode?: string | null;
   };
   subscription?: {
     status: 'active' | 'inactive';
     plan: 'single-post' | 'daily' | 'weekly' | 'monthly' | 'Premium' | null;
-    startDate?: string;
-    expiry?: string;
+    startDate?: string | null;
+    expiry?: string | null;
   };
 }
 
@@ -50,5 +50,3 @@ export interface Post {
   // Author details are joined from the users collection for contact info
   author: User;
 }
-
-    
