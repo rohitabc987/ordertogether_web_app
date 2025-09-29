@@ -9,7 +9,7 @@ const plans = [
     name: 'Single Post Pass',
     price: '₹1',
     description: 'Quick access to view one contact.',
-    features: ['View contacts for 5 minutes', 'Perfect for a one-time need'],
+    features: ['View details for a single post', 'No time limit to use', 'Perfect for a one-time need'],
   },
   {
     id: 'daily' as const,
