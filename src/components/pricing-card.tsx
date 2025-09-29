@@ -2,12 +2,14 @@
 'use client';
 
 import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Check } from 'lucide-react';
 import { subscribeAction } from '@/lib/actions';
 import { useAuth } from '@/providers';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface PricingCardProps {
   plan: {
@@ -23,11 +25,28 @@ interface PricingCardProps {
 export function PricingCard({ plan, isCurrentPlan }: PricingCardProps) {
   const { user } = useAuth();
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const { toast } = useToast();
 
   const handleSubscribe = () => {
     if (!user) return;
-    startTransition(() => {
-      subscribeAction(plan.id, user.id);
+    startTransition(async () => {
+      const result = await subscribeAction(plan.id, user.id);
+      if (result.success) {
+        toast({
+          title: 'Subscription Successful!',
+          description: `Your ${plan.name} is now active.`,
+        });
+        // Redirect to force a refresh of user data on the client
+        router.push('/profile');
+        router.refresh(); // Also explicitly ask Next.js to refresh server data
+      } else {
+        toast({
+          title: 'Subscription Failed',
+          description: result.message || 'An unexpected error occurred.',
+          variant: 'destructive',
+        });
+      }
     });
   };
 

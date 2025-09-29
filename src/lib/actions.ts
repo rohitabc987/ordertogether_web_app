@@ -225,35 +225,40 @@ export async function updateProfileAction(prevState: any, formData: FormData) {
 }
 
 export async function subscribeAction(plan: 'single-post' | 'daily' | 'weekly' | 'monthly', userId: string) {
-  const updates: Record<string, any> = {
-    'subscription.status': 'active',
-    'subscription.plan': plan,
-  };
+  try {
+    const updates: Record<string, any> = {
+      'subscription.status': 'active',
+      'subscription.plan': plan,
+      'subscription.startDate': new Date().toISOString(),
+    };
 
-  if (plan === 'single-post') {
-    updates['subscription.expiry'] = null;
-  } else {
-    let expiryDate = new Date();
-    let expiryDays = 0;
-    if (plan === 'daily') expiryDays = 1;
-    if (plan === 'weekly') expiryDays = 7;
-    if (plan === 'monthly') expiryDays = 30;
-    expiryDate.setDate(expiryDate.getDate() + expiryDays);
-    updates['subscription.expiry'] = expiryDate.toISOString();
+    if (plan === 'single-post') {
+      updates['subscription.expiry'] = null;
+    } else {
+      let expiryDate = new Date();
+      if (plan === 'daily') expiryDate.setDate(expiryDate.getDate() + 1);
+      if (plan === 'weekly') expiryDate.setDate(expiryDate.getDate() + 7);
+      if (plan === 'monthly') expiryDate.setDate(expiryDate.getDate() + 30);
+      updates['subscription.expiry'] = expiryDate.toISOString();
+    }
+
+    await updateUser(userId, updates);
+
+    revalidatePath('/pricing');
+    revalidatePath('/');
+    revalidatePath('/profile');
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Subscription action failed:', error);
+    return { success: false, message: 'Could not update subscription.' };
   }
-
-  await updateUser(userId, updates);
-
-  revalidatePath('/pricing');
-  revalidatePath('/');
-  revalidatePath('/profile');
 }
 
 export async function deactivateSinglePostPassAction(userId: string) {
   await updateUser(userId, {
     'subscription.status': 'inactive',
   });
-  // Revalidate pages where subscription status is important
   revalidatePath('/');
   revalidatePath('/profile');
 }
