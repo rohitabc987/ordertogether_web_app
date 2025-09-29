@@ -57,7 +57,7 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
       const amountMatch = remainingNeeded >= amountFilter[0] && remainingNeeded <= amountFilter[1];
 
       // Gender Filter
-      const genderMatch = genderFilter === 'all' || post.author.userProfile.gender === genderFilter;
+      const genderMatch = genderFilter === 'all' || post.authorGender === genderFilter;
 
       // Restaurant Filter
       const restaurantMatch = restaurantFilter === '' || post.restaurant.toLowerCase().includes(restaurantFilter.toLowerCase());

@@ -40,10 +40,13 @@ export interface Post {
   notes?: string;
   createdAt: Date;
   updatedAt?: Date; // To track if the post has been edited
-  // Denormalized fields for querying
+  // Denormalized fields for querying and display
   institutionName?: string;
   area?: string;
   city?: string;
-  // Author details are joined from the users collection
+  authorName: string;
+  authorGender: 'male' | 'female' | 'other';
+  authorPhotoURL?: string;
+  // Author details are joined from the users collection for contact info
   author: User;
 }

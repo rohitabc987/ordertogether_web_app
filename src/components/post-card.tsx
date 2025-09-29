@@ -62,7 +62,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     return null;
   }
 
-  const authorName = post.author.userProfile.name || 'Anonymous';
+  const authorName = post.authorName || 'Anonymous';
   const authorInitials = authorName
     .split(' ')
     .map((n) => n[0])
@@ -110,7 +110,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
         "bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm p-4 space-y-4",
         "transition-all duration-500 ease-out transform-gpu origin-center",
         animateClass,
-        deadlineInPast && 'opacity-50 bg-muted/30'
+        deadlineInPast && 'opacity-60 bg-muted/40'
       )}
     >
       <div className="flex items-start justify-between gap-4">
@@ -126,7 +126,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
             <div className="flex items-center gap-2 flex-wrap mt-1">
                 <Badge variant="outline" className="capitalize">
                   <UserIcon className="w-3 h-3 mr-1" />
-                  {post.author.userProfile.gender}
+                  {post.authorGender}
               </Badge>
               <p className="text-sm text-muted-foreground truncate">Contributing: {formatCurrency(post.contributionAmount)}</p>
             </div>
