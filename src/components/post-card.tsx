@@ -110,7 +110,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
         "bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm p-4 space-y-4",
         "transition-all duration-500 ease-out transform-gpu origin-center",
         animateClass,
-        deadlineInPast && 'opacity-60 bg-muted/40'
+        deadlineInPast && 'opacity-60 bg-muted/30'
       )}
     >
       <div className="flex items-start justify-between gap-4">

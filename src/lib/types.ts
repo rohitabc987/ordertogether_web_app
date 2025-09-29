@@ -46,7 +46,6 @@ export interface Post {
   city?: string;
   authorName: string;
   authorGender: 'male' | 'female' | 'other';
-  authorPhotoURL?: string;
   // Author details are joined from the users collection for contact info
   author: User;
 }
