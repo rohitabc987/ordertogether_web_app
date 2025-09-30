@@ -1,3 +1,4 @@
+
 'use client';
 import { useActionState, useEffect, useState } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -32,6 +33,8 @@ export function CreatePostForm({ user }: { user: User }) {
     notes: ''
   });
 
+  const [generatedTitle, setGeneratedTitle] = useState('Group order');
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -46,6 +49,19 @@ export function CreatePostForm({ user }: { user: User }) {
       });
     }
   }, [state, toast]);
+
+  useEffect(() => {
+    const { title, restaurant } = formData;
+    if (title && restaurant) {
+      setGeneratedTitle(`${title} at ${restaurant}`);
+    } else if (title) {
+      setGeneratedTitle(title);
+    } else if (restaurant) {
+      setGeneratedTitle(`Group order at ${restaurant}`);
+    } else {
+      setGeneratedTitle('Group order');
+    }
+  }, [formData.title, formData.restaurant]);
 
     return (
         <Card className="w-full max-w-2xl mx-auto border-2 border-teal-100 shadow-lg"> 
@@ -111,8 +127,7 @@ export function CreatePostForm({ user }: { user: User }) {
                 </div>
                 <div className="space-y-2">
                   <Label>Your Contribution (₹)</Label>
-                  <Input 
-                    id="contributionAmount" 
+                  <Input _id="contributionAmount" 
                     name="contributionAmount"
                     type="number" 
                     placeholder="e.g. 250"
@@ -138,6 +153,13 @@ export function CreatePostForm({ user }: { user: User }) {
                 </p>
               </div>
               
+              <div className="space-y-2 mt-6">
+                  <Label>Title Preview</Label>
+                  <div className="p-4 border rounded-md bg-muted text-muted-foreground">
+                      <p className="font-semibold text-lg">{generatedTitle}</p>
+                  </div>
+              </div>
+
               <SubmitButton />
             </form>
           </CardContent>
