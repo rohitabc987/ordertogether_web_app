@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useTransition, useContext, useEffect } from 'react';
@@ -6,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail, Utensils } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { useAuth, PostViewContext } from '@/providers';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, differenceInHours } from 'date-fns';
 import { formatCurrency, generateCatchyTitle } from '@/lib/utils';
 import Link from 'next/link';
 import { Badge } from './ui/badge';
@@ -52,6 +53,8 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
 
   const deadline = post.deadline ? new Date(post.deadline) : null;
   const deadlineInPast = deadline ? deadline < new Date() : true;
+  const hoursLeft = deadline ? differenceInHours(deadline, new Date()) : null;
+  const isUrgent = hoursLeft !== null && hoursLeft <= 6 && !deadlineInPast;
 
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: false, threshold: 0.2 });
@@ -71,7 +74,6 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     .join('')
     .toUpperCase();
 
-  const remainingNeeded = post.totalAmount - post.contributionAmount;
   const progressPercentage = (post.contributionAmount / post.totalAmount) * 100;
 
   const catchyTitle = generateCatchyTitle(post);
@@ -138,6 +140,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
         "bg-card/70 backdrop-blur-sm border rounded-lg overflow-hidden shadow-sm p-4 space-y-4",
         "transition-all duration-500 ease-out transform-gpu origin-center",
         animateClass,
+        isUrgent && 'border-destructive/50 ring-2 ring-destructive/20',
         deadlineInPast && 'opacity-60 bg-muted/30'
       )}
     >
@@ -169,8 +172,12 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
               <span className="font-medium truncate">{post.restaurant}</span>
           </div>
           <div className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4" />
-              <span>{deadline ? formatDistanceToNow(deadline, { addSuffix: true }) : 'N/A'}</span>
+              {!isUrgent && (
+                <>
+                  <Clock className="w-4 h-4" />
+                  <span>{deadline ? formatDistanceToNow(deadline, { addSuffix: true }) : 'N/A'}</span>
+                </>
+              )}
           </div>
         </div>
       </div>
@@ -181,6 +188,11 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
               <span>{formatCurrency(post.totalAmount)}</span>
           </div>
           <Progress value={progressPercentage} className="h-2" />
+          {isUrgent && (
+            <Badge variant="destructive" className="mt-2 text-base">
+              Closes in {hoursLeft}h ⏳
+            </Badge>
+          )}
           {post.notes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{post.notes}</span></p>}
       </div>
 
@@ -282,3 +294,5 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     </div>
   );
 }
+
+    

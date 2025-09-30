@@ -1,3 +1,4 @@
+
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { differenceInHours } from 'date-fns';
@@ -54,7 +55,7 @@ export function generateCatchyTitle(post: Partial<Post>): string {
   }
 
   const urgencyPhrases: string[] = [];
-  if (deadlineHours !== null && deadlineHours > 0 && deadlineHours <= 24) {
+  if (deadlineHours !== null && deadlineHours > 0 && deadlineHours <= 6) {
     urgencyPhrases.push(`Ends in ${deadlineHours}h ⏳`);
   } else if (deadlineHours !== null && deadlineHours <= 0) {
     urgencyPhrases.push('Closing now!');
@@ -91,3 +92,5 @@ export function generateCatchyTitle(post: Partial<Post>): string {
 
   return title;
 }
+
+    
