@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { User } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Info } from 'lucide-react';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -153,11 +154,17 @@ export function CreatePostForm({ user }: { user: User }) {
                 </p>
               </div>
               
-              <div className="space-y-2 mt-6">
-                  <Label>Title Preview</Label>
-                  <div className="p-4 border rounded-md bg-muted text-muted-foreground">
-                      <p className="font-semibold text-lg">{generatedTitle}</p>
-                  </div>
+              <div className="space-y-4">
+                <Label>Title Preview</Label>
+                <Card className="bg-teal-50 border-teal-200">
+                    <CardContent className="p-4 flex items-start gap-4">
+                        <Info className="w-5 h-5 text-teal-600 mt-1 flex-shrink-0" />
+                        <div>
+                            <p className="font-semibold text-teal-800">{generatedTitle}</p>
+                            <p className="text-sm text-teal-700">This is how your post title will appear on the dashboard.</p>
+                        </div>
+                    </CardContent>
+                </Card>
               </div>
 
               <SubmitButton />
