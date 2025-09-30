@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Combobox } from './ui/combobox';
 import { institutions } from '@/lib/institutions';
 import { hostels } from '@/lib/hostels';
+import { Switch } from './ui/switch';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -30,6 +31,7 @@ export function ProfileForm({ user }: { user: User }) {
   const [institutionType, setInstitutionType] = useState(user.institution?.institutionType || '');
   const [institutionName, setInstitutionName] = useState(user.institution?.institutionName || '');
   const [gender, setGender] = useState(user.userProfile?.gender || '');
+  const [shareContact, setShareContact] = useState(user.contact?.shareContact ?? true);
 
   useEffect(() => {
     if (state?.message) {
@@ -46,30 +48,36 @@ export function ProfileForm({ user }: { user: User }) {
   const institutionPlaceholder = institutionType === 'College/University' ? 'Select institution...' : 'Select hostel/PG...';
   const institutionSearchPlaceholder = institutionType === 'College/University' ? 'Search institution...' : 'Search hostel/PG...';
 
+  const RequiredLabel = ({ htmlFor, children }: { htmlFor: string, children: React.ReactNode }) => (
+    <Label htmlFor={htmlFor}>
+      {children} <span className="text-destructive">*</span>
+    </Label>
+  );
+
   return (
     <form action={formAction}>
       <input type="hidden" name="id" value={user.id} />
       <Card>
         <CardHeader>
             <CardTitle>Personal Information</CardTitle>
-            <CardDescription>Update your personal and location details.</CardDescription>
+            <CardDescription>Update your personal and contact details.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <RequiredLabel htmlFor="name">Full Name</RequiredLabel>
                 <Input id="name" name="name" defaultValue={user.userProfile?.name} required />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" defaultValue={user.contact?.email} readOnly />
+                <Label htmlFor="email">Email (Cannot be changed)</Label>
+                <Input id="email" name="email" defaultValue={user.contact?.email} readOnly className="bg-muted cursor-not-allowed" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                  <Label htmlFor="contactNumber">Contact Number</Label>
+                  <RequiredLabel htmlFor="contactNumber">Contact Number</RequiredLabel>
                   <Input id="contactNumber" name="contactNumber" defaultValue={user.contact?.phone} required/>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
+                <RequiredLabel htmlFor="gender">Gender</RequiredLabel>
                 <Select name="gender" onValueChange={setGender} value={gender} required>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a gender" />
@@ -82,17 +90,33 @@ export function ProfileForm({ user }: { user: User }) {
                 </Select>
               </div>
             </div>
+             <div className="space-y-2 !mt-6">
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                      <Label htmlFor="share-contact">Share Contact Number</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Allow others to see your phone number when you post.
+                      </p>
+                    </div>
+                    <Switch
+                      id="share-contact"
+                      name="shareContact"
+                      checked={shareContact}
+                      onCheckedChange={setShareContact}
+                    />
+                </div>
+            </div>
         </CardContent>
       </Card>
       
       <Card className="mt-6">
         <CardHeader>
             <CardTitle>Location Details</CardTitle>
-            <CardDescription>This helps you see orders from people nearby.</CardDescription>
+            <CardDescription>This information is required to help you find relevant group orders in your area.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="institutionType">Select your institution type</Label>
+                <RequiredLabel htmlFor="institutionType">Select your institution type</RequiredLabel>
                 <Select name="institutionType" onValueChange={setInstitutionType} value={institutionType}>
                     <SelectTrigger>
                         <SelectValue placeholder="Please select your institution type." />
@@ -107,7 +131,7 @@ export function ProfileForm({ user }: { user: User }) {
             {institutionType && (
                 <div className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="institutionName">{institutionLabel}</Label>
+                        <RequiredLabel htmlFor="institutionName">{institutionLabel}</RequiredLabel>
                         <Combobox
                             options={institutionOptions}
                             value={institutionName}

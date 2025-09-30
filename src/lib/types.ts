@@ -1,5 +1,6 @@
 
 
+
 export interface User {
   id: string;
   updatedAt?: string; // For cache invalidation
@@ -12,6 +13,7 @@ export interface User {
     email: string;
     phone?: string | null;
     whatsapp?: string | null;
+    shareContact?: boolean; // New field
   };
   institution: {
     institutionType?: 'College/University' | 'Hostel/PG/Apartment' | null;

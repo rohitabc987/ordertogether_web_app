@@ -1,5 +1,6 @@
 
 
+
 // @ts-nocheck
 'use server';
 
@@ -184,6 +185,7 @@ const profileSchema = z.object({
   id: z.string(),
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   contactNumber: z.string().min(10, 'Contact number must be at least 10 digits.'),
+  shareContact: z.enum(['on', 'off']).transform(val => val === 'on'),
   gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']),
   institutionType: z.enum(['College/University', 'Hostel/PG/Apartment']).optional(),
   institutionName: z.string().optional(),
@@ -209,6 +211,7 @@ export async function updateProfileAction(prevState: any, formData: FormData) {
     'userProfile.gender': data.gender || null,
     'contact.phone': data.contactNumber || null,
     'contact.whatsapp': data.contactNumber || null, // Assuming phone and whatsapp are the same
+    'contact.shareContact': data.shareContact,
     'institution.institutionType': institutionType || null,
     'institution.institutionName': institutionName || null,
     'location.area': area || null,

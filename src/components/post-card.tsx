@@ -5,7 +5,7 @@
 import { useState, useRef, useTransition, useContext, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail, Utensils } from 'lucide-react';
+import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail, Utensils, ShieldOff } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { useAuth, PostViewContext } from '@/providers';
 import { formatDistanceToNow, differenceInHours } from 'date-fns';
@@ -230,14 +230,19 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
                         <a href={`mailto:${post.author.contact.email}`} className="hover:underline">{post.author.contact.email}</a>
                       </div>
                     )}
-                    {post.author.contact.phone && (
+                    {post.author.contact.shareContact && post.author.contact.phone ? (
                         <div className="flex items-center gap-2 text-muted-foreground">
-                        <Phone className="w-4 h-4" />
-                        <a href={`tel:${post.author.contact.phone}`} className="hover:underline">{post.author.contact.phone}</a>
-                      </div>
+                          <Phone className="w-4 h-4" />
+                          <a href={`tel:${post.author.contact.phone}`} className="hover:underline">{post.author.contact.phone}</a>
+                        </div>
+                    ) : (
+                       <div className="flex items-center gap-2 text-muted-foreground">
+                          <ShieldOff className="w-4 h-4 text-destructive" />
+                          <span>Contact number is private</span>
+                        </div>
                     )}
                   </div>
-                    {post.author.contact.phone && (
+                    {post.author.contact.shareContact && post.author.contact.phone && (
                     <Button asChild variant="ghost" size="icon" className="h-12 w-12 flex-shrink-0">
                       <a href={`https://wa.me/${post.author.contact.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" title="Chat on WhatsApp">
                         <MessageSquare className="w-6 h-6 text-green-500" />
