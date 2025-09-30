@@ -1,6 +1,7 @@
 
 
 
+
 'use client';
 
 import { useState, useRef, useTransition, useContext, useEffect } from 'react';
@@ -213,7 +214,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
           </Button>
       </div>
       
-      {isExpanded && (
+      {isExpanded && post.author && (
         <div className="border-t pt-4">
             <div>
               <h4 className="font-semibold mb-3">Contact {liveAuthorName} to Coordinate</h4>

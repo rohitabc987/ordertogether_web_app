@@ -2,6 +2,7 @@
 
 
 
+
 // @ts-nocheck
 'use server';
 
@@ -231,9 +232,6 @@ const profileSchema = z.object({
   area: z.string().optional(),
   city: z.string().optional(),
   pinCode: z.string().optional(),
-}).refine(data => data.gender !== 'prefer_not_to_say', {
-  message: "Please select a gender.",
-  path: ["gender"],
 });
 
 export async function updateProfileAction(prevState: any, formData: FormData) {
