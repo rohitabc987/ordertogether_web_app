@@ -1,10 +1,10 @@
-
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { getUserById } from '@/lib/data';
 
 export async function GET() {
-  const cookieStore = cookies();
+  // The Next.js static analyzer expects `cookies()` to be awaited in this project.
+  const cookieStore = await cookies();
   const userId = cookieStore.get('session_userId')?.value;
 
   if (!userId) {
@@ -14,6 +14,8 @@ export async function GET() {
   try {
     const user = await getUserById(userId);
     if (!user) {
+      // If user not found, maybe the cookie is stale. Clear it.
+      cookieStore.delete('session_userId');
       return NextResponse.json({ user: null });
     }
     // Ensure data is serializable

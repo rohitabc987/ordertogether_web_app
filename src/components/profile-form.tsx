@@ -1,168 +1,151 @@
 
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
-import { useFormStatus } from 'react-dom';
-import { updateProfileAction } from '@/lib/actions';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useFormState, useFormStatus } from 'react-dom';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Button } from "./ui/button";
+import { updateUserAction } from '@/lib/actions';
 import type { User } from '@/lib/types';
+import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2 } from 'lucide-react';
+import { Switch } from './ui/switch';
 import { Combobox } from './ui/combobox';
 import { institutions } from '@/lib/institutions';
 import { hostels } from '@/lib/hostels';
-import { Switch } from './ui/switch';
+
+const initialState = {
+    message: '',
+    status: '',
+};
 
 function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending ? 'Saving...' : 'Save Changes'}
-    </Button>
-  );
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" disabled={pending}>
+            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Changes
+        </Button>
+    );
+}
+
+function RequiredLabel({ htmlFor, children }: { htmlFor: string, children: React.ReactNode }) {
+    return (
+        <Label htmlFor={htmlFor}>
+            {children} <span className="text-destructive">*</span>
+        </Label>
+    );
 }
 
 export function ProfileForm({ user }: { user: User }) {
-  const [state, formAction] = useActionState(updateProfileAction, null);
-  const { toast } = useToast();
-  const [institutionType, setInstitutionType] = useState(user.institution?.institutionType || '');
-  const [institutionName, setInstitutionName] = useState(user.institution?.institutionName || '');
-  const [gender, setGender] = useState(user.userProfile?.gender || '');
-  const [shareContact, setShareContact] = useState(user.contact?.shareContact ?? true);
+    const [state, formAction] = useFormState(updateUserAction, initialState);
+    const { toast } = useToast();
+    
+    // State to manage the combobox value separately
+    const [institutionName, setInstitutionName] = useState(user.institution?.institutionName || '');
 
-  useEffect(() => {
-    if (state?.message) {
-      toast({
-        title: state.message.includes('success') ? 'Success' : 'Error',
-        description: state.message,
-        variant: state.message.includes('success') ? 'default' : 'destructive',
-      });
-    }
-  }, [state, toast]);
 
-  const institutionOptions = institutionType === 'College/University' ? institutions : hostels;
-  const institutionLabel = institutionType === 'College/University' ? 'College/University Name' : 'Hostel/PG/Apartment Name';
-  const institutionPlaceholder = institutionType === 'College/University' ? 'Select institution...' : 'Select hostel/PG...';
-  const institutionSearchPlaceholder = institutionType === 'College/University' ? 'Search institution...' : 'Search hostel/PG...';
+    useEffect(() => {
+        if (state.message) {
+            toast({
+                title: state.status === 'success' ? 'Success' : 'Error',
+                description: state.message,
+                variant: state.status === 'success' ? 'default' : 'destructive',
+            });
+        }
+    }, [state, toast]);
 
-  const RequiredLabel = ({ htmlFor, children }: { htmlFor: string, children: React.ReactNode }) => (
-    <Label htmlFor={htmlFor}>
-      {children} <span className="text-destructive">*</span>
-    </Label>
-  );
+    return (
+        <form action={formAction}>
+          <input type="hidden" name="id" value={user.id} />
+          <Card>
+            <CardHeader>
+                <CardTitle>Personal Information</CardTitle>
+                <CardDescription>Update your personal and contact details.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                 <div className="space-y-2">
+                    <RequiredLabel htmlFor="name">Full Name</RequiredLabel>
+                    <Input id="name" name="name" defaultValue={user.userProfile?.name} required />
+                </div>
+                <div className="space-y-2">
+                    <RequiredLabel htmlFor="email">Email</RequiredLabel>
+                    <Input id="email" name="email" defaultValue={user.contact?.email} readOnly className="bg-muted cursor-not-allowed opacity-50" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                      <RequiredLabel htmlFor="contactNumber">Phone Number</RequiredLabel>
+                      <Input id="contactNumber" name="contactNumber" type="tel" defaultValue={user.contact?.phone || ''} required />
+                  </div>
+                  <div className="flex items-center space-x-2 pt-6">
+                    <Switch id="shareContact" name="shareContact" defaultChecked={user.contact?.shareContact ?? true} />
+                    <Label htmlFor="shareContact" className="cursor-pointer">Share contact number publicly on posts</Label>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="gender">Gender</Label>
+                    <Select name="gender" defaultValue={user.userProfile?.gender}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select your gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                            <SelectItem value="male">Male</SelectItem>
+                            <SelectItem value="female">Female</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </CardContent>
+          </Card>
 
-  return (
-    <form action={formAction}>
-      <input type="hidden" name="id" value={user.id} />
-      <Card>
-        <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
-            <CardDescription>Update your personal and contact details.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-             <div className="space-y-2">
-                <RequiredLabel htmlFor="name">Full Name</RequiredLabel>
-                <Input id="name" name="name" defaultValue={user.userProfile?.name} required />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="email">Email (Cannot be changed)</Label>
-                <Input id="email" name="email" defaultValue={user.contact?.email} readOnly className="bg-muted cursor-not-allowed" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                  <RequiredLabel htmlFor="contactNumber">Contact Number</RequiredLabel>
-                  <Input id="contactNumber" name="contactNumber" defaultValue={user.contact?.phone} required/>
-              </div>
-              <div className="space-y-2">
-                <RequiredLabel htmlFor="gender">Gender</RequiredLabel>
-                <Select name="gender" onValueChange={setGender} value={gender} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-             <div className="space-y-2 !mt-6">
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div>
-                      <Label htmlFor="share-contact">Share Contact Number</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Allow others to see your phone number when you post.
-                      </p>
-                    </div>
-                    <Switch
-                      id="share-contact"
-                      name="shareContact"
-                      checked={shareContact}
-                      onCheckedChange={setShareContact}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Location Details</CardTitle>
+              <CardDescription>This information is required to help you find group orders near you.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                 <div className="space-y-2">
+                    <RequiredLabel htmlFor="institutionName">Institution</RequiredLabel>
+                    <Combobox
+                        options={institutions}
+                        value={institutionName}
+                        onChange={setInstitutionName}
+                        placeholder="Select institution..."
+                        searchPlaceholder="Search institution..."
                     />
+                    <input type="hidden" name="institutionName" value={institutionName} />
                 </div>
-            </div>
-        </CardContent>
-      </Card>
-      
-      <Card className="mt-6">
-        <CardHeader>
-            <CardTitle>Location Details</CardTitle>
-            <CardDescription>This information is required to help you find relevant group orders in your area.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-            <div className="space-y-2">
-                <RequiredLabel htmlFor="institutionType">Select your institution type</RequiredLabel>
-                <Select name="institutionType" onValueChange={setInstitutionType} value={institutionType}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Please select your institution type." />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="College/University">College/University</SelectItem>
-                        <SelectItem value="Hostel/PG/Apartment">Hostel/PG/Apartment</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-
-            {institutionType && (
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <RequiredLabel htmlFor="institutionName">{institutionLabel}</RequiredLabel>
-                        <Combobox
-                            options={institutionOptions}
-                            value={institutionName}
-                            onChange={setInstitutionName}
-                            placeholder={institutionPlaceholder}
-                            searchPlaceholder={institutionSearchPlaceholder}
-                        />
-                        <input type="hidden" name="institutionName" value={institutionName} />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="area">Area/Colony</Label>
-                            <Input id="area" name="area" defaultValue={user.location?.area} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="city">City</Label>
-                            <Input id="city" name="city" defaultValue={user.location?.city} />
-                        </div>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="pinCode">Pin Code</Label>
-                        <Input id="pinCode" name="pinCode" defaultValue={user.location?.pinCode} />
-                    </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Hostel/PG (Optional)</CardTitle>
+              <CardDescription>If you live in a hostel or PG, specify it here to find more relevant orders.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="hostelOrPG">Hostel/PG Name</Label>
+                    <Combobox
+                        options={hostels}
+                        value={user.institution?.hostelOrPG || ''}
+                        onChange={(value) => {
+                            const e = { target: { name: 'hostelOrPG', value } } as any;
+                        }}
+                        placeholder="Select hostel/PG..."
+                        searchPlaceholder="Search..."
+                    />
+                    <input type="hidden" name="hostelOrPG" value={user.institution?.hostelOrPG || ''} />
                 </div>
-            )}
-        </CardContent>
-      </Card>
-      
-      <div className="mt-6 flex justify-end">
-        <SubmitButton />
-      </div>
-    </form>
-  );
+            </CardContent>
+            <CardFooter className="justify-end">
+              <SubmitButton />
+            </CardFooter>
+          </Card>
+        </form>
+    );
 }

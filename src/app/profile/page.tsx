@@ -1,6 +1,6 @@
 import { ProfileForm } from '@/components/profile-form';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCurrentUser } from '@/lib/session';
 import { format } from 'date-fns';
 import { AlertCircle, CheckCircle, Crown } from 'lucide-react';
@@ -12,6 +12,7 @@ export default async function ProfilePage({
   searchParams: { message?: string };
 }) {
   const user = await getCurrentUser();
+  const message = searchParams.message;
 
   if (!user) {
     redirect('/login');
@@ -23,11 +24,11 @@ export default async function ProfilePage({
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold font-headline mb-8">My Profile</h1>
       
-      {searchParams.message && (
+      {message && (
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Action Required</AlertTitle>
-          <AlertDescription>{searchParams.message}</AlertDescription>
+          <AlertDescription>{message}</AlertDescription>
         </Alert>
       )}
 
@@ -44,7 +45,7 @@ export default async function ProfilePage({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {isSubscribed ? (
+              {isSubscribed && user.subscription ? (
                 <>
                   <div className="flex items-center gap-2 text-green-600">
                     <CheckCircle className="w-5 h-5" />
@@ -53,9 +54,11 @@ export default async function ProfilePage({
                   <p className="text-sm text-muted-foreground">
                     Plan: <span className="capitalize font-medium text-foreground">{user.subscription.plan}</span>
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    Expires on: <span className="font-medium text-foreground">{format(new Date(user.subscription.expiry!), 'PPP')}</span>
-                  </p>
+                  {user.subscription.expiry && (
+                    <p className="text-sm text-muted-foreground">
+                      Expires on: <span className="font-medium text-foreground">{format(new Date(user.subscription.expiry), 'PPP')}</span>
+                    </p>
+                  )}
                 </>
               ) : (
                 <p className="text-muted-foreground">You are not currently subscribed.</p>
