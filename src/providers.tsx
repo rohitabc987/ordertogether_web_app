@@ -3,8 +3,6 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import type { User } from '@/lib/types';
 import { updatePostViewCountAction } from '@/lib/actions';
 
@@ -22,28 +20,6 @@ export const PostViewContext = createContext<PostViewContextType>({
   trackViewedPost: () => {},
 });
 
-async function fetchWithRetry(url: string, retries = 3, delay = 300): Promise<Response> {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.clone().json();
-        if (data.user) {
-          return response;
-        }
-      }
-      // Don't retry on 404 or other client errors that indicate no session
-      if (response.status >= 400 && response.status < 500) {
-        return response;
-      }
-    } catch (error) {
-       // Only retry on network errors
-       console.warn(`Fetch attempt ${i + 1} failed. Retrying...`);
-    }
-    await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
-  }
-  return fetch(url); // Final attempt
-}
 
 function PostViewProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -84,54 +60,49 @@ function PostViewProvider({ children }: { children: React.ReactNode }) {
 
 export function AuthProvider({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
   const [user, setUser] = useState<User | null>(initialUser);
-  
-  // No initial loading state if we have user data from the server
-  const [loading, setLoading] = useState(!initialUser);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
-      if (firebaseUser) {
-        // If the server didn't provide a user, we might need to fetch it.
-        // This happens on client-side navigation after login.
-        if (!user) {
-          try {
-            const response = await fetchWithRetry('/api/session');
-            if (response.ok) {
-              const session = await response.json();
-              setUser(session.user || null);
-            } else {
-              setUser(null);
-            }
-          } catch (error) {
-            console.error('Failed to fetch session:', error);
-            setUser(null);
-          } finally {
-            setLoading(false);
+    // If we have an initial user from the server, we are not loading.
+    if (initialUser) {
+      setUser(initialUser);
+      setLoading(false);
+      return;
+    }
+
+    // If no initial user, this might be a client-side navigation.
+    // Try to fetch the session from our API route.
+    let isMounted = true;
+    
+    async function fetchSession() {
+      try {
+        const response = await fetch('/api/session');
+        if (response.ok) {
+          const session = await response.json();
+          if (isMounted) {
+            setUser(session.user || null);
           }
         } else {
-            // User data is already present from server hydration
-            setLoading(false);
+          if (isMounted) setUser(null);
         }
-      } else {
-        // User is signed out
-        setUser(null);
-        setLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch session:', error);
+        if (isMounted) setUser(null);
+      } finally {
+        if (isMounted) setLoading(false);
       }
-    });
+    }
+    
+    fetchSession();
 
-    // Cleanup subscription on unmount
-    return () => unsubscribeAuth();
-  }, [user]);
-
-  // Don't render children until we have determined the auth state
-  // to avoid flashing content.
-  if (loading) {
-      return null;
-  }
+    return () => {
+      isMounted = false;
+    };
+  }, [initialUser]);
 
   return (
     <AuthContext.Provider value={{ user }}>
-      <PostViewProvider>{children}</PostViewProvider>
+      {loading ? null : <PostViewProvider>{children}</PostViewProvider>}
     </AuthContext.Provider>
   );
 }
