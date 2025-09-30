@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { verifyAndSignInAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogIn } from 'lucide-react';
+import { LogIn, UtensilsCrossed } from 'lucide-react';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth as getAuthInstance } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -43,9 +43,12 @@ export function AuthForm() {
     };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
+    <Card className="w-full max-w-sm shadow-xl bg-card/80 backdrop-blur-sm">
+      <CardHeader className="text-center items-center">
+        <div className="bg-primary/10 p-4 rounded-full border border-primary/20 mb-4">
+            <UtensilsCrossed className="w-8 h-8 text-primary" />
+        </div>
+        <CardTitle className="text-3xl font-headline">Welcome to OrderlyGather</CardTitle>
         <CardDescription>Sign in with your Google account to continue.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -55,15 +58,16 @@ export function AuthForm() {
           </p>
         )}
         <Button 
-          className="w-full" 
+          className="w-full transition-transform hover:scale-105" 
           onClick={handleGoogleSignIn} 
           disabled={isPending}
+          size="lg"
         >
           {isPending ? (
             'Signing in...'
           ) : (
             <>
-              <LogIn className="mr-2 h-4 w-4" /> Sign in with Google
+              <LogIn className="mr-2 h-5 w-5" /> Sign in with Google
             </>
           )}
         </Button>
