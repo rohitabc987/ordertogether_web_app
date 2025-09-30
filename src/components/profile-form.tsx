@@ -19,7 +19,7 @@ import { hostels } from '@/lib/hostels';
 
 const initialState = {
     message: '',
-    status: '',
+    status: 'success',
 };
 
 function SubmitButton() {
