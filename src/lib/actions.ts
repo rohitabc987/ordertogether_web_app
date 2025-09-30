@@ -209,6 +209,7 @@ export async function updateProfileAction(prevState: any, formData: FormData) {
   const updates: Record<string, any> = {
     'userProfile.name': data.name,
     'userProfile.gender': data.gender || null,
+    'userProfile.lastProfileUpdate': new Date().toISOString(),
     'contact.phone': data.contactNumber || null,
     'contact.whatsapp': data.contactNumber || null, // Assuming phone and whatsapp are the same
     'contact.shareContact': data.shareContact,
