@@ -112,7 +112,7 @@ export function CreatePostForm({ user }: { user: User }) {
               <div className="flex items-start gap-3">
                 <Lightbulb className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
                 <div>
-                  <h4 className="font-semibold text-sm text-foreground">Title Preview</h4>
+                  <h4 className="font-semibold text-sm text-foreground">Title preview for your post</h4>
                   <p className="text-sm text-accent-foreground font-medium">{catchyTitlePreview}</p>
                 </div>
               </div>
