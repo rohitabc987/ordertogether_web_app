@@ -50,6 +50,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
   const [isPending, startTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showPrompt, setShowPrompt] = useState<'login' | 'subscribe' | 'limit-reached' | null>(null);
+  const [catchyTitle, setCatchyTitle] = useState(post.title || "Group Order");
 
   const deadline = post.deadline ? new Date(post.deadline) : null;
   const deadlineInPast = deadline ? deadline < new Date() : true;
@@ -58,6 +59,12 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
 
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: false, threshold: 0.2 });
+
+  useEffect(() => {
+    // Generate the title on the client side after initial render to avoid hydration mismatch
+    setCatchyTitle(generateCatchyTitle(post));
+  }, [post]);
+
 
   const animateClass = isInView
     ? 'scale-100 opacity-100'
@@ -75,8 +82,6 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     .toUpperCase();
 
   const progressPercentage = (post.contributionAmount / post.totalAmount) * 100;
-
-  const catchyTitle = generateCatchyTitle(post);
 
   // Use the live, joined author name for the contact details to ensure it's up-to-date.
   const liveAuthorName = post.author.userProfile.name;
