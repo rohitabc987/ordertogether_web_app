@@ -27,9 +27,9 @@ import { Progress } from './ui/progress';
 export function MyPostCard({ post }: { post: Post }) {
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const deadline = post.timestamps.deadline ? new Date(post.timestamps.deadline) : null;
+  const deadline = post.timestamps?.deadline ? new Date(post.timestamps.deadline) : null;
   const deadlineInPast = deadline ? deadline < new Date() : true;
-  const hasBeenEdited = !!post.timestamps.updatedAt;
+  const hasBeenEdited = !!post.timestamps?.updatedAt;
 
   const remainingNeeded = post.order.totalAmount - post.order.contributionAmount;
   const progressPercentage = (post.order.contributionAmount / post.order.totalAmount) * 100;
