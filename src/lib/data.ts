@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 import type { User, Post } from './types';
 import { db } from './firebase-admin';
@@ -84,12 +85,12 @@ async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
 export const getPostsForUser = cache(async (user: User | null): Promise<Post[]> => {
   let query: Query = postsCollection;
 
-  // This query requires a composite index on `institutionName` and `createdAt`.
+  // This query requires a composite index on `location.institutionName` and `timestamps.createdAt`.
   if (user?.institution?.institutionName) {
-    query = query.where('institutionName', '==', user.institution.institutionName).orderBy('createdAt', 'desc');
+    query = query.where('location.institutionName', '==', user.institution.institutionName).orderBy('timestamps.createdAt', 'desc');
   } else {
     // Fallback for users without an institution or not logged in
-    query = query.orderBy('createdAt', 'desc');
+    query = query.orderBy('timestamps.createdAt', 'desc');
   }
 
   query = query.limit(25);
@@ -110,7 +111,7 @@ export const getPostsForUser = cache(async (user: User | null): Promise<Post[]> 
 
 
 export const getPostsByAuthorId = cache(async (authorId: string): Promise<Post[]> => {
-  const snapshot = await postsCollection.where('authorId', '==', authorId).orderBy('createdAt', 'desc').get();
+  const snapshot = await postsCollection.where('authorId', '==', authorId).orderBy('timestamps.createdAt', 'desc').get();
   const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   
   const postsWithAuthors = await joinAuthorToPosts(posts);
@@ -119,10 +120,13 @@ export const getPostsByAuthorId = cache(async (authorId: string): Promise<Post[]
 });
 
 
-export async function createPost(postData: Omit<Post, 'id' | 'createdAt' | 'author'>): Promise<Post> {
+export async function createPost(postData: Omit<Post, 'id' | 'author' | 'timestamps.createdAt'>): Promise<Post> {
   const postWithTimestamp = {
     ...postData,
-    createdAt: new Date(),
+    timestamps: {
+      ...postData.timestamps,
+      createdAt: new Date(),
+    }
   };
   const docRef = await postsCollection.add(postWithTimestamp);
   const newPostData = (await docRef.get()).data();
@@ -130,7 +134,16 @@ export async function createPost(postData: Omit<Post, 'id' | 'createdAt' | 'auth
 }
 
 export async function updatePost(postId: string, updates: Partial<Post>): Promise<void> {
-  await postsCollection.doc(postId).update({ ...updates, updatedAt: new Date() });
+  const flattenedUpdates = {
+    'details.title': updates.details.title,
+    'details.restaurant': updates.details.restaurant,
+    'details.notes': updates.details.notes,
+    'order.totalAmount': updates.order.totalAmount,
+    'order.contributionAmount': updates.order.contributionAmount,
+    'timestamps.deadline': updates.timestamps.deadline,
+    'timestamps.updatedAt': new Date(),
+  };
+  await postsCollection.doc(postId).update(flattenedUpdates);
 }
 
 export async function deletePost(postId: string): Promise<void> {

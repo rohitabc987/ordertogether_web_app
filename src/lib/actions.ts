@@ -1,6 +1,7 @@
 
 
 
+
 // @ts-nocheck
 'use server';
 
@@ -99,13 +100,19 @@ export async function logoutAction() {
 }
 
 const postSchema = z.object({
-  title: z.string().min(1, 'Title is required.'),
-  restaurant: z.string().min(1, 'Restaurant is required.'),
-  totalAmount: z.coerce.number().min(0, 'Total amount must be positive.'),
-  contributionAmount: z.coerce.number().min(0, 'Contribution must be positive.'),
-  deadline: z.coerce.date(),
-  notes: z.string().optional(),
   authorId: z.string(),
+  details: z.object({
+    title: z.string().min(1, 'Title is required.'),
+    restaurant: z.string().min(1, 'Restaurant is required.'),
+    notes: z.string().optional(),
+  }),
+  order: z.object({
+    totalAmount: z.coerce.number().min(0, 'Total amount must be positive.'),
+    contributionAmount: z.coerce.number().min(0, 'Contribution must be positive.'),
+  }),
+  timestamps: z.object({
+    deadline: z.coerce.date(),
+  }),
 });
 
 export async function createPostAction(prevState: any, formData: FormData) {
@@ -116,9 +123,23 @@ export async function createPostAction(prevState: any, formData: FormData) {
     return { message: 'Please complete your profile (name, contact number, and gender) before posting.' };
   }
   
-  const data = Object.fromEntries(formData);
+  const rawData = {
+    authorId,
+    details: {
+      title: formData.get('details.title'),
+      restaurant: formData.get('details.restaurant'),
+      notes: formData.get('details.notes'),
+    },
+    order: {
+      totalAmount: formData.get('order.totalAmount'),
+      contributionAmount: formData.get('order.contributionAmount'),
+    },
+    timestamps: {
+      deadline: formData.get('timestamps.deadline'),
+    },
+  };
 
-  const parsed = postSchema.safeParse(data);
+  const parsed = postSchema.safeParse(rawData);
 
   if (!parsed.success) {
     console.error(parsed.error.flatten().fieldErrors);
@@ -126,21 +147,25 @@ export async function createPostAction(prevState: any, formData: FormData) {
     return { message: firstError || 'Invalid post data. Please check your inputs.' };
   }
   
-  if (parsed.data.contributionAmount > parsed.data.totalAmount) {
+  if (parsed.data.order.contributionAmount > parsed.data.order.totalAmount) {
     return { message: 'Your contribution cannot be greater than the total order amount.' };
   }
 
   // Denormalize user data into the post
-  const postDataWithDenormalization = {
+  const postData = {
     ...parsed.data,
-    institutionName: user.institution?.institutionName || null,
-    area: user.location?.area || null,
-    city: user.location?.city || null,
-    authorName: user.userProfile.name,
-    gender: user.userProfile.gender,
+    authorInfo: {
+      authorName: user.userProfile.name,
+      gender: user.userProfile.gender,
+    },
+    location: {
+      institutionName: user.institution?.institutionName || null,
+      area: user.location?.area || null,
+      city: user.location?.city || null,
+    }
   };
 
-  await createPost(postDataWithDenormalization);
+  await createPost(postData);
   revalidatePath('/');
   redirect('/');
 }
@@ -150,8 +175,22 @@ const updatePostSchema = postSchema.omit({ authorId: true }).extend({
 });
 
 export async function updatePostAction(prevState: any, formData: FormData) {
-  const data = Object.fromEntries(formData);
-  const parsed = updatePostSchema.safeParse(data);
+    const rawData = {
+    postId: formData.get('postId'),
+    details: {
+      title: formData.get('details.title'),
+      restaurant: formData.get('details.restaurant'),
+      notes: formData.get('details.notes'),
+    },
+    order: {
+      totalAmount: formData.get('order.totalAmount'),
+      contributionAmount: formData.get('order.contributionAmount'),
+    },
+    timestamps: {
+      deadline: formData.get('timestamps.deadline'),
+    },
+  };
+  const parsed = updatePostSchema.safeParse(rawData);
 
   if (!parsed.success) {
       return { message: 'Invalid post data. Please check your inputs.' };
@@ -162,11 +201,11 @@ export async function updatePostAction(prevState: any, formData: FormData) {
       return { message: 'Post not found.' };
   }
 
-  if (post.updatedAt) {
+  if (post.timestamps.updatedAt) {
       return { message: 'This post has already been updated once and cannot be edited again.' };
   }
 
-  if (parsed.data.contributionAmount > parsed.data.totalAmount) {
+  if (parsed.data.order.contributionAmount > parsed.data.order.totalAmount) {
       return { message: 'Your contribution cannot be greater than the total order amount.' };
   }
 

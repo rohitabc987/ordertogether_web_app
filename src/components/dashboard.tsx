@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -45,7 +46,7 @@ export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { 
   const filteredPosts = useMemo(() => {
     return posts.filter(post => {
       const now = new Date();
-      const deadline = new Date(post.deadline);
+      const deadline = new Date(post.timestamps.deadline);
       const isExpired = deadline < now;
 
       // Status Filter
@@ -69,17 +70,17 @@ export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { 
       }
 
       // Amount Filter
-      const remainingNeeded = post.totalAmount - post.contributionAmount;
+      const remainingNeeded = post.order.totalAmount - post.order.contributionAmount;
       const amountMatch = remainingNeeded >= amountFilter[0] && remainingNeeded <= amountFilter[1];
 
       // Gender Filter
-      const genderMatch = genderFilter === 'all' || post.gender === genderFilter;
+      const genderMatch = genderFilter === 'all' || post.authorInfo.gender === genderFilter;
 
       // Restaurant Filter
-      const restaurantMatch = restaurantFilter === '' || post.restaurant.toLowerCase().includes(restaurantFilter.toLowerCase());
+      const restaurantMatch = restaurantFilter === '' || post.details.restaurant.toLowerCase().includes(restaurantFilter.toLowerCase());
 
       // Institution Filter (now filters on denormalized data)
-      const institutionMatch = institutionFilter === '' || post.institutionName?.toLowerCase() === institutionFilter.toLowerCase();
+      const institutionMatch = institutionFilter === '' || post.location.institutionName?.toLowerCase() === institutionFilter.toLowerCase();
       
       return statusMatch && timeMatch && amountMatch && genderMatch && restaurantMatch && institutionMatch;
     });

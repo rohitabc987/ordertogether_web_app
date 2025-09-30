@@ -27,12 +27,12 @@ import { Progress } from './ui/progress';
 export function MyPostCard({ post }: { post: Post }) {
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const deadline = post.deadline ? new Date(post.deadline) : null;
+  const deadline = post.timestamps.deadline ? new Date(post.timestamps.deadline) : null;
   const deadlineInPast = deadline ? deadline < new Date() : true;
-  const hasBeenEdited = !!post.updatedAt;
+  const hasBeenEdited = !!post.timestamps.updatedAt;
 
-  const remainingNeeded = post.totalAmount - post.contributionAmount;
-  const progressPercentage = (post.contributionAmount / post.totalAmount) * 100;
+  const remainingNeeded = post.order.totalAmount - post.order.contributionAmount;
+  const progressPercentage = (post.order.contributionAmount / post.order.totalAmount) * 100;
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -42,14 +42,14 @@ export function MyPostCard({ post }: { post: Post }) {
   return (
     <Card className="flex flex-col">
       <CardHeader>
-        <CardTitle>{post.title}</CardTitle>
-        <CardDescription>From: {post.restaurant}</CardDescription>
+        <CardTitle>{post.details.title}</CardTitle>
+        <CardDescription>From: {post.details.restaurant}</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow space-y-4">
         <div className="space-y-2">
             <div className="flex justify-between items-center text-xs text-muted-foreground">
-                <span>{formatCurrency(post.contributionAmount)} contributed</span>
-                <span>{formatCurrency(post.totalAmount)} total</span>
+                <span>{formatCurrency(post.order.contributionAmount)} contributed</span>
+                <span>{formatCurrency(post.order.totalAmount)} total</span>
             </div>
             <Progress value={progressPercentage} className="h-2" />
             <p className="text-sm font-medium text-primary text-center">
@@ -62,7 +62,7 @@ export function MyPostCard({ post }: { post: Post }) {
           <span>Deadline: {deadline ? formatDistanceToNow(deadline, { addSuffix: true }) : 'N/A'}</span>
         </div>
         
-        {post.notes && <p className="text-sm border-l-2 border-accent pl-3 py-1 bg-background rounded-r-md">{post.notes}</p>}
+        {post.details.notes && <p className="text-sm border-l-2 border-accent pl-3 py-1 bg-background rounded-r-md">{post.details.notes}</p>}
 
         {hasBeenEdited && (
            <Badge variant="outline" className="flex items-center gap-2">

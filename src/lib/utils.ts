@@ -20,28 +20,28 @@ export function formatCurrency(amount: number) {
 
 export function generateCatchyTitle(post: Partial<Post>): string {
   // If core fields are missing, fallback to the user's title or a generic one.
-  if (!post.restaurant || !post.totalAmount) {
-    return post.title?.trim() || "Group Order";
+  if (!post.details?.restaurant || !post.order?.totalAmount) {
+    return post.details?.title?.trim() || "Group Order";
   }
 
-  const remaining = Math.max(0, (post.totalAmount || 0) - (post.contributionAmount || 0));
-  const deadlineHours = post.deadline ? differenceInHours(new Date(post.deadline), new Date()) : null;
+  const remaining = Math.max(0, (post.order.totalAmount || 0) - (post.order.contributionAmount || 0));
+  const deadlineHours = post.timestamps?.deadline ? differenceInHours(new Date(post.timestamps.deadline), new Date()) : null;
 
   // --- Phrase Pools for Variation ---
   const invitePhrases = [
-    `Join our ${post.restaurant} order`,
-    `Group order for ${post.restaurant}`,
-    `Who's in for ${post.restaurant}?`,
-    `Let's order ${post.restaurant} together`,
+    `Join our ${post.details.restaurant} order`,
+    `Group order for ${post.details.restaurant}`,
+    `Who's in for ${post.details.restaurant}?`,
+    `Let's order ${post.details.restaurant} together`,
   ];
 
   const dealPhrases: string[] = [];
   // Prioritize user-mentioned deals
-  if (post.title && /free delivery/i.test(post.title)) {
+  if (post.details.title && /free delivery/i.test(post.details.title)) {
     dealPhrases.push("Free Delivery 🚚");
-  } else if (post.title && /₹\d+\s*off/i.test(post.title)) {
+  } else if (post.details.title && /₹\d+\s*off/i.test(post.details.title)) {
     // Extract and use the specific discount mentioned
-    const match = post.title.match(/₹\d+\s*off/i);
+    const match = post.details.title.match(/₹\d+\s*off/i);
     if(match) dealPhrases.push(`${match[0].trim()} 🔥`);
   }
   
@@ -92,5 +92,3 @@ export function generateCatchyTitle(post: Partial<Post>): string {
 
   return title;
 }
-
-    

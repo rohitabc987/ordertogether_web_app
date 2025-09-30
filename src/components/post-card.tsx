@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import { useState, useRef, useTransition, useContext, useEffect } from 'react';
@@ -51,9 +52,9 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
   const [isPending, startTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showPrompt, setShowPrompt] = useState<'login' | 'subscribe' | 'limit-reached' | null>(null);
-  const [catchyTitle, setCatchyTitle] = useState(post.title || "Group Order");
+  const [catchyTitle, setCatchyTitle] = useState(post.details.title || "Group Order");
 
-  const deadline = post.deadline ? new Date(post.deadline) : null;
+  const deadline = post.timestamps.deadline ? new Date(post.timestamps.deadline) : null;
   const deadlineInPast = deadline ? deadline < new Date() : true;
   const hoursLeft = deadline ? differenceInHours(deadline, new Date()) : null;
   const isUrgent = hoursLeft !== null && hoursLeft <= 6 && !deadlineInPast;
@@ -76,13 +77,13 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
   }
 
   // Use denormalized name for the main card for performance.
-  const authorInitials = (post.authorName || 'A')
+  const authorInitials = (post.authorInfo.authorName || 'A')
     .split(' ')
     .map((n) => n[0])
     .join('')
     .toUpperCase();
 
-  const progressPercentage = (post.contributionAmount / post.totalAmount) * 100;
+  const progressPercentage = (post.order.contributionAmount / post.order.totalAmount) * 100;
 
   // Use the live, joined author name for the contact details to ensure it's up-to-date.
   const liveAuthorName = post.author.userProfile.name;
@@ -158,14 +159,14 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 flex-wrap">
               <p className="font-semibold text-base text-primary">{catchyTitle}</p>
-              <p className="text-sm text-muted-foreground">(Min Order: {formatCurrency(post.totalAmount)})</p>
+              <p className="text-sm text-muted-foreground">(Min Order: {formatCurrency(post.order.totalAmount)})</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap mt-1">
-              <p className="text-sm text-muted-foreground truncate">Contributing: {formatCurrency(post.contributionAmount)} </p>
-              {post.gender && (
+              <p className="text-sm text-muted-foreground truncate">Contributing: {formatCurrency(post.order.contributionAmount)} </p>
+              {post.authorInfo.gender && (
                  <Badge variant="outline" className="capitalize flex items-center gap-1">
                   <UserIcon className="w-3 h-3" />
-                  {post.gender}
+                  {post.authorInfo.gender}
                 </Badge>
               )}
             </div>
@@ -174,8 +175,8 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
 
         <div className="flex flex-col items-end gap-2 text-sm text-muted-foreground text-right flex-shrink-0">
           <div className="flex items-center gap-1.5">
-              <RestaurantIcon name={post.restaurant} />
-              <span className="font-medium truncate">{post.restaurant}</span>
+              <RestaurantIcon name={post.details.restaurant} />
+              <span className="font-medium truncate">{post.details.restaurant}</span>
           </div>
            {isUrgent && (
               <Badge variant="destructive" className="text-base">
@@ -193,11 +194,11 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
 
       <div className="space-y-2">
           <div className="flex justify-between items-center text-xs text-muted-foreground">
-              <span>{formatCurrency(post.contributionAmount)}</span>
-              <span>{formatCurrency(post.totalAmount)}</span>
+              <span>{formatCurrency(post.order.contributionAmount)}</span>
+              <span>{formatCurrency(post.order.totalAmount)}</span>
           </div>
           <Progress value={progressPercentage} className="h-2" />
-          {post.notes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{post.notes}</span></p>}
+          {post.details.notes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{post.details.notes}</span></p>}
       </div>
 
       <div className="flex justify-start">

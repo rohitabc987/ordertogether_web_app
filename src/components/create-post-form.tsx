@@ -78,11 +78,11 @@ export function CreatePostForm({ user }: { user: User }) {
                 <Label htmlFor="title">Post Title / Main Discount</Label>
                 <Input 
                   id="title" 
-                  name="title"
+                  name="details.title"
                   placeholder="e.g. ₹100 Off, Free Delivery, BOGO"
                   required
                   value={formData.title}
-                  onChange={handleInputChange}
+                  onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
                 />
                  <p className="text-xs text-muted-foreground">This helps auto-generate a better title for your post.</p>
               </div>
@@ -92,22 +92,22 @@ export function CreatePostForm({ user }: { user: User }) {
                   <Label htmlFor="restaurant">Restaurant</Label>
                   <Input 
                     id="restaurant" 
-                    name="restaurant"
+                    name="details.restaurant"
                     placeholder="e.g. Domino's, McDonald's"
                     required 
                     value={formData.restaurant}
-                    onChange={handleInputChange}
+                    onChange={e => setFormData(prev => ({ ...prev, restaurant: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="deadline">Order Deadline</Label>
                     <Input 
                         id="deadline" 
-                        name="deadline" 
+                        name="timestamps.deadline" 
                         type="datetime-local" 
                         required 
                         value={formData.deadline}
-                        onChange={handleInputChange}
+                        onChange={e => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
                     />
                 </div>
               </div>
@@ -117,25 +117,26 @@ export function CreatePostForm({ user }: { user: User }) {
                   <Label htmlFor="totalAmount">Total Order Amount (₹)</Label>
                   <Input 
                     id="totalAmount" 
-                    name="totalAmount" 
+                    name="order.totalAmount" 
                     type="number" 
                     placeholder="e.g. 1000"
                     required 
                     min="0"
                     value={formData.totalAmount}
-                    onChange={handleInputChange}
+                    onChange={e => setFormData(prev => ({ ...prev, totalAmount: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Your Contribution (₹)</Label>
-                  <Input _id="contributionAmount" 
-                    name="contributionAmount"
+                  <Input 
+                    id="contributionAmount" 
+                    name="order.contributionAmount"
                     type="number" 
                     placeholder="e.g. 250"
                     required 
                     min="0"
                     value={formData.contributionAmount}
-                    onChange={handleInputChange}
+                    onChange={e => setFormData(prev => ({ ...prev, contributionAmount: e.target.value }))}
                   />
                 </div>
               </div>
@@ -144,10 +145,10 @@ export function CreatePostForm({ user }: { user: User }) {
                 <Label htmlFor="notes">Notes</Label>
                 <Textarea 
                   id="notes" 
-                  name="notes"
+                  name="details.notes"
                   placeholder="e.g. I'm ordering a Medium Pizza. Join in to save on delivery!"
                   value={formData.notes}
-                  onChange={handleInputChange}
+                  onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                 />
                 <p className="text-xs text-muted-foreground">
                   Share what you are ordering, any special instructions, or how to coordinate.
