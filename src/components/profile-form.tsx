@@ -1,13 +1,13 @@
 
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
-import { updateUserAction } from '@/lib/actions';
+import { updateProfileAction } from '@/lib/actions';
 import type { User } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -41,7 +41,7 @@ function RequiredLabel({ htmlFor, children }: { htmlFor: string, children: React
 }
 
 export function ProfileForm({ user }: { user: User }) {
-    const [state, formAction] = useFormState(updateUserAction, initialState);
+    const [state, formAction] = useActionState(updateProfileAction, initialState);
     const { toast } = useToast();
     
     // State to manage the combobox value separately
