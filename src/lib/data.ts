@@ -1,4 +1,5 @@
 
+
 // @ts-nocheck
 import type { User, Post } from './types';
 import { db } from './firebase-admin';
@@ -85,11 +86,9 @@ async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
 export const getPostsForUser = cache(async (user: User | null): Promise<Post[]> => {
   let query: Query = postsCollection;
 
-  // This query requires a composite index on `location.institutionName` and `timestamps.createdAt`.
   if (user?.institution?.institutionName) {
-    query = query.where('location.institutionName', '==', user.institution.institutionName).orderBy('timestamps.createdAt', 'desc');
+    query = query.where('location.institutionName', '==', user.institution.institutionName);
   } else {
-    // Fallback for users without an institution or not logged in
     query = query.orderBy('timestamps.createdAt', 'desc');
   }
 
@@ -98,6 +97,11 @@ export const getPostsForUser = cache(async (user: User | null): Promise<Post[]> 
   const snapshot = await query.get();
   
   let posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  // Sort manually if not ordered by Firestore
+  if (user?.institution?.institutionName) {
+    posts.sort((a, b) => b.timestamps.createdAt.toMillis() - a.timestamps.createdAt.toMillis());
+  }
 
   // Exclude posts made by the current user from their own feed
   if (user) {
