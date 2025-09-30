@@ -2,6 +2,7 @@
 
 
 
+
 'use client';
 
 import { useState, useRef, useTransition, useContext, useEffect } from 'react';
@@ -65,7 +66,9 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
 
   useEffect(() => {
     // Generate the title on the client side after initial render to avoid hydration mismatch
-    setCatchyTitle(generateCatchyTitle(post));
+    if (post.details) {
+      setCatchyTitle(generateCatchyTitle(post));
+    }
   }, [post]);
 
 

@@ -2,6 +2,7 @@
 
 
 
+
 // @ts-nocheck
 import type { User, Post } from './types';
 import { db } from './firebase-admin';
@@ -64,25 +65,22 @@ async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
   if (posts.length === 0) return [];
 
   const authorIds = [...new Set(posts.map(p => p.authorId).filter(Boolean))];
-
-  if (authorIds.length === 0) {
-    return convertTimestamps(posts) as Post[];
-  }
-  
-  // Use a single 'in' query to fetch all authors in one batch
-  const authorSnapshots = await db.collection('users').where(FieldPath.documentId(), 'in', authorIds).get();
   
   const authors = {};
-  authorSnapshots.forEach(doc => {
-    authors[doc.id] = { id: doc.id, ...doc.data() };
-  });
+  if (authorIds.length > 0) {
+    const authorSnapshots = await db.collection('users').where(FieldPath.documentId(), 'in', authorIds).get();
+    authorSnapshots.forEach(doc => {
+      authors[doc.id] = { id: doc.id, ...doc.data() };
+    });
+  }
 
   const joinedPosts = posts.map(post => ({
     ...post,
     author: authors[post.authorId] || null,
   })).filter(p => p.author !== null);
 
-  return convertTimestamps(joinedPosts) as Post[];
+  // This is the critical fix: convert timestamps AFTER joining the author.
+  return convertTimestamps(joinedPosts);
 }
 
 export const getPostsForUser = cache(async (user: User | null): Promise<Post[]> => {
@@ -91,6 +89,7 @@ export const getPostsForUser = cache(async (user: User | null): Promise<Post[]> 
   if (user?.institution?.institutionName) {
     query = query.where('location.institutionName', '==', user.institution.institutionName);
   } else {
+    // Only apply ordering when not filtering by institution to avoid composite index need
     query = query.orderBy('timestamps.createdAt', 'desc');
   }
 
@@ -100,7 +99,7 @@ export const getPostsForUser = cache(async (user: User | null): Promise<Post[]> 
   
   let posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-  // Sort manually if not ordered by Firestore
+  // Manually sort if we didn't do it in the query
   if (user?.institution?.institutionName) {
     posts.sort((a, b) => b.timestamps.createdAt.toMillis() - a.timestamps.createdAt.toMillis());
   }
