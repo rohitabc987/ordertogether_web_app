@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useRef, useTransition, useContext, useEffect } from 'react';
@@ -176,14 +177,17 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
               <RestaurantIcon name={post.restaurant} />
               <span className="font-medium truncate">{post.restaurant}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-              {!isUrgent && (
-                <>
-                  <Clock className="w-4 h-4" />
-                  <span>{deadline ? formatDistanceToNow(deadline, { addSuffix: true }) : 'N/A'}</span>
-                </>
-              )}
-          </div>
+           {isUrgent && (
+              <Badge variant="destructive" className="text-base">
+                Closes in {hoursLeft}h ⏳
+              </Badge>
+            )}
+            {!isUrgent && (
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4" />
+                <span>{deadline ? formatDistanceToNow(deadline, { addSuffix: true }) : 'N/A'}</span>
+              </div>
+            )}
         </div>
       </div>
 
@@ -193,11 +197,6 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
               <span>{formatCurrency(post.totalAmount)}</span>
           </div>
           <Progress value={progressPercentage} className="h-2" />
-          {isUrgent && (
-            <Badge variant="destructive" className="mt-2 text-base">
-              Closes in {hoursLeft}h ⏳
-            </Badge>
-          )}
           {post.notes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{post.notes}</span></p>}
       </div>
 
@@ -299,5 +298,3 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     </div>
   );
 }
-
-    
