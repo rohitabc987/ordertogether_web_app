@@ -3,6 +3,7 @@
 
 
 
+
 // @ts-nocheck
 import type { User, Post } from './types';
 import { db } from './firebase-admin';
@@ -116,8 +117,11 @@ export const getPostsForUser = cache(async (user: User | null): Promise<Post[]> 
 
 
 export const getPostsByAuthorId = cache(async (authorId: string): Promise<Post[]> => {
-  const snapshot = await postsCollection.where('authorId', '==', authorId).orderBy('timestamps.createdAt', 'desc').get();
-  const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const snapshot = await postsCollection.where('authorId', '==', authorId).get();
+  let posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  // Manual sort to avoid composite index
+  posts.sort((a, b) => b.timestamps.createdAt.toMillis() - a.timestamps.createdAt.toMillis());
   
   const postsWithAuthors = await joinAuthorToPosts(posts);
   
