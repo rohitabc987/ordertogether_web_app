@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useActionState, useState, useMemo } from 'react';
@@ -63,20 +64,8 @@ export function CreatePostForm({ user }: { user: User }) {
               value={formData.title}
               onChange={handleInputChange}
             />
-             <p className="text-xs text-muted-foreground">This helps create a catchy title.</p>
+             <p className="text-xs text-muted-foreground">Helps auto-generate a better title for your post</p>
           </div>
-
-          {catchyTitlePreview && (
-            <div className="p-3 rounded-lg bg-accent/20 border border-accent/50">
-              <div className="flex items-start gap-3">
-                <Lightbulb className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-semibold text-sm text-foreground">Title Preview</h4>
-                  <p className="text-sm text-accent-foreground font-medium">{catchyTitlePreview}</p>
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="space-y-2">
             <Label htmlFor="restaurant">Delivery App / Restaurant Name</Label>
@@ -117,6 +106,18 @@ export function CreatePostForm({ user }: { user: User }) {
           </div>
           
           {state?.message && <p className="text-sm text-destructive">{state.message}</p>}
+
+          {catchyTitlePreview && (
+            <div className="p-3 rounded-lg bg-accent/20 border border-accent/50">
+              <div className="flex items-start gap-3">
+                <Lightbulb className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-sm text-foreground">Title Preview</h4>
+                  <p className="text-sm text-accent-foreground font-medium">{catchyTitlePreview}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <Button type="submit" className="w-full">
             Create Post
