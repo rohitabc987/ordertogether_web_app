@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useActionState, useFormStatus } from 'react';
+import { useActionState, useEffect, useState, useTransition } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Button } from "./ui/button";
 import { updateProfileAction } from '@/lib/actions';
 import type { User } from '@/lib/types';
-import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Switch } from './ui/switch';
@@ -22,16 +21,6 @@ const initialState = {
     status: 'success',
 };
 
-function SubmitButton() {
-    const { pending } = useFormStatus();
-    return (
-        <Button type="submit" disabled={pending} className="w-full sm:w-auto">
-            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Changes
-        </Button>
-    );
-}
-
 function RequiredLabel({ htmlFor, children }: { htmlFor: string, children: React.ReactNode }) {
     return (
         <Label htmlFor={htmlFor}>
@@ -43,10 +32,10 @@ function RequiredLabel({ htmlFor, children }: { htmlFor: string, children: React
 export function ProfileForm({ user }: { user: User }) {
     const [state, formAction] = useActionState(updateProfileAction, initialState);
     const { toast } = useToast();
+    const [isPending, startTransition] = useTransition();
     
     // State to manage the combobox value separately
     const [institutionName, setInstitutionName] = useState(user.institution?.institutionName || '');
-
 
     useEffect(() => {
         if (state.message) {
@@ -58,8 +47,14 @@ export function ProfileForm({ user }: { user: User }) {
         }
     }, [state, toast]);
 
+    const handleSubmit = (formData: FormData) => {
+        startTransition(() => {
+            formAction(formData);
+        });
+    };
+
     return (
-        <form action={formAction}>
+        <form action={handleSubmit}>
           <input type="hidden" name="id" value={user.id} />
           
           <div className="space-y-6">
@@ -148,7 +143,10 @@ export function ProfileForm({ user }: { user: User }) {
           </div>
 
           <div className="mt-6 flex justify-end">
-            <SubmitButton />
+            <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Changes
+            </Button>
           </div>
         </form>
     );
