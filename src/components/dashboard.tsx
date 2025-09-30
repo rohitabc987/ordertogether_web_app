@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { PostCard } from './post-card';
 import { PostFilters } from './post-filters';
 import type { Post } from '@/lib/types';
@@ -12,9 +12,10 @@ import { Button } from './ui/button';
 
 const POSTS_PER_PAGE = 10;
 
-export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post[], bannerImageUrl: string | null }) {
+export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { initialPosts: Post[], bannerImageUrl: string | null }) {
   const { user } = useAuth();
   const [posts] = useState<Post[]>(initialPosts);
+  const [bannerImageUrl, setBannerImageUrl] = useState(initialBannerUrl);
   
   // Filter states
   const [statusFilter, setStatusFilter] = useState<'recent' | 'active' | 'expired'>('recent');
@@ -25,6 +26,21 @@ export function Dashboard({ initialPosts, bannerImageUrl }: { initialPosts: Post
   const [institutionFilter, setInstitutionFilter] = useState('iit-dharwad');
 
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    const cachedUrl = localStorage.getItem('bannerImageUrl');
+    if (initialBannerUrl) {
+      // If we got a URL from the server, cache it.
+      if (cachedUrl !== initialBannerUrl) {
+        localStorage.setItem('bannerImageUrl', initialBannerUrl);
+      }
+      setBannerImageUrl(initialBannerUrl);
+    } else if (cachedUrl) {
+      // If server didn't provide one (e.g., client navigation), use the cached one.
+      setBannerImageUrl(cachedUrl);
+    }
+  }, [initialBannerUrl]);
+
 
   const filteredPosts = useMemo(() => {
     return posts.filter(post => {
