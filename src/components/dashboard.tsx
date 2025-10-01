@@ -3,6 +3,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -203,7 +204,7 @@ export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { 
                 <p className="mt-2 text-base text-foreground">
                   Try adjusting your filters or check back later for new group orders.
                 </p>
-                <Button variant="outline" onClick={resetFilters} className="mt-6">
+                <Button variant="destructive" onClick={resetFilters} className="mt-6">
                   Clear All Filters
                 </Button>
               </div>
