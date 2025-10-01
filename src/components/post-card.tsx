@@ -3,6 +3,7 @@
 
 
 
+
 'use client';
 
 import { useState, useRef, useTransition, useContext, useEffect } from 'react';
@@ -67,7 +68,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
   const [isPending, startTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showPrompt, setShowPrompt] = useState<'login' | 'subscribe' | 'limit-reached' | null>(null);
-  const [catchyTitle, setCatchyTitle] = useState(post.details.title || "Group Order");
+  const [catchyTitle, setCatchyTitle] = useState(post.details?.title || "Group Order");
 
   const deadline = convertFirestoreTimestampToDate(post.timestamps.deadline);
   const deadlineInPast = deadline ? deadline < new Date() : true;

@@ -38,8 +38,20 @@ export default async function EditPostPage({ params }: { params: { id: string } 
     );
   }
 
-  // Check if the post has already been edited once
-  const hasBeenEdited = !!post.timestamps.updatedAt && post.timestamps.createdAt !== post.timestamps.updatedAt;
+  // Check if the post has already been edited once.
+  // We allow a 2-second difference to account for the time between creation and the timestamp being set.
+  const { createdAt: createdAtString, updatedAt: updatedAtString } = post.timestamps;
+
+  let hasBeenEdited = false;
+  // The post is considered edited only if it has an updatedAt timestamp,
+  // and that timestamp is more than 2 seconds after the createdAt timestamp.
+  if (updatedAtString) {
+    const createdAt = new Date(createdAtString).getTime();
+    const updatedAt = new Date(updatedAtString).getTime();
+    if (updatedAt - createdAt > 2000) {
+      hasBeenEdited = true;
+    }
+  }
 
   if (hasBeenEdited) {
      return (
@@ -47,7 +59,7 @@ export default async function EditPostPage({ params }: { params: { id: string } 
             <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Editing Locked</AlertTitle>
-                <AlertDescription>This post has already been edited once and cannot be changed again.</AlertDescription>
+                <AlertDescription>This post has been edited once and cannot be changed again.</AlertDescription>
             </Alert>
         </div>
     );

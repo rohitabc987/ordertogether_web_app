@@ -8,7 +8,7 @@ import { Header } from '@/components/header';
 import { getCurrentUser } from '@/lib/session';
 import { Inter } from 'next/font/google';
 import { Footer } from '@/components/footer';
-import { User } from './lib/types';
+import { User } from '@/lib/types';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-body' });
 

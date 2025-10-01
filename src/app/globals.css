@@ -3,10 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    @apply scroll-smooth;
-  }
-
   :root {
     /* ===== Colors (Light Mode) ===== */
     --bg-header-background: 32 32.5% 99.2%; 
@@ -77,11 +73,14 @@
 
     --radius: 1rem;
   }
-}
 
-@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 
   h1, h2, h3, h4, h5, h6 {

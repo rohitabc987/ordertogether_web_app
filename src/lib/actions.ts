@@ -1,8 +1,10 @@
 
+
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { Post, User, Subscription } from './types';
+import { Post, User } from './types';
 import {FieldValue,Timestamp,} from 'firebase-admin/firestore';
 import { db as adminDb, auth as adminAuth } from './firebase-admin';
 import { cookies } from 'next/headers';
@@ -57,9 +59,9 @@ export async function createPostAction(prevState: any, formData: FormData) {
         deadline: deadline as any,
       },
       location: {
-        institutionName: authorData.institution?.institutionName,
-        area: authorData.location?.area,
-        city: authorData.location?.city,
+        institutionName: authorData.institution?.institutionName ?? undefined,
+        area: authorData.location?.area ?? undefined,
+        city: authorData.location?.city ?? undefined,
       },
     };
 
@@ -222,8 +224,7 @@ export async function verifyAndSignInAction(idToken: string) {
       user = await createUserInDb(newUser);
     }
     
-    // Set cookies for session management
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.set('session_userId', user.id, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
     return { success: true, user };
@@ -233,7 +234,7 @@ export async function verifyAndSignInAction(idToken: string) {
 }
 
 export async function logoutAction() {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.delete('session_userId');
 }
 
@@ -260,12 +261,11 @@ export async function subscribeAction(planId: 'single-post' | 'daily' | 'weekly'
         expiry.setMonth(now.getMonth() + 1);
         break;
       case 'single-post':
-        // Expiry doesn't matter as much, it's usage-based
         expiry.setFullYear(now.getFullYear() + 1);
         break;
     }
     
-    const subscriptionData: Subscription = {
+    const subscriptionData: User['subscription'] = {
       status: 'active',
       plan: planId,
       startDate: Timestamp.fromDate(now) as any,
