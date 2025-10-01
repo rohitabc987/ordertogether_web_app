@@ -65,11 +65,20 @@ export function MyPostCard({ post }: { post: Post }) {
     if (!deadline) return 'N/A';
     const now = new Date();
     const minutesLeft = differenceInMinutes(deadline, now);
-    if (minutesLeft < 60 && minutesLeft > 0) {
-        return `in ${minutesLeft} min`;
+
+    if (minutesLeft <= 0) {
+      return formatDistanceToNow(deadline, { addSuffix: true });
+    }
+    if (minutesLeft < 60) {
+      return `in ${minutesLeft} min`;
+    }
+    if (minutesLeft < 6 * 60) {
+      const hours = Math.floor(minutesLeft / 60);
+      const minutes = minutesLeft % 60;
+      return `in ${hours}hr ${minutes}min`;
     }
     return formatDistanceToNow(deadline, { addSuffix: true });
-  }
+  };
   
   return (
     <Card className="flex flex-col">
