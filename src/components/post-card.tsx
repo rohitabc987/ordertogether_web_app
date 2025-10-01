@@ -27,6 +27,19 @@ import {
 } from '@/components/ui/dialog';
 import { deactivateSinglePostPassAction } from '@/lib/actions';
 
+function convertFirestoreTimestampToDate(timestamp: any): Date | null {
+  if (!timestamp) {
+    return null;
+  }
+  if (typeof timestamp.seconds === 'number' && typeof timestamp.nanoseconds === 'number') {
+    return new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+  }
+  const date = new Date(timestamp);
+  if (!isNaN(date.getTime())) {
+    return date;
+  }
+  return null;
+}
 
 const RestaurantIcon = ({ name }: { name: string }) => {
   const lowerCaseName = name.toLowerCase();
@@ -56,7 +69,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
   const [showPrompt, setShowPrompt] = useState<'login' | 'subscribe' | 'limit-reached' | null>(null);
   const [catchyTitle, setCatchyTitle] = useState(post.details.title || "Group Order");
 
-  const deadline = post.timestamps.deadline ? new Date(post.timestamps.deadline) : null;
+  const deadline = convertFirestoreTimestampToDate(post.timestamps.deadline);
   const deadlineInPast = deadline ? deadline < new Date() : true;
   const hoursLeft = deadline ? differenceInHours(deadline, new Date()) : null;
   const isUrgent = hoursLeft !== null && hoursLeft <= 6 && !deadlineInPast;

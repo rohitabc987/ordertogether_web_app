@@ -32,7 +32,7 @@ export function generateCatchyTitle(post: Partial<Post>): string {
     `Join our ${post.details.restaurant} order`,
     `Group order for ${post.details.restaurant}`,
     `Who's in for ${post.details.restaurant}?`,
-    `Let's order ${post.details.restaurant} together`,
+    `Let's order on ${post.details.restaurant} together`,
   ];
 
   const dealPhrases: string[] = [];

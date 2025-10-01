@@ -24,12 +24,29 @@ import type { Post } from '@/lib/types';
 import { deletePostAction } from '@/lib/actions';
 import { Progress } from './ui/progress';
 
+function convertFirestoreTimestampToDate(timestamp: any): Date | null {
+  if (!timestamp) {
+    return null;
+  }
+  // Firestore timestamps are serialized to objects with seconds and nanoseconds
+  // when passed from server to client components.
+  if (typeof timestamp.seconds === 'number' && typeof timestamp.nanoseconds === 'number') {
+    return new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+  }
+  // Fallback for cases where it might be a string (e.g., from `new Date().toISOString()`)
+  const date = new Date(timestamp);
+  if (!isNaN(date.getTime())) {
+    return date;
+  }
+  return null;
+}
+
 export function MyPostCard({ post }: { post: Post }) {
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const deadline = post.timestamps?.deadline ? new Date(post.timestamps.deadline) : null;
+  const deadline = convertFirestoreTimestampToDate(post.timestamps?.deadline);
   const deadlineInPast = deadline ? deadline < new Date() : true;
-  const hasBeenEdited = !!post.timestamps?.updatedAt;
+  const hasBeenEdited = !!convertFirestoreTimestampToDate(post.timestamps?.updatedAt);
 
   const remainingNeeded = post.order.totalAmount - post.order.contributionAmount;
   const progressPercentage = (post.order.contributionAmount / post.order.totalAmount) * 100;

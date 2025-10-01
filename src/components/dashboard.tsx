@@ -13,6 +13,20 @@ import { Button } from './ui/button';
 
 const POSTS_PER_PAGE = 10;
 
+function convertFirestoreTimestampToDate(timestamp: any): Date | null {
+  if (!timestamp) {
+    return null;
+  }
+  if (typeof timestamp.seconds === 'number' && typeof timestamp.nanoseconds === 'number') {
+    return new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+  }
+  const date = new Date(timestamp);
+  if (!isNaN(date.getTime())) {
+    return date;
+  }
+  return null;
+}
+
 export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { initialPosts: Post[], bannerImageUrl: string | null }) {
   const { user } = useAuth();
   const [posts] = useState<Post[]>(initialPosts);
@@ -31,13 +45,11 @@ export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { 
   useEffect(() => {
     const cachedUrl = localStorage.getItem('bannerImageUrl');
     if (initialBannerUrl) {
-      // If we got a URL from the server, cache it.
       if (cachedUrl !== initialBannerUrl) {
         localStorage.setItem('bannerImageUrl', initialBannerUrl);
       }
       setBannerImageUrl(initialBannerUrl);
     } else if (cachedUrl) {
-      // If server didn't provide one (e.g., client navigation), use the cached one.
       setBannerImageUrl(cachedUrl);
     }
   }, [initialBannerUrl]);
@@ -46,7 +58,12 @@ export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { 
   const filteredPosts = useMemo(() => {
     return posts.filter(post => {
       const now = new Date();
-      const deadline = new Date(post.timestamps.deadline);
+      const deadline = convertFirestoreTimestampToDate(post.timestamps.deadline);
+
+      if (!deadline) {
+          return false; // Or handle as per your logic for posts without deadlines
+      }
+
       const isExpired = deadline < now;
 
       // Status Filter

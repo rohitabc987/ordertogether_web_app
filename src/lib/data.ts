@@ -4,6 +4,7 @@
 
 
 
+
 // @ts-nocheck
 import type { User, Post } from './types';
 import { db } from './firebase-admin';
@@ -56,10 +57,8 @@ export const getUserById = cache(async (userId: string): Promise<User | undefine
     return undefined;
   }
   const userData = { id: userDoc.id, ...userDoc.data() } as User;
-  console.log(`data: User found:`, userData);
-  // We return the raw data here, and expect the caller to handle timestamp conversion if needed for client-side use.
-  // For server components, raw objects are fine.
-  return userData;
+  // Convert timestamps for client-side usage
+  return convertTimestamps(userData);
 });
 
 async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
