@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, differenceInMinutes } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
 import type { Post } from '@/lib/types';
 import { deletePostAction } from '@/lib/actions';
@@ -60,6 +60,16 @@ export function MyPostCard({ post }: { post: Post }) {
     setIsDeleting(true);
     await deletePostAction(post.id);
   };
+
+  const getDeadlineText = () => {
+    if (!deadline) return 'N/A';
+    const now = new Date();
+    const minutesLeft = differenceInMinutes(deadline, now);
+    if (minutesLeft < 60 && minutesLeft > 0) {
+        return `in ${minutesLeft} min`;
+    }
+    return formatDistanceToNow(deadline, { addSuffix: true });
+  }
   
   return (
     <Card className="flex flex-col">
@@ -81,7 +91,7 @@ export function MyPostCard({ post }: { post: Post }) {
         
         <div className="flex items-center text-sm text-muted-foreground">
           <Clock className="mr-2 h-4 w-4" />
-          <span>Deadline: {deadline ? formatDistanceToNow(deadline, { addSuffix: true }) : 'N/A'}</span>
+          <span>Deadline: {getDeadlineText()}</span>
         </div>
         
         {post.details.notes && <p className="text-sm border-l-2 border-accent pl-3 py-1 bg-background rounded-r-md">{post.details.notes}</p>}
@@ -89,17 +99,23 @@ export function MyPostCard({ post }: { post: Post }) {
         {hasBeenEdited && (
            <Badge variant="outline" className="flex items-center gap-2">
               <Info className="w-3 h-3"/>
-              This post has been edited once and cannot be changed again.
+              Posts can be edited only once
             </Badge>
         )}
 
       </CardContent>
       <CardFooter className="flex justify-end gap-2">
-        <Button asChild variant="outline" size="sm" disabled={hasBeenEdited || deadlineInPast}>
-            <Link href={`/edit-post/${post.id}`} onClick={(e) => (hasBeenEdited || deadlineInPast) && e.preventDefault()}>
-              <Edit />
-              Edit
-            </Link>
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          disabled={hasBeenEdited || deadlineInPast}
+          className={(hasBeenEdited || deadlineInPast) ? 'opacity-50 cursor-not-allowed' : ''}
+        >
+          <Link href={`/edit-post/${post.id}`} onClick={(e) => (hasBeenEdited || deadlineInPast) && e.preventDefault()}>
+            <Edit />
+            Edit
+          </Link>
         </Button>
         <AlertDialog>
           <AlertDialogTrigger asChild>

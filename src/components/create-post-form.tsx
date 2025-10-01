@@ -156,12 +156,12 @@ export function CreatePostForm({ user }: { user: User }) {
   return (
       <>
     <Card className="w-full max-w-2xl mx-auto border-2 border-teal-100 shadow-lg">
-      <CardHeader className="text-center bg-teal-50 rounded-t-lg p-6">
+      <CardHeader className="text-center bg-teal-50 rounded-t-lg p-4">
         <CardTitle className="text-3xl font-headline text-teal-800">🎉 Create a New Order Post</CardTitle>
         <CardDescription className="text-teal-600">Let others in your building know you're ordering.</CardDescription>
       </CardHeader>
       <CardContent className="p-8">
-        <form ref={formRef} action={formAction} className="space-y-6">
+        <form ref={formRef} action={formAction} className="space-y-2">
           <input type="hidden" name="authorId" value={user.id} />
 
           <div className="space-y-2">
@@ -271,9 +271,9 @@ export function CreatePostForm({ user }: { user: User }) {
                 <div className="p-3 bg-green-100 dark:bg-green-900/50 rounded-full mb-4">
                     <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
                 </div>
-                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">Post Created Successfully!</DialogTitle>
+                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">Your post is live! 🎉</DialogTitle>
                 <DialogDescription className="text-gray-600 dark:text-gray-400 mt-2">
-                    Your group order has been posted. You can manage it in the 'My Posts' section of your profile.
+                You can view or update it anytime from ‘My Posts’ in your profile
                 </DialogDescription>
             </DialogHeader>
             <div className="flex justify-around p-6 bg-gray-50 dark:bg-gray-700/50 rounded-b-lg">

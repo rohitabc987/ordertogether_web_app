@@ -1,9 +1,4 @@
 
-
-
-
-
-
 'use client';
 
 import { useState, useRef, useTransition, useContext, useEffect } from 'react';
@@ -12,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail, Utensils, ShieldOff } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { useAuth, PostViewContext } from '@/providers';
-import { formatDistanceToNow, differenceInHours } from 'date-fns';
+import { formatDistanceToNow, differenceInHours, differenceInMinutes } from 'date-fns';
 import { formatCurrency, generateCatchyTitle } from '@/lib/utils';
 import Link from 'next/link';
 import { Badge } from './ui/badge';
@@ -156,6 +151,16 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
   const closePrompt = () => {
     setShowPrompt(null);
   };
+  
+  const getDeadlineText = () => {
+    if (!deadline) return 'N/A';
+    const now = new Date();
+    const minutesLeft = differenceInMinutes(deadline, now);
+    if (minutesLeft < 60 && minutesLeft > 0) {
+        return `in ${minutesLeft} min`;
+    }
+    return formatDistanceToNow(deadline, { addSuffix: true });
+  }
 
   return (
     <div
@@ -204,7 +209,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
             {!isUrgent && (
               <div className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
-                <span>{deadline ? formatDistanceToNow(deadline, { addSuffix: true }) : 'N/A'}</span>
+                <span>{getDeadlineText()}</span>
               </div>
             )}
         </div>
