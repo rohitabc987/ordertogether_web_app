@@ -212,13 +212,13 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
           </div>
            {isUrgent && (
               <Badge variant="destructive" className="text-base">
-                Closes in {hoursLeft}h ⏳
+                Closes {getDeadlineText()} ⏳
               </Badge>
             )}
             {!isUrgent && (
               <div className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
-                <span>{getDeadlineText()}</span>
+                <span> {getDeadlineText()}</span>
               </div>
             )}
         </div>

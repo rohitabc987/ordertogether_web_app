@@ -1,6 +1,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -10,6 +11,7 @@ import type { Post } from '@/lib/types';
 import { useAuth } from '@/providers';
 import { AboutSection } from './about-section';
 import { Button } from './ui/button';
+import Image from 'next/image';
 
 const POSTS_PER_PAGE = 10;
 
@@ -190,17 +192,17 @@ export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { 
                 )}
               </div>
             ) : (
-              <div className="text-center py-16 border-2 border-dashed rounded-lg bg-card h-full flex flex-col justify-center">
-                <div className="flex justify-center mb-4">
-                  <img src="/images/empty-state.svg" alt="No Orders" className="w-48 h-48"/>
+              <div className="flex h-full flex-col items-center justify-center rounded-lg border-2 border-dashed bg-card p-12 text-center">
+                <div className="mb-4">
+                  <Image src="/images/empty-state.svg" alt="No Orders Found" width={192} height={192} className="mx-auto" />
                 </div>
-                <h2 className="text-2xl font-headline text-primary">
+                <h3 className="text-2xl font-bold font-headline tracking-tight text-primary">
                   No Matching Orders Found
-                </h2>
-                <p className="text-muted-foreground mt-2 mb-4">
-                  Try adjusting or clearing your filters to see more results.
+                </h3>
+                <p className="mt-2 text-base text-muted-foreground">
+                  Try adjusting your filters or check back later for new group orders.
                 </p>
-                 <Button variant="outline" onClick={resetFilters}>
+                <Button variant="outline" onClick={resetFilters} className="mt-6">
                   Clear All Filters
                 </Button>
               </div>
