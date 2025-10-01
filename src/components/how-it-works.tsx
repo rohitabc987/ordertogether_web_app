@@ -24,26 +24,21 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works">
-      <h2 className="text-3xl font-bold font-headline text-center mb-8">
-        How It Works
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {steps.map(step => (
-          <Card key={step.step} className="text-center">
-            <CardHeader>
-              <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
-                {step.icon}
-              </div>
-              <div className="text-sm font-bold text-primary">STEP {step.step}</div>
-            </CardHeader>
-            <CardContent>
-              <CardTitle className="text-xl mb-2">{step.title}</CardTitle>
-              <p className="text-muted-foreground">{step.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </section>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {steps.map(step => (
+        <Card key={step.step} className="text-center flex flex-col">
+          <CardHeader>
+            <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
+              {step.icon}
+            </div>
+            <div className="text-sm font-bold text-primary">STEP {step.step}</div>
+          </CardHeader>
+          <CardContent className="py-8">
+            <CardTitle className="text-xl mb-2">{step.title}</CardTitle>
+            <p className="text-muted-foreground">{step.description}</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }

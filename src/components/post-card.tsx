@@ -4,7 +4,7 @@
 import { useState, useRef, useTransition, useContext, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail, Utensils, ShieldOff } from 'lucide-react';
+import { Clock, Phone, MessageSquare, Info, ChevronDown, User as UserIcon, Mail, Utensils, ShieldOff, Pizza, Burger, Coffee } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { useAuth, PostViewContext } from '@/providers';
 import { formatDistanceToNow, differenceInHours, differenceInMinutes } from 'date-fns';
@@ -39,6 +39,7 @@ function convertFirestoreTimestampToDate(timestamp: any): Date | null {
 
 const RestaurantIcon = ({ name }: { name: string }) => {
   const lowerCaseName = name.toLowerCase();
+  
   if (lowerCaseName.includes('zomato')) {
     return (
       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -54,8 +55,19 @@ const RestaurantIcon = ({ name }: { name: string }) => {
       </svg>
     );
   }
+  if (lowerCaseName.includes('pizza') || lowerCaseName.includes("domino's")) {
+    return <Pizza className="w-4 h-4" />;
+  }
+  if (lowerCaseName.includes('burger') || lowerCaseName.includes('kfc')) {
+    return <Burger className="w-4 h-4" />;
+  }
+  if (lowerCaseName.includes('cafe') || lowerCaseName.includes('starbucks')) {
+    return <Coffee className="w-4 h-4" />;
+  }
+  
   return <Utensils className="w-4 h-4" />;
 };
+
 
 export function PostCard({ post, index }: { post: Post; index: number }) {
   const { user } = useAuth();
@@ -336,5 +348,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     </div>
   );
 }
+
+    
 
     

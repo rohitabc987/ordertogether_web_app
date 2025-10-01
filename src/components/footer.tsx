@@ -12,7 +12,7 @@ export function Footer() {
               <UtensilsCrossed className="h-6 w-6 text-primary" />
               <span className="font-bold font-headline text-lg">OrderlyGather</span>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-secondary-foreground">
               Combine small orders, save on delivery fees.
             </p>
           </div>
@@ -22,41 +22,41 @@ export function Footer() {
             <div>
               <h3 className="font-semibold font-headline mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><Link href="/about" className="text-sm text-muted-foreground hover:text-foreground">About</Link></li>
-                <li><Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground">Pricing Plan</Link></li>
-                <li><Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground">Contact Us</Link></li>
+                <li><Link href="/about" className="text-sm text-secondary-foreground hover:text-primary">About</Link></li>
+                <li><Link href="/pricing" className="text-sm text-secondary-foreground hover:text-primary">Pricing Plan</Link></li>
+                <li><Link href="/contact" className="text-sm text-secondary-foreground hover:text-primary">Contact Us</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="font-semibold font-headline mb-4">Resources</h3>
               <ul className="space-y-2">
-                <li><Link href="/about#how-it-works" className="text-sm text-muted-foreground hover:text-foreground">How it Works</Link></li>
-                <li><Link href="/feedback" className="text-sm text-muted-foreground hover:text-foreground">Give Feedback</Link></li>
-                <li><Link href="/know-more" className="text-sm text-muted-foreground hover:text-foreground">Know More</Link></li>
+                <li><Link href="/how-it-works" className="text-sm text-secondary-foreground hover:text-primary">How it Works</Link></li>
+                <li><Link href="/feedback" className="text-sm text-secondary-foreground hover:text-primary">Give Feedback</Link></li>
+                <li><Link href="/know-more" className="text-sm text-secondary-foreground hover:text-primary">Know More</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="font-semibold font-headline mb-4">Legal</h3>
               <ul className="space-y-2">
-                <li><Link href="/legal/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground">Privacy Policy</Link></li>
-                <li><Link href="/legal/terms-of-service" className="text-sm text-muted-foreground hover:text-foreground">Terms of Service</Link></li>
+                <li><Link href="/legal/privacy-policy" className="text-sm text-secondary-foreground hover:text-primary">Privacy Policy</Link></li>
+                <li><Link href="/legal/terms-of-service" className="text-sm text-secondary-foreground hover:text-primary">Terms of Service</Link></li>
               </ul>
             </div>
           </div>
         </div>
 
         <div className="mt-12 border-t pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-secondary-foreground">
             © {new Date().getFullYear()} OrderlyGather. All rights reserved.
           </p>
           <div className="flex items-center space-x-4">
-            <Link href="#" className="text-muted-foreground hover:text-foreground">
+            <Link href="#" className="text-secondary-foreground hover:text-primary">
               <Twitter className="h-5 w-5" />
             </Link>
-            <Link href="#" className="text-muted-foreground hover:text-foreground">
+            <Link href="#" className="text-secondary-foreground hover:text-primary">
               <Github className="h-5 w-5" />
             </Link>
-            <Link href="#" className="text-muted-foreground hover:text-foreground">
+            <Link href="#" className="text-secondary-foreground hover:text-primary">
               <Linkedin className="h-5 w-5" />
             </Link>
           </div>
