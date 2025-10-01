@@ -46,7 +46,12 @@ export function MyPostCard({ post }: { post: Post }) {
 
   const deadline = convertFirestoreTimestampToDate(post.timestamps?.deadline);
   const deadlineInPast = deadline ? deadline < new Date() : true;
-  const hasBeenEdited = !!convertFirestoreTimestampToDate(post.timestamps?.updatedAt);
+  
+  // A post is considered edited only if updatedAt exists and is more than
+  // 2 seconds after createdAt to account for creation time.
+  const createdAt = convertFirestoreTimestampToDate(post.timestamps?.createdAt);
+  const updatedAt = convertFirestoreTimestampToDate(post.timestamps?.updatedAt);
+  const hasBeenEdited = createdAt && updatedAt && (updatedAt.getTime() - createdAt.getTime() > 2000);
 
   const remainingNeeded = post.order.totalAmount - post.order.contributionAmount;
   const progressPercentage = (post.order.contributionAmount / post.order.totalAmount) * 100;
