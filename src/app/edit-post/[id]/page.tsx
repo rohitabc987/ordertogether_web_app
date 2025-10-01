@@ -1,5 +1,6 @@
 
 import { EditPostForm } from '@/components/edit-post-form';
+import { EditingLockedDialog } from '@/components/editing-locked-dialog';
 import { getPostById } from '@/lib/data';
 import { getCurrentUser } from '@/lib/session';
 import { redirect } from 'next/navigation';
@@ -54,15 +55,7 @@ export default async function EditPostPage({ params }: { params: { id: string } 
   }
 
   if (hasBeenEdited) {
-     return (
-        <div className="container mx-auto px-4 py-8">
-            <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Editing Locked</AlertTitle>
-                <AlertDescription>This post has been edited once and cannot be changed again.</AlertDescription>
-            </Alert>
-        </div>
-    );
+     return <EditingLockedDialog />;
   }
 
   return (
