@@ -336,3 +336,5 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     </div>
   );
 }
+
+    
