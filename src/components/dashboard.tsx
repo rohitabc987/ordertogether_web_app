@@ -2,6 +2,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -199,7 +200,7 @@ export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { 
                 <h3 className="text-2xl font-bold font-headline tracking-tight text-primary">
                   No Matching Orders Found
                 </h3>
-                <p className="mt-2 text-base text-muted-foreground">
+                <p className="mt-2 text-base text-foreground">
                   Try adjusting your filters or check back later for new group orders.
                 </p>
                 <Button variant="outline" onClick={resetFilters} className="mt-6">
