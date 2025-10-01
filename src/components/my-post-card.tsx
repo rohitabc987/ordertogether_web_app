@@ -96,7 +96,7 @@ export function MyPostCard({ post }: { post: Post }) {
       </CardContent>
       <CardFooter className="flex justify-end gap-2">
         <Button asChild variant="outline" size="sm" disabled={hasBeenEdited || deadlineInPast}>
-            <Link href={`/edit-post/${post.id}`}>
+            <Link href={`/edit-post/${post.id}`} onClick={(e) => (hasBeenEdited || deadlineInPast) && e.preventDefault()}>
               <Edit />
               Edit
             </Link>
