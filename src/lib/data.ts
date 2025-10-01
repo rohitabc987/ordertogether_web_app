@@ -1,10 +1,4 @@
 
-
-
-
-
-
-
 // @ts-nocheck
 import type { User, Post } from './types';
 import { db } from './firebase-admin';
@@ -35,8 +29,27 @@ function convertTimestamps(obj: any): any {
   return obj;
 }
 
+export const getAuthorAndInstitution = cache(async (authorId: string): Promise<{ authorData: User; institutionId: string; } | null> => {
+  try {
+    const userDoc = await usersCollection.doc(authorId).get();
+    if (!userDoc.exists) return null;
 
-export async function findUserByEmail(email: string): Promise<User | undefined> {
+    const authorData = { id: userDoc.id, ...userDoc.data() } as User;
+    const institutionId = authorData.institution?.institutionName;
+
+    if (!institutionId) {
+      console.warn(`User ${authorId} does not have an institutionId.`);
+      return null;
+    }
+    return { authorData: convertTimestamps(authorData), institutionId };
+  } catch (error) {
+    console.error('Error fetching user and institution:', error);
+    return null;
+  }
+});
+
+
+export const findUserByEmail = cache(async (email: string): Promise<User | undefined> => {
   console.log(`data: findUserByEmail called for: ${email}`);
   const snapshot = await usersCollection.where('contact.email', '==', email).limit(1).get();
   if (snapshot.empty) {
@@ -46,8 +59,8 @@ export async function findUserByEmail(email: string): Promise<User | undefined> 
   const userDoc = snapshot.docs[0];
   const userData = { id: userDoc.id, ...userDoc.data() } as User;
   console.log(`data: User found with ID: ${userDoc.id}`, userData);
-  return userData;
-}
+  return convertTimestamps(userData);
+});
 
 export const getUserById = cache(async (userId: string): Promise<User | undefined> => {
   console.log(`data: getUserById called for ID: ${userId}`);
@@ -68,9 +81,12 @@ async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
   
   const authors = {};
   if (authorIds.length > 0) {
-    const authorSnapshots = await db.collection('users').where(FieldPath.documentId(), 'in', authorIds).get();
-    authorSnapshots.forEach(doc => {
-      authors[doc.id] = { id: doc.id, ...doc.data() };
+    const authorPromises = authorIds.map(id => getUserById(id));
+    const authorResults = await Promise.all(authorPromises);
+    authorResults.forEach(author => {
+      if (author) {
+        authors[author.id] = author;
+      }
     });
   }
 
@@ -127,31 +143,11 @@ export const getPostsByAuthorId = cache(async (authorId: string): Promise<Post[]
   return postsWithAuthors;
 });
 
-
-export async function createPost(postData: Omit<Post, 'id' | 'author' | 'timestamps.createdAt'>): Promise<Post> {
-  const postWithTimestamp = {
-    ...postData,
-    timestamps: {
-      ...postData.timestamps,
-      createdAt: new Date(),
-    }
-  };
-  const docRef = await postsCollection.add(postWithTimestamp);
-  const newPostData = (await docRef.get()).data();
-  return { id: docRef.id, ...newPostData } as Post;
-}
-
 export async function updatePost(postId: string, updates: Partial<Post>): Promise<void> {
-  const flattenedUpdates = {
-    'details.title': updates.details.title,
-    'details.restaurant': updates.details.restaurant,
-    'details.notes': updates.details.notes,
-    'order.totalAmount': updates.order.totalAmount,
-    'order.contributionAmount': updates.order.contributionAmount,
-    'timestamps.deadline': updates.timestamps.deadline,
+  await postsCollection.doc(postId).update({
+    ...updates,
     'timestamps.updatedAt': new Date(),
-  };
-  await postsCollection.doc(postId).update(flattenedUpdates);
+  });
 }
 
 export async function deletePost(postId: string): Promise<void> {
@@ -177,18 +173,18 @@ export async function updateUser(userId: string, updates: Record<string, any>): 
   return updatedUser;
 }
 
-export async function createUserInDb(data: { name: string; email: string; gender: string; photoURL?: string | null; }): Promise<User> {
+export async function createUserInDb(data: { name: string; email: string; photoURL?: string | null; }): Promise<User> {
   console.log(`data: createUserInDb called for email: ${data.email}`);
   const newUserTemplate: Omit<User, 'id'> = {
     userProfile: {
       name: data.name,
-      gender: data.gender,
+      gender: 'prefer_not_to_say',
       photoURL: data.photoURL || null,
     },
     contact: {
       email: data.email,
       phone: null,
-      whatsapp: null,
+      shareContact: true,
     },
     location: {
       area: null,
@@ -204,6 +200,7 @@ export async function createUserInDb(data: { name: string; email: string; gender
       plan: null,
       startDate: null,
       expiry: null,
+      postsViewed: 0,
     },
   };
 
@@ -214,7 +211,7 @@ export async function createUserInDb(data: { name: string; email: string; gender
 
   const result = { id: docRef.id, ...newUserDoc.data() } as User;
   console.log('data: Returning new user object:', result);
-  return result;
+  return convertTimestamps(result);
 }
 
 export const getBannerImageUrl = cache(async (): Promise<string | null> => {

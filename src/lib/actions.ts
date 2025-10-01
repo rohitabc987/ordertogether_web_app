@@ -1,13 +1,12 @@
 
-
-
-
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { Post, User, Subscription } from './types';
 import {FieldValue,Timestamp,} from 'firebase-admin/firestore';
-import { db as adminDb } from './firebase-admin';
+import { db as adminDb, auth as adminAuth } from './firebase-admin';
+import { cookies } from 'next/headers';
+import { findUserByEmail, createUserInDb, getAuthorAndInstitution } from './data';
 
 function convertFirestoreTimestampToDate(timestamp: any): Date | null {
   if (!timestamp) {
@@ -23,25 +22,6 @@ function convertFirestoreTimestampToDate(timestamp: any): Date | null {
   return null;
 }
 
-async function getAuthorAndInstitution(authorId: string): Promise<{ authorData: User; institutionId: string; } | null> {
-  try {
-    const userDoc = await adminDb.collection('users').doc(authorId).get();
-    if (!userDoc.exists) return null;
-
-    const authorData = userDoc.data() as User;
-    const institutionId = authorData.institution?.institutionName;
-
-    if (!institutionId) {
-      console.warn(`User ${authorId} does not have an institutionId.`);
-      return null;
-    }
-    return { authorData, institutionId };
-  } catch (error) {
-    console.error('Error fetching user and institution:', error);
-    return null;
-  }
-}
-
 export async function createPostAction(prevState: any, formData: FormData) {
   const authorId = formData.get('authorId') as string;
 
@@ -51,7 +31,7 @@ export async function createPostAction(prevState: any, formData: FormData) {
       return { message: 'Error: Could not find author or institution.' };
     }
 
-    const { authorData, institutionId } = authorResult;
+    const { authorData } = authorResult;
 
     const deadlineStr = formData.get('timestamps.deadline') as string;
     const deadline = Timestamp.fromDate(new Date(deadlineStr));
@@ -60,7 +40,7 @@ export async function createPostAction(prevState: any, formData: FormData) {
       authorId,
       authorInfo: {
         authorName: authorData.userProfile.name,
-        gender: authorData.userProfile.gender,
+        gender: authorData.userProfile.gender || 'prefer_not_to_say',
       },
       details: {
         title: formData.get('details.title') as string,
@@ -72,16 +52,15 @@ export async function createPostAction(prevState: any, formData: FormData) {
         contributionAmount: parseFloat(formData.get('order.contributionAmount') as string),
       },
       timestamps: {
-        createdAt: FieldValue.serverTimestamp(),
-        updatedAt: FieldValue.serverTimestamp(),
-        deadline: deadline,
+        createdAt: FieldValue.serverTimestamp() as any,
+        updatedAt: FieldValue.serverTimestamp() as any,
+        deadline: deadline as any,
       },
       location: {
         institutionName: authorData.institution?.institutionName,
         area: authorData.location?.area,
         city: authorData.location?.city,
       },
-      status: 'active',
     };
 
     await adminDb.collection('posts').add(newPost);
@@ -156,10 +135,15 @@ export async function updateProfileAction(prevState: any, formData: FormData) {
         if (!userDoc.exists) {
             return { message: 'Error: User not found.' };
         }
-
-        const lastUpdate = userDoc.data()?.userProfile?.lastProfileUpdate;
-        if (lastUpdate && (new Date().getTime() - lastUpdate.toDate().getTime()) < oneWeek) {
-            return { message: 'Profile can only be updated once a week.' };
+        
+        const userData = userDoc.data() as User;
+        const lastUpdateStr = userData.userProfile?.lastProfileUpdate;
+        
+        if (lastUpdateStr) {
+            const lastUpdate = new Date(lastUpdateStr);
+            if ((new Date().getTime() - lastUpdate.getTime()) < oneWeek) {
+                 return { message: 'Profile can only be updated once a week.' };
+            }
         }
         
         const updates: Record<string, any> = {
@@ -177,6 +161,7 @@ export async function updateProfileAction(prevState: any, formData: FormData) {
         await userRef.update(updates);
         
         revalidatePath('/profile');
+        revalidatePath('/');
 
         return { message: 'Profile updated successfully!' };
     } catch (error) {
@@ -186,110 +171,21 @@ export async function updateProfileAction(prevState: any, formData: FormData) {
 }
 
 
-
-export async function getPostsForUser(userId: string): Promise<Post[]> {
-  try {
-    const now = Timestamp.now();
-    const postsSnapshot = await adminDb
-      .collection('posts')
-      .where('authorId', '==', userId)
-      .orderBy('timestamps.createdAt', 'desc')
-      .get();
-
-    if (postsSnapshot.empty) {
-      return [];
-    }
-
-    const posts: Post[] = postsSnapshot.docs.map(doc => {
-      const data = doc.data();
-      const deadline = convertFirestoreTimestampToDate(data.timestamps.deadline);
-
-      return {
-        id: doc.id,
-        ...
-        data,
-        timestamps: { ...data.timestamps, deadline }, 
-      } as Post;
-    });
-    
-    return posts;
-
-  } catch (error) {
-    console.error("Error fetching user's posts:", error);
-    return [];
-  }
-}
-
-
-
-export async function getActivePosts(institutionId: string): Promise<Post[]> {
-  try {
-    const now = Timestamp.now();
-    const postsSnapshot = await adminDb
-      .collection('posts')
-      .where('location.institutionId', '==', institutionId)
-      .orderBy('timestamps.deadline', 'desc') 
-      .get();
-
-    if (postsSnapshot.empty) {
-      return [];
-    }
-
-    const authorIds = [...new Set(postsSnapshot.docs.map(doc => doc.data().authorId))];
-    const authorSnapshots = await adminDb.collection('users').where(FieldValue.documentId(), 'in', authorIds).get();
-    const authors = new Map(authorSnapshots.docs.map(doc => [doc.id, doc.data() as User]));
-
-    const posts: Post[] = postsSnapshot.docs.map(doc => {
-      const data = doc.data();
-      const author = authors.get(data.authorId);
-      
-      if (!author) {
-        return null;
-      }
-
-      return {
-        id: doc.id,
-        ...data,
-        author: author, 
-      } as Post;
-    }).filter((post): post is Post => post !== null);
-
-    return posts;
-
-  } catch (error) {
-    console.error("Error fetching institution's posts:", error);
-    return [];
-  }
-}
-
-export async function getSubscription(userId: string): Promise<Subscription | null> {
-  try {
-    const subDoc = await adminDb.collection('subscriptions').doc(userId).get();
-    if (!subDoc.exists) {
-      return null;
-    }
-    return subDoc.data() as Subscription;
-  } catch (error) {
-    console.error('Error fetching subscription:', error);
-    return null;
-  }
-}
-
 export async function deactivateSinglePostPassAction(userId: string) {
   try {
-    const subscriptionRef = adminDb.collection('subscriptions').doc(userId);
-    const subDoc = await subscriptionRef.get();
+    const userRef = adminDb.collection('users').doc(userId);
+    const userDoc = await userRef.get();
 
-    if (!subDoc.exists) {
-      return { success: false, message: 'Subscription not found.' };
+    if (!userDoc.exists) {
+      return { success: false, message: 'User not found.' };
     }
 
-    const subscription = subDoc.data() as Subscription;
+    const user = userDoc.data() as User;
 
-    if (subscription.plan === 'single-post' && subscription.status === 'active') {
-      await subscriptionRef.update({
-        status: 'inactive',
-        'usage.postsViewed': 1, 
+    if (user.subscription?.plan === 'single-post' && user.subscription?.status === 'active') {
+      await userRef.update({
+        'subscription.status': 'inactive',
+        'subscription.postsViewed': 1, 
       });
 
       revalidatePath('/'); 
@@ -304,9 +200,6 @@ export async function deactivateSinglePostPassAction(userId: string) {
   }
 }
 
-
-import { cookies } from 'next/headers';
-import { auth as adminAuth } from './firebase-admin';
 
 export async function verifyAndSignInAction(idToken: string) {
   try {
@@ -324,7 +217,6 @@ export async function verifyAndSignInAction(idToken: string) {
       const newUser = {
         name: decodedToken.name || 'New User',
         email: email,
-        gender: 'prefer_not_to_say',
         photoURL: decodedToken.picture || null,
       };
       user = await createUserInDb(newUser);
@@ -340,49 +232,6 @@ export async function verifyAndSignInAction(idToken: string) {
   }
 }
 
-async function findUserByEmail(email: string): Promise<User | undefined> {
-  const snapshot = await adminDb.collection('users').where('contact.email', '==', email).limit(1).get();
-  if (snapshot.empty) {
-    return undefined;
-  }
-  const userDoc = snapshot.docs[0];
-  return { id: userDoc.id, ...userDoc.data() } as User;
-}
-
-async function createUserInDb(data: { name: string; email: string; gender: string; photoURL?: string | null; }): Promise<User> {
-  const newUserTemplate: Omit<User, 'id'> = {
-    userProfile: {
-      name: data.name,
-      gender: data.gender as any,
-      photoURL: data.photoURL,
-    },
-    contact: {
-      email: data.email,
-      phone: null,
-      shareContact: true,
-    },
-    location: {
-      area: null,
-      city: null,
-      pinCode: null,
-    },
-    institution: {
-      institutionType: null,
-      institutionName: null,
-    },
-    subscription: {
-      status: 'inactive',
-      plan: null,
-      startDate: null,
-      expiry: null,
-    },
-  };
-
-  const docRef = await adminDb.collection('users').add(newUserTemplate);
-  const newUserDoc = await docRef.get();
-  return { id: docRef.id, ...newUserDoc.data() } as User;
-}
-
 export async function logoutAction() {
     const cookieStore = cookies();
     cookieStore.delete('session_userId');
@@ -395,7 +244,6 @@ export async function subscribeAction(planId: 'single-post' | 'daily' | 'weekly'
   }
 
   try {
-    const subscriptionRef = adminDb.collection('subscriptions').doc(userId);
     const userRef = adminDb.collection('users').doc(userId);
 
     const now = new Date();
@@ -420,18 +268,13 @@ export async function subscribeAction(planId: 'single-post' | 'daily' | 'weekly'
     const subscriptionData: Subscription = {
       status: 'active',
       plan: planId,
-      startDate: Timestamp.fromDate(now),
-      expiry: Timestamp.fromDate(expiry),
-      usage: {
-        postsViewed: 0,
-      }
+      startDate: Timestamp.fromDate(now) as any,
+      expiry: Timestamp.fromDate(expiry) as any,
+      postsViewed: 0,
     };
     
     await userRef.update({
-        'subscription.status': 'active',
-        'subscription.plan': planId,
-        'subscription.startDate': Timestamp.fromDate(now),
-        'subscription.expiry': Timestamp.fromDate(expiry),
+        'subscription': subscriptionData
     });
 
     revalidatePath('/pricing');
@@ -472,9 +315,13 @@ export async function updatePostViewCountAction(userId: string, count: number) {
     const userRef = adminDb.collection('users').doc(userId);
 
     try {
-        await userRef.update({
-            'activity.postsViewed': FieldValue.increment(count)
-        });
+        const userDoc = await userRef.get();
+        if (userDoc.exists) {
+            const currentCount = userDoc.data()?.subscription?.postsViewed || 0;
+            await userRef.update({
+                'subscription.postsViewed': currentCount + count
+            });
+        }
     } catch (error) {
         console.error(`Failed to update view count for user ${userId}:`, error);
     }
