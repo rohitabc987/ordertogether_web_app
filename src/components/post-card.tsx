@@ -39,30 +39,70 @@ function convertFirestoreTimestampToDate(timestamp: any): Date | null {
 
 const RestaurantIcon = ({ name }: { name: string }) => {
   const lowerCaseName = name.toLowerCase();
+
+  // Food Delivery Apps
+  if (['swiggy', 'zomato'].some(keyword => lowerCaseName.includes(keyword))) {
+    return (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 17C19 17.5304 18.7893 18.0391 18.4142 18.4142C18.0391 18.7893 17.5304 19 17 19C16.4696 19 15.9609 18.7893 15.5858 18.4142C15.2107 18.0391 15 17.5304 15 17C15 16.4696 15.2107 15.9609 15.5858 15.5858C15.9609 15.2107 16.4696 15 17 15C17.5304 15 18.0391 15.2107 18.4142 15.5858C18.7893 15.9609 19 16.4696 19 17Z" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M9 17C9 17.5304 8.78929 18.0391 8.41421 18.4142C8.03914 18.7893 7.53043 19 7 19C6.46957 19 5.96086 18.7893 5.58579 18.4142C5.21071 18.0391 5 17.5304 5 17C5 16.4696 5.21071 15.9609 5.58579 15.5858C5.96086 15.2107 6.46957 15 7 15C7.53043 15 8.03914 15.2107 8.41421 15.5858C8.78929 15.9609 9 16.4696 9 17Z" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M14 17H9.5" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M19 12V10H15" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M17.5 12H19C19.5304 12 20.0391 11.7893 20.4142 11.4142C20.7893 11.0391 21 10.5304 21 10V7C21 6.46957 20.7893 5.96086 20.4142 5.58579C20.0391 5.21071 19.5304 5 19 5H14.5L12.5 8H5C4.46957 8 3.96086 8.21071 3.58579 8.58579C3.21071 8.96086 3 9.46957 3 10V17H5" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    );
+  }
+
+  // Pizza places
+  if (['pizza', 'domino\'s', 'pizzahut'].some(keyword => lowerCaseName.includes(keyword))) {
+     return (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C12 2 8 12 12 12C16 12 12 2 12 2Z" fill="#FBBF24"/>
+        <path d="M21.22 10.13C20.93 7.42 18.58 5.07 15.87 4.78C13.16 4.49 10.66 5.86 9.21 8H12L21.22 10.13Z" fill="#FBBF24"/>
+        <path d="M2.78 10.13C3.07 7.42 5.42 5.07 8.13 4.78C10.84 4.49 13.34 5.86 14.79 8H12L2.78 10.13Z" fill="#FBBF24"/>
+        <path d="M9.21 16C10.66 18.14 13.16 19.51 15.87 19.22C18.58 18.93 20.93 16.58 21.22 13.87H12L9.21 16Z" fill="#FB923C"/>
+        <path d="M14.79 16C13.34 18.14 10.84 19.51 8.13 19.22C5.42 18.93 3.07 16.58 2.78 13.87H12L14.79 16Z" fill="#FB923C"/>
+        <circle cx="15" cy="11" r="1" fill="#DC2626"/>
+        <circle cx="9" cy="11" r="1" fill="#DC2626"/>
+        <circle cx="12" cy="15" r="1" fill="#DC2626"/>
+      </svg>
+    );
+  }
+
+  // Fast Food like McD, KFC
+  if (['mcdonald\'s', 'kfc'].some(keyword => lowerCaseName.includes(keyword))) {
+      return <Utensils className="w-4 h-4 text-red-600" />;
+  }
   
-  if (lowerCaseName.includes('zomato')) {
+  // E-commerce
+  if (['amazon', 'flipkart', 'jiomart', 'meesho'].some(keyword => lowerCaseName.includes(keyword))) {
     return (
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12.2311 3.52222C11.3911 2.52222 9.79111 2.52222 8.95111 3.52222C8.11111 4.52222 8.11111 6.12222 8.95111 7.12222C9.79111 8.12222 11.3911 8.12222 12.2311 7.12222C13.0711 6.12222 13.0711 4.52222 12.2311 3.52222ZM17.16 3.5C16.32 2.5 14.72 2.5 13.88 3.5C13.04 4.5 13.04 6.1 13.88 7.1C14.72 8.1 16.32 8.1 17.16 7.1C18 6.1 18 4.5 17.16 3.5ZM17.2 9.54C16.5 9.17 15.65 9.32 15.06 9.91L12.56 12.41C11.97 13 11.02 12.85 10.65 12.15L8.2 8.01999C7.83 7.31999 6.86 7.02999 6.07 7.42999C4.48 8.22999 4.34 10.51 5.72 11.89L9.34 15.51C10.15 16.32 10.02 17.65 9.10 18.3L7.33 19.6C6.70 20.04 6.86 21.01 7.55 21.25C13.29 23.23 18.38 18.2 20.43 12.3C20.68 11.61 19.72 11.16 19.29 11.79L17.52 13.56C16.87 14.21 15.77 14.13 15.22 13.38L16.27 11.04C16.82 10.29 17.92 9.91 17.2 9.54Z" fill="#E23744"/>
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18.364 16.9998H5.63604C5.1965 16.9998 4.82176 16.7111 4.72147 16.2828L2.22147 6.28284C2.15541 5.99264 2.22033 5.68884 2.40058 5.46208C2.58083 5.23531 2.85964 5.10913 3.14929 5.10913H20.8507C21.1404 5.10913 21.4192 5.23531 21.5994 5.46208C21.7797 5.68884 21.8446 5.99264 21.7785 6.28284L19.2785 16.2828C19.1782 16.7111 18.8035 16.9998 18.364 16.9998Z" fill="#3B82F6"/>
+        <path d="M9 9.99988C9 8.34299 10.3431 6.99988 12 6.99988C13.6569 6.99988 15 8.34299 15 9.99988" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     );
   }
-  if (lowerCaseName.includes('swiggy')) {
-    return (
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z" fill="#FC8019"/>
-        <path d="M15.89 10.76C15.61 10.23 15.14 9.87 14.58 9.75C14.02 9.63 13.43 9.76 12.97 10.10L11.31 11.45C10.95 11.73 10.46 11.79 10.04 11.60C9.62 11.41 9.31 11.01 9.24 10.55L8.93 8.35C8.84 7.78 8.32 7.35 7.75 7.44C7.18 7.53 6.75 8.05 6.84 8.62L7.33 12.27C7.45 13.06 8.01 13.72 8.75 13.97C9.49 14.22 10.28 14.02 10.84 13.49L12.50 12.14C12.86 11.86 13.35 11.80 13.77 11.99C14.19 12.18 14.50 12.58 14.57 13.04L14.88 15.24C14.97 15.81 15.49 16.24 16.06 16.15C16.63 16.06 17.06 15.54 16.97 14.97L16.48 11.32C16.36 10.53 15.89 10.76 15.89 10.76Z" fill="#FC8019"/>
-      </svg>
-    );
+  
+  // Travel / Ride-sharing
+  if (['uber', 'ola', 'rapido', 'redbus', 'makemytrip'].some(keyword => lowerCaseName.includes(keyword))) {
+     return (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 17H5C3.89543 17 3 16.1046 3 15V12C3 10.8954 3.89543 10 5 10H19C20.1046 10 21 10.8954 21 12V15C21 16.1046 20.1046 17 19 17Z" fill="#10B981"/>
+          <path d="M5 10V7C5 5.89543 5.89543 5 7 5H17C18.1046 5 19 5.89543 19 7V10" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="7" cy="17" r="2" fill="white"/>
+          <circle cx="17" cy="17" r="2" fill="white"/>
+        </svg>
+     );
   }
-  if (lowerCaseName.includes('pizza') || lowerCaseName.includes("domino's") || lowerCaseName.includes('kfc')) {
-    return <Pizza className="w-4 h-4" />;
-  }
+
+  // Coffee shops
   if (lowerCaseName.includes('cafe') || lowerCaseName.includes('starbucks')) {
-    return <Coffee className="w-4 h-4" />;
+    return <Coffee className="w-4 h-4 text-amber-800" />;
   }
   
-  return <Utensils className="w-4 h-4" />;
+  // Fallback icon
+  return <Utensils className="w-4 h-4 text-gray-500" />;
 };
 
 
@@ -345,3 +385,5 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     </div>
   );
 }
+
+    
