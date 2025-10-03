@@ -26,7 +26,7 @@ export function ChatSidebar({ chats, currentUser }: ChatSidebarProps) {
   }
 
   return (
-    <div className="hidden md:flex flex-col w-80 lg:w-96 border-r">
+    <div className="flex flex-col w-80 lg:w-96 border-r">
       <div className="p-4 border-b">
         <h2 className="text-xl font-semibold">Chats</h2>
       </div>
