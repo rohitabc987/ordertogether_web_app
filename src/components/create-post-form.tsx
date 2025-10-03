@@ -222,7 +222,7 @@ export function CreatePostForm({ user }: { user: User }) {
                 id="contributionAmount"
                 name="order.contributionAmount"
                 type="number"
-                placeholder="e.g. 250"
+                placeholder="e.g. 199"
                 required
                 min="0"
                 value={formData.order.contributionAmount}

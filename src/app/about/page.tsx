@@ -1,6 +1,9 @@
+
 import { HowItWorks } from '@/components/how-it-works';
 import { KeyFeatures } from '@/components/key-features';
 import { Users } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function AboutPage() {
   return (
@@ -38,11 +41,20 @@ export default function AboutPage() {
       </section>
 
       {/* Call to Action */}
-      <section className="text-center">
-        <h3 className="text-2xl font-bold mb-4">Ready to save on your next order?</h3>
-        <button className="px-6 py-3 bg-primary text-white rounded-xl font-semibold shadow hover:bg-primary/90 transition">
-          Start Your First Group Order
-        </button>
+      <section className="text-center space-y-6">
+        <h3 className="text-2xl font-bold">Ready to save on your next order?</h3>
+        <div className="flex justify-center gap-4">
+            <Link href="/create-post">
+                <Button size="lg" >
+                Start Your First Group Order
+                </Button>
+            </Link>
+            <Link href="/">
+                <Button size="lg" >
+                Join a Group Order
+                </Button>
+            </Link>
+        </div>
       </section>
     </div>
   );

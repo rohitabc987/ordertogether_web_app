@@ -1,4 +1,3 @@
-
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { differenceInHours } from 'date-fns';
@@ -19,72 +18,86 @@ export function formatCurrency(amount: number) {
 }
 
 export function generateCatchyTitle(post: Partial<Post>): string {
-  // If core fields are missing, fallback to the user's title or a generic one.
   if (!post.details?.restaurant || !post.order?.totalAmount) {
     return post.details?.title?.trim() || "Group Order";
   }
 
-  const remaining = Math.max(0, (post.order.totalAmount || 0) - (post.order.contributionAmount || 0));
-  const deadlineHours = post.timestamps?.deadline ? differenceInHours(new Date(post.timestamps.deadline), new Date()) : null;
+  const restaurant = post.details.restaurant;
+  const remaining = Math.max(
+    0,
+    (post.order.totalAmount || 0) - (post.order.contributionAmount || 0)
+  );
 
-  // --- Phrase Pools for Variation ---
+  const deadlineHours = post.timestamps?.deadline
+    ? differenceInHours(new Date(post.timestamps.deadline), new Date())
+    : null;
+
+  // --- Phrase Pools ---
   const invitePhrases = [
-    `Join our ${post.details.restaurant} order`,
-    `Group order for ${post.details.restaurant}`,
-    `Who's in for ${post.details.restaurant}?`,
-    `Let's order on ${post.details.restaurant} together`,
+    `Who\'s in for ${restaurant}?`,
+    `Group order at ${restaurant}!`,
+    `Let’s team up on ${restaurant}`,
+    `Anyone up for ${restaurant}?`,
+    `Craving ${restaurant}? Join in!`,
+    `Don’t miss the ${restaurant} order!`,
+    `Hop on this ${restaurant} deal`,
   ];
 
   const dealPhrases: string[] = [];
-  // Prioritize user-mentioned deals
   if (post.details.title && /free delivery/i.test(post.details.title)) {
     dealPhrases.push("Free Delivery 🚚");
   } else if (post.details.title && /₹\d+\s*off/i.test(post.details.title)) {
-    // Extract and use the specific discount mentioned
     const match = post.details.title.match(/₹\d+\s*off/i);
-    if(match) dealPhrases.push(`${match[0].trim()} 🔥`);
+    if (match) dealPhrases.push(`${match[0].trim()} 🔥`);
   }
-  
+
   if (remaining > 0) {
-    dealPhrases.push(`${formatCurrency(remaining)} more needed!`);
+    dealPhrases.push(`₹${remaining} more needed!`);
+    dealPhrases.push(`Still short by ₹${remaining}`);
+    dealPhrases.push(`Only ₹${remaining} left to hit target`);
   } else {
-    // Only add this if no other deal is mentioned to avoid clutter
-    if (dealPhrases.length === 0) {
-      dealPhrases.push("Deal reached!");
-    }
+    dealPhrases.push("Deal unlocked! 🎉");
+    dealPhrases.push("Target met ✅");
   }
 
   const urgencyPhrases: string[] = [];
   if (deadlineHours !== null && deadlineHours > 0 && deadlineHours <= 6) {
     urgencyPhrases.push(`Ends in ${deadlineHours}h ⏳`);
+    urgencyPhrases.push(`Hurry, ${deadlineHours}h left!`);
   } else if (deadlineHours !== null && deadlineHours <= 0) {
-    urgencyPhrases.push('Closing now!');
+    urgencyPhrases.push("Closing now!");
+    urgencyPhrases.push("Last call 🚨");
   }
 
-  const emojis = ["🎉", "🔥", "🍕", "🚀"];
-  
-  // --- Assemble the Title ---
+  const extraFlair = [
+    "🔥",
+    "🍔",
+    "🍟",
+    "🚀",
+    "💥",
+    "✨",
+    "Don’t miss it!",
+    "Grab your spot!",
+    "Limited slots!",
+    "",
+  ];
 
-  // 1. Start with a random invitation phrase
+  // --- Random selection ---
   const invite = invitePhrases[Math.floor(Math.random() * invitePhrases.length)];
-  
-  // 2. Add the most relevant deal phrase if available
-  const deal = dealPhrases.length > 0 ? dealPhrases[0] : "";
-  
-  // 3. Add an urgency phrase if relevant
-  const urgency = urgencyPhrases.length > 0 ? urgencyPhrases[0] : "";
+  const deal = dealPhrases[Math.floor(Math.random() * dealPhrases.length)];
+  const urgency =
+    urgencyPhrases.length > 0
+      ? urgencyPhrases[Math.floor(Math.random() * urgencyPhrases.length)]
+      : "";
+  const flair = extraFlair[Math.floor(Math.random() * extraFlair.length)];
 
-  // 4. Occasionally add a random emoji for flavor, but not if one is already in a phrase
-  let randomEmoji = '';
-  if (Math.random() > 0.5 && !deal.includes('🚚') && !deal.includes('🔥') && !urgency.includes('⏳')) {
-    randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-  }
+  // --- Shuffle order of parts ---
+  const parts = [invite, deal, urgency, flair].filter(Boolean);
+  const shuffled = parts.sort(() => Math.random() - 0.5);
 
-  // Combine the parts, filtering out any empty strings
-  const segments = [invite, deal, urgency, randomEmoji].filter(s => s && s.trim() !== '');
-  let title = segments.join(" • ");
+  let title = shuffled.join(" • ");
 
-  // Trim the title if it's too long
+  // Limit length
   const maxLength = 100;
   if (title.length > maxLength) {
     title = title.substring(0, maxLength - 3) + "...";

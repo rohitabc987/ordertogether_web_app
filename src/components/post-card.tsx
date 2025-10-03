@@ -40,33 +40,47 @@ function convertFirestoreTimestampToDate(timestamp: any): Date | null {
 const getRestaurantEmoji = (name: string): string => {
   const lowerCaseName = name.toLowerCase();
 
-  // Food Delivery Apps
-  if (['swiggy', 'zomato'].some(keyword => lowerCaseName.includes(keyword))) {
-    return '🛵';
-  }
-  // Pizza places
-  if (['pizza', 'domino\'s', 'pizzahut'].some(keyword => lowerCaseName.includes(keyword))) {
-    return '🍕';
-  }
-  // Fast Food like McD, KFC
-  if (['mcdonald\'s', 'kfc', 'burger'].some(keyword => lowerCaseName.includes(keyword))) {
-      return '🍔';
-  }
-  // E-commerce
-  if (['amazon', 'flipkart', 'jiomart', 'meesho'].some(keyword => lowerCaseName.includes(keyword))) {
-    return '🛍️';
-  }
+  // Food Delivery Apps (unique)
+  if (lowerCaseName.includes('zomato')) return '🍔';
+  if (lowerCaseName.includes('swiggy')) return '🥘';
+  if (lowerCaseName.includes('ubereats') || lowerCaseName.includes('uber eats')) return '🥗';
+  if (lowerCaseName.includes('blinkit')) return '🛒';
+  if (lowerCaseName.includes('dunzo')) return '📦';
+
+  // Pizza Chains
+  if (lowerCaseName.includes('domino')) return '🍕';
+  if (lowerCaseName.includes('pizza hut')) return '🍕🔥';
+  if (lowerCaseName.includes('pizzahut')) return '🍕🔥';
+
+  // Burgers & Fast Food
+  if (lowerCaseName.includes('mcdonald')) return '🍟';
+  if (lowerCaseName.includes('kfc')) return '🍗';
+  if (lowerCaseName.includes('burger king')) return '👑🍔';
+
+  // Coffee & Cafes
+  if (lowerCaseName.includes('starbucks')) return '🧋';
+  if (lowerCaseName.includes('cafe')) return '☕';
+
+  // E-commerce / Grocery
+  if (lowerCaseName.includes('amazon')) return '📦';
+  if (lowerCaseName.includes('flipkart')) return '🛍️';
+  if (lowerCaseName.includes('jiomart')) return '🛒';
+  if (lowerCaseName.includes('meesho')) return '🎀';
+
   // Travel / Ride-sharing
-  if (['uber', 'ola', 'rapido', 'redbus', 'makemytrip'].some(keyword => lowerCaseName.includes(keyword))) {
-     return '🚕';
-  }
-  // Coffee shops
-  if (lowerCaseName.includes('cafe') || lowerCaseName.includes('starbucks')) {
-    return '☕';
-  }
-  // Fallback icon
+  if (lowerCaseName.includes('ola')) return '🚖';
+  if (lowerCaseName.includes('uber')) return '🚕';
+  if (lowerCaseName.includes('rapido')) return '🏍️';
+  if (lowerCaseName.includes('redbus')) return '🚌';
+  if (lowerCaseName.includes('makemytrip')) return '✈️';
+
+  // Dessert / Ice Cream (bonus example)
+  if (lowerCaseName.includes('cream') || lowerCaseName.includes('icecream')) return '🍦';
+
+  // Fallback (generic restaurant)
   return '🍽️';
 };
+
 
 
 export function PostCard({ post, index }: { post: Post; index: number }) {
