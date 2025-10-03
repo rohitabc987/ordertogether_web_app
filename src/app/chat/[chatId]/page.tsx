@@ -7,11 +7,11 @@ import { redirect } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface ChatPageProps {
-  params: Promise<{ chatId: string }>;
+  params: { chatId: string };
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
-  const { chatId } = await params;
+  const { chatId } = params;
   const user = await getCurrentUser();
   
   if (!user) {
