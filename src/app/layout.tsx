@@ -9,6 +9,7 @@ import { getCurrentUser } from '@/lib/session';
 import { Inter } from 'next/font/google';
 import { Footer } from '@/components/footer';
 import { User } from '@/lib/types';
+import { PostViewTracker } from '@/components/post-view-tracker';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-body' });
 
@@ -38,6 +39,7 @@ export default async function RootLayout({
         )}
       >
         <Providers initialUser={serializableUser}>
+          <PostViewTracker />
           <div className="relative flex min-h-screen flex-col">
             <Header />
             <main className="flex-1">{children}</main>

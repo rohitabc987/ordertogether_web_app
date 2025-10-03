@@ -12,44 +12,34 @@ const AuthContext = createContext<AuthContextType>({ user: null });
 
 interface PostViewContextType {
   trackViewedPost: (postId: string) => void;
+  getViewedPosts: () => Set<string>;
+  clearViewedPosts: () => void;
 }
 
 export const PostViewContext = createContext<PostViewContextType>({
   trackViewedPost: () => {},
+  getViewedPosts: () => new Set(),
+  clearViewedPosts: () => {},
 });
 
 
 function PostViewProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
   const viewedPostIdsInSession = useRef(new Set<string>());
 
   const trackViewedPost = (postId: string) => {
     viewedPostIdsInSession.current.add(postId);
   };
 
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden' && viewedPostIdsInSession.current.size > 0) {
-        if (user?.id) {
-          updatePostViewCountAction(user.id, viewedPostIdsInSession.current.size);
-          viewedPostIdsInSession.current.clear(); // Reset after sending
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      // Fallback: try to update when the component unmounts
-      if (viewedPostIdsInSession.current.size > 0 && user?.id) {
-        updatePostViewCountAction(user.id, viewedPostIdsInSession.current.size);
-      }
-    };
-  }, [user]);
+  const getViewedPosts = () => {
+    return viewedPostIdsInSession.current;
+  };
+  
+  const clearViewedPosts = () => {
+    viewedPostIdsInSession.current.clear();
+  };
 
   return (
-    <PostViewContext.Provider value={{ trackViewedPost }}>
+    <PostViewContext.Provider value={{ trackViewedPost, getViewedPosts, clearViewedPosts }}>
       {children}
     </PostViewContext.Provider>
   );
