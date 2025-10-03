@@ -58,7 +58,11 @@ function PostViewProvider({ children }: { children: React.ReactNode }) {
 
 export function AuthProvider({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
   const [user, setUser] = useState<User | null>(() => {
-    // Load initial user from localStorage if available
+    // On server, always start with initialUser to avoid mismatch
+    if (typeof window === 'undefined') {
+      return initialUser;
+    }
+    // On client, try to load from cache
     try {
       const cachedUser = localStorage.getItem('cachedUser');
       return cachedUser ? JSON.parse(cachedUser) : initialUser;
@@ -67,7 +71,7 @@ export function AuthProvider({ children, initialUser }: { children: React.ReactN
       return initialUser;
     }
   });
-  const [loading, setLoading] = useState(!user);
+  const [loading, setLoading] = useState(true); // Start with loading=true on client
 
   useEffect(() => {
     // If we have an initial user from server, update cache
@@ -123,7 +127,14 @@ export function AuthProvider({ children, initialUser }: { children: React.ReactN
     return () => {
       isMounted = false;
     };
-  }, [initialUser, user]);
+  }, [initialUser]);
+  
+  // This effect ensures client-side loading state is handled correctly.
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setLoading(false);
+    }
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user }}>

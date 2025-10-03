@@ -586,7 +586,11 @@ function AuthProvider({ children, initialUser }) {
     _s1();
     const [user, setUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({
         "AuthProvider.useState": ()=>{
-            // Load initial user from localStorage if available
+            // On server, always start with initialUser to avoid mismatch
+            if ("TURBOPACK compile-time falsy", 0) {
+                "TURBOPACK unreachable";
+            }
+            // On client, try to load from cache
             try {
                 const cachedUser = localStorage.getItem('cachedUser');
                 return cachedUser ? JSON.parse(cachedUser) : initialUser;
@@ -596,7 +600,7 @@ function AuthProvider({ children, initialUser }) {
             }
         }
     }["AuthProvider.useState"]);
-    const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(!user);
+    const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true); // Start with loading=true on client
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AuthProvider.useEffect": ()=>{
             // If we have an initial user from server, update cache
@@ -652,9 +656,16 @@ function AuthProvider({ children, initialUser }) {
             })["AuthProvider.useEffect"];
         }
     }["AuthProvider.useEffect"], [
-        initialUser,
-        user
+        initialUser
     ]);
+    // This effect ensures client-side loading state is handled correctly.
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "AuthProvider.useEffect": ()=>{
+            if ("TURBOPACK compile-time truthy", 1) {
+                setLoading(false);
+            }
+        }
+    }["AuthProvider.useEffect"], []);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(AuthContext.Provider, {
         value: {
             user
@@ -663,16 +674,16 @@ function AuthProvider({ children, initialUser }) {
             children: children
         }, void 0, false, {
             fileName: "[project]/src/providers.tsx",
-            lineNumber: 130,
+            lineNumber: 141,
             columnNumber: 25
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/providers.tsx",
-        lineNumber: 129,
+        lineNumber: 140,
         columnNumber: 5
     }, this);
 }
-_s1(AuthProvider, "sRgtWGuYcRViHwgyA5wctfXDg/0=");
+_s1(AuthProvider, "YyNfCwy017Ep7TKb7BfgbitZau4=");
 _c1 = AuthProvider;
 function useAuth() {
     _s2();
@@ -689,7 +700,7 @@ function Providers({ children, initialUser }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/src/providers.tsx",
-        lineNumber: 144,
+        lineNumber: 155,
         columnNumber: 10
     }, this);
 }

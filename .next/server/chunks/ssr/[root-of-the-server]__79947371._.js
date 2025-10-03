@@ -527,16 +527,13 @@ function PostViewProvider({ children }) {
 }
 function AuthProvider({ children, initialUser }) {
     const [user, setUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(()=>{
-        // Load initial user from localStorage if available
-        try {
-            const cachedUser = localStorage.getItem('cachedUser');
-            return cachedUser ? JSON.parse(cachedUser) : initialUser;
-        } catch (error) {
-            console.error('Failed to load cached user', error);
+        // On server, always start with initialUser to avoid mismatch
+        if ("TURBOPACK compile-time truthy", 1) {
             return initialUser;
         }
+        "TURBOPACK unreachable";
     });
-    const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(!user);
+    const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(true); // Start with loading=true on client
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         // If we have an initial user from server, update cache
         if (initialUser) {
@@ -588,9 +585,14 @@ function AuthProvider({ children, initialUser }) {
             isMounted = false;
         };
     }, [
-        initialUser,
-        user
+        initialUser
     ]);
+    // This effect ensures client-side loading state is handled correctly.
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        if ("TURBOPACK compile-time falsy", 0) {
+            "TURBOPACK unreachable";
+        }
+    }, []);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(AuthContext.Provider, {
         value: {
             user
@@ -599,12 +601,12 @@ function AuthProvider({ children, initialUser }) {
             children: children
         }, void 0, false, {
             fileName: "[project]/src/providers.tsx",
-            lineNumber: 130,
+            lineNumber: 141,
             columnNumber: 25
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/providers.tsx",
-        lineNumber: 129,
+        lineNumber: 140,
         columnNumber: 5
     }, this);
 }
@@ -621,7 +623,7 @@ function Providers({ children, initialUser }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/src/providers.tsx",
-        lineNumber: 144,
+        lineNumber: 155,
         columnNumber: 10
     }, this);
 }
