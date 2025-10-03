@@ -53,8 +53,11 @@ export function ProfileForm({ user }: { user: User }) {
 
   const lastUpdate = user.userProfile?.lastProfileUpdate ? new Date(user.userProfile.lastProfileUpdate) : null;
   const oneWeek = 7 * 24 * 60 * 60 * 1000;
-  const canUpdate = !lastUpdate || (new Date().getTime() - lastUpdate.getTime()) > oneWeek;
+  const canUpdateProfile = !lastUpdate || (new Date().getTime() - lastUpdate.getTime()) > oneWeek;
   const nextUpdateDate = lastUpdate ? new Date(lastUpdate.getTime() + oneWeek) : null;
+
+  const isGenderSet = user.userProfile?.gender && user.userProfile.gender !== 'prefer_not_to_say';
+  const canUpdateGender = !isGenderSet;
 
   useEffect(() => {
     if (state?.message) {
@@ -75,7 +78,7 @@ export function ProfileForm({ user }: { user: User }) {
 
   return (
     <form action={formAction}>
-      {!canUpdate && nextUpdateDate && (
+      {!canUpdateProfile && nextUpdateDate && (
         <Card className="mb-6 bg-amber-50 border-amber-200">
             <CardContent className="p-4 flex items-center gap-4">
                 <Info className="w-6 h-6 text-amber-600"/>
@@ -97,7 +100,7 @@ export function ProfileForm({ user }: { user: User }) {
         <CardContent className="space-y-4">
              <div className="space-y-2">
                 <RequiredLabel htmlFor="name">Full Name</RequiredLabel>
-                <Input id="name" name="name" defaultValue={user.userProfile?.name || ''} required disabled={!canUpdate} />
+                <Input id="name" name="name" defaultValue={user.userProfile?.name || ''} required disabled={!canUpdateProfile} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -106,16 +109,26 @@ export function ProfileForm({ user }: { user: User }) {
                 </div>
                 <div className="space-y-2">
                     <RequiredLabel htmlFor="gender">Gender</RequiredLabel>
-                    <Input id="gender" name="gender" defaultValue={user.userProfile?.gender || 'prefer_not_to_say'} readOnly className="bg-muted cursor-not-allowed opacity-50" />
+                     <Select name="gender" defaultValue={user.userProfile?.gender || 'prefer_not_to_say'} required disabled={!canUpdateGender}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select your gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                            <SelectItem value="male">Male</SelectItem>
+                            <SelectItem value="female">Female</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                   <Label htmlFor="contactNumber">Contact Number</Label>
-                  <Input id="contactNumber" name="contactNumber" defaultValue={user.contact?.phone || ''} disabled={!canUpdate} />
+                  <Input id="contactNumber" name="contactNumber" defaultValue={user.contact?.phone || ''} disabled={!canUpdateProfile} />
               </div>
               <div className="flex items-center space-x-2 pt-6">
-                <Switch id="shareContact" name="shareContact" defaultChecked={user.contact?.shareContact ?? true} disabled={!canUpdate} />
+                <Switch id="shareContact" name="shareContact" defaultChecked={user.contact?.shareContact ?? true} disabled={!canUpdateProfile} />
                 <Label htmlFor="shareContact" className="cursor-pointer">Share contact publicly</Label>
               </div>
             </div>
@@ -130,7 +143,7 @@ export function ProfileForm({ user }: { user: User }) {
         <CardContent className="space-y-4">
             <div className="space-y-2">
                 <RequiredLabel htmlFor="institutionType">Select your institution type</RequiredLabel>
-                <Select name="institutionType" onValueChange={setInstitutionType} value={institutionType} required disabled={!canUpdate}>
+                <Select name="institutionType" onValueChange={setInstitutionType} value={institutionType} required disabled={!canUpdateProfile}>
                     <SelectTrigger>
                         <SelectValue placeholder="Please select your institution type." />
                     </SelectTrigger>
@@ -151,23 +164,23 @@ export function ProfileForm({ user }: { user: User }) {
                             onChange={setInstitutionName}
                             placeholder={institutionPlaceholder}
                             searchPlaceholder={institutionSearchPlaceholder}
-                            disabled={!canUpdate}
+                            disabled={!canUpdateProfile}
                         />
                         <input type="hidden" name="institutionName" value={institutionName} required />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <RequiredLabel htmlFor="area">Area/Colony</RequiredLabel>
-                            <Input id="area" name="area" defaultValue={user.location?.area || ''} required disabled={!canUpdate} />
+                            <Input id="area" name="area" defaultValue={user.location?.area || ''} required disabled={!canUpdateProfile} />
                         </div>
                         <div className="space-y-2">
                             <RequiredLabel htmlFor="city">City</RequiredLabel>
-                            <Input id="city" name="city" defaultValue={user.location?.city || ''} required disabled={!canUpdate} />
+                            <Input id="city" name="city" defaultValue={user.location?.city || ''} required disabled={!canUpdateProfile} />
                         </div>
                     </div>
                      <div className="space-y-2">
                         <RequiredLabel htmlFor="pinCode">Pin Code</RequiredLabel>
-                        <Input id="pinCode" name="pinCode" defaultValue={user.location?.pinCode || ''} required disabled={!canUpdate} />
+                        <Input id="pinCode" name="pinCode" defaultValue={user.location?.pinCode || ''} required disabled={!canUpdateProfile} />
                     </div>
                 </div>
             )}
@@ -175,7 +188,7 @@ export function ProfileForm({ user }: { user: User }) {
       </Card>
       
       <div className="mt-6 flex justify-center">
-        <SubmitButton isLocked={!canUpdate} />
+        <SubmitButton isLocked={!canUpdateProfile && !canUpdateGender} />
       </div>
     </form>
   );

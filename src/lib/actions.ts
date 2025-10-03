@@ -150,27 +150,37 @@ export async function updateProfileAction(prevState: any, formData: FormData) {
         
         const userData = userDoc.data() as User;
         const lastUpdateStr = userData.userProfile?.lastProfileUpdate;
+        const canUpdateProfile = !lastUpdateStr || (new Date().getTime() - new Date(lastUpdateStr).getTime()) > oneWeek;
         
-        if (lastUpdateStr) {
-            const lastUpdate = new Date(lastUpdateStr);
-            if ((new Date().getTime() - lastUpdate.getTime()) < oneWeek) {
-                 return { message: 'Profile can only be updated once a week.' };
-            }
+        const updates: Record<string, any> = {};
+
+        // Conditionally add profile fields if they are allowed to be updated
+        if(canUpdateProfile) {
+            Object.assign(updates, {
+                'userProfile.name': formData.get('name'),
+                'userProfile.lastProfileUpdate': FieldValue.serverTimestamp(),
+                'contact.phone': formData.get('contactNumber'),
+                'contact.shareContact': formData.get('shareContact') === 'on',
+                'institution.institutionType': formData.get('institutionType'),
+                'institution.institutionName': formData.get('institutionName'),
+                'location.area': formData.get('area'),
+                'location.city': formData.get('city'),
+                'location.pinCode': formData.get('pinCode'),
+            });
         }
         
-        const updates: Record<string, any> = {
-            'userProfile.name': formData.get('name'),
-            'userProfile.lastProfileUpdate': FieldValue.serverTimestamp(),
-            'contact.phone': formData.get('contactNumber'),
-            'contact.shareContact': formData.get('shareContact') === 'on',
-            'institution.institutionType': formData.get('institutionType'),
-            'institution.institutionName': formData.get('institutionName'),
-            'location.area': formData.get('area'),
-            'location.city': formData.get('city'),
-            'location.pinCode': formData.get('pinCode'),
-        };
+        // Always allow gender to be updated if it's not set
+        const currentGender = userData.userProfile?.gender;
+        const newGender = formData.get('gender') as string;
+        if (currentGender === 'prefer_not_to_say' && newGender !== 'prefer_not_to_say') {
+            updates['userProfile.gender'] = newGender;
+        }
 
-        await userRef.update(updates);
+        if (Object.keys(updates).length > 0) {
+            await userRef.update(updates);
+        } else {
+             return { message: 'Profile is locked for updates until the one week period is over.' };
+        }
         
         revalidatePath('/profile');
         revalidatePath('/');
