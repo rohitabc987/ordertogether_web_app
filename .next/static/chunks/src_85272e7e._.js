@@ -2448,20 +2448,27 @@ const subHeadlines = [
     "Join forces on OrderlyGather to get the best discounts on every meal."
 ];
 const renderHighlightedTitle = (title, highlight)=>{
-    if (!highlight || !title.includes(highlight)) {
+    const highlightIndex = title.toLowerCase().indexOf(highlight.toLowerCase());
+    if (!highlight || highlightIndex === -1) {
         return title;
     }
-    const parts = title.split(new RegExp(`(${highlight})`, 'gi'));
+    const before = title.substring(0, highlightIndex);
+    const highlighted = title.substring(highlightIndex, highlightIndex + highlight.length);
+    const after = title.substring(highlightIndex + highlight.length);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
-        children: parts.map((part, index)=>part.toLowerCase() === highlight.toLowerCase() ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+        children: [
+            before,
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                 className: "text-accent",
-                children: part
-            }, index, false, {
+                children: highlighted
+            }, void 0, false, {
                 fileName: "[project]/src/components/rotating-headlines.tsx",
-                lineNumber: 28,
-                columnNumber: 11
-            }, this) : part)
-    }, void 0, false);
+                lineNumber: 33,
+                columnNumber: 7
+            }, this),
+            after
+        ]
+    }, void 0, true);
 };
 function RotatingHeadlines() {
     _s();

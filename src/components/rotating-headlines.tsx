@@ -17,21 +17,21 @@ const subHeadlines = [
 ];
 
 const renderHighlightedTitle = (title: string, highlight: string) => {
-  if (!highlight || !title.includes(highlight)) {
+  const highlightIndex = title.toLowerCase().indexOf(highlight.toLowerCase());
+
+  if (!highlight || highlightIndex === -1) {
     return title;
   }
-  const parts = title.split(new RegExp(`(${highlight})`, 'gi'));
+
+  const before = title.substring(0, highlightIndex);
+  const highlighted = title.substring(highlightIndex, highlightIndex + highlight.length);
+  const after = title.substring(highlightIndex + highlight.length);
+
   return (
     <>
-      {parts.map((part, index) =>
-        part.toLowerCase() === highlight.toLowerCase() ? (
-          <span key={index} className="text-accent">
-            {part}
-          </span>
-        ) : (
-          part
-        )
-      )}
+      {before}
+      <span className="text-accent">{highlighted}</span>
+      {after}
     </>
   );
 };
