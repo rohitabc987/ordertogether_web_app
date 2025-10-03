@@ -10,7 +10,7 @@ import { redirect } from 'next/navigation';
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams?: { message?: string };
+  searchParams: { message?: string };
 }) {
   const user = await getCurrentUser();
 
