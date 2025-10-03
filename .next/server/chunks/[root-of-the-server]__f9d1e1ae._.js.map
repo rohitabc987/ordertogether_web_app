@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 6, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"","debugId":null}},
+    {"offset": {"line": 60, "column": 0}, "map": {"version":3,"sources":["file:///home/user/studio/src/app/api/session/route.ts"],"sourcesContent":["import { cookies } from 'next/headers';\nimport { NextResponse } from 'next/server';\n\nexport async function GET() {\n  const cookieStore = cookies();\n  const userId = cookieStore.get('session_userId')?.value;\n\n  return NextResponse.json({ userId });\n}\n"],"names":[],"mappings":";;;AAAA;AACA;;;AAEO,eAAe;IACpB,MAAM,cAAc,CAAA,GAAA,iIAAA,CAAA,UAAO,AAAD;IAC1B,MAAM,SAAS,YAAY,GAAG,CAAC,mBAAmB;IAElD,OAAO,gIAAA,CAAA,eAAY,CAAC,IAAI,CAAC;QAAE;IAAO;AACpC","debugId":null}}]
+}

@@ -1,0 +1,27 @@
+{
+  "node": {
+    "60cc8ebb244f6fe1f1f1b3d8ee4bd944f52bd618c3": {
+      "workers": {
+        "app/legal/privacy-policy/page": {
+          "moduleId": "[project]/.next-internal/server/app/legal/privacy-policy/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true
+        }
+      },
+      "layer": {
+        "app/legal/privacy-policy/page": "action-browser"
+      }
+    },
+    "004d49033eb565a117b1d8b30854d8c4f35e240335": {
+      "workers": {
+        "app/legal/privacy-policy/page": {
+          "moduleId": "[project]/.next-internal/server/app/legal/privacy-policy/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true
+        }
+      },
+      "layer": {
+        "app/legal/privacy-policy/page": "action-browser"
+      }
+    }
+  },
+  "edge": {}
+}
