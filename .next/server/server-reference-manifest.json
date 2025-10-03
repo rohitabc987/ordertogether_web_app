@@ -5,15 +5,10 @@
         "app/page": {
           "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": true
-        },
-        "app/profile/page": {
-          "moduleId": "[project]/.next-internal/server/app/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": true
         }
       },
       "layer": {
-        "app/page": "action-browser",
-        "app/profile/page": "action-browser"
+        "app/page": "action-browser"
       }
     },
     "60cc8ebb244f6fe1f1f1b3d8ee4bd944f52bd618c3": {
@@ -21,15 +16,10 @@
         "app/page": {
           "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": true
-        },
-        "app/profile/page": {
-          "moduleId": "[project]/.next-internal/server/app/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": true
         }
       },
       "layer": {
-        "app/page": "action-browser",
-        "app/profile/page": "action-browser"
+        "app/page": "action-browser"
       }
     },
     "40ed8ce8c40eb1eb22037a6c8d02de7eed81678c50": {
@@ -41,17 +31,6 @@
       },
       "layer": {
         "app/page": "action-browser"
-      }
-    },
-    "608074465a1d4bbd442a023bf1b703e67a89a32fad": {
-      "workers": {
-        "app/profile/page": {
-          "moduleId": "[project]/.next-internal/server/app/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": true
-        }
-      },
-      "layer": {
-        "app/profile/page": "action-browser"
       }
     }
   },
