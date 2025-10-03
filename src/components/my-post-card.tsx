@@ -15,12 +15,10 @@ import {
   Clock,
   Edit,
   Trash2,
-  AlertTriangle,
-  CheckCircle,
   Info,
 } from 'lucide-react';
 import type { Post } from '@/lib/types';
-import { formatDistanceToNow, differenceInSeconds, differenceInMinutes, differenceInHours } from 'date-fns';
+import { formatDistanceToNow, differenceInSeconds, differenceInMinutes } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
 import { deletePostAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -104,7 +102,7 @@ export function MyPostCard({ post }: { post: Post }) {
                 <span>{formatCurrency(post.order.contributionAmount)}</span>
                 <span>{formatCurrency(post.order.totalAmount)}</span>
             </div>
-            <Progress value={progressPercentage} className="h-2" />
+            <Progress value={progressPercentage} className="h-2 bg-tertiary" />
             <div className="flex justify-between items-center text-sm font-medium">
                 <span>Your Contribution</span>
                 <span>Total Needed</span>
