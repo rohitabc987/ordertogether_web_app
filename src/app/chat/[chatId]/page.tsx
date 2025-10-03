@@ -16,7 +16,8 @@ export default async function ChatPage({
     redirect("/login");
   }
 
-  const chat = await getChatById(params.chatId, user.id);
+  const chatId = params.chatId;
+  const chat = await getChatById(chatId, user.id);
   
   if (!chat) {
     return (
@@ -32,9 +33,11 @@ export default async function ChatPage({
     );
   }
 
-  const initialMessages = await getMessagesForChat(params.chatId);
+  const initialMessages = await getMessagesForChat(chatId);
 
   return (
     <ChatWindow chat={chat} initialMessages={initialMessages} currentUser={user} />
   );
 }
+
+    

@@ -454,7 +454,7 @@ export async function sendMessageAction(chatId: string, senderId: string, text: 
 
 export async function getChatsForUserAction(userId: string): Promise<{ success: boolean; chats?: Chat[]; message?: string }> {
   try {
-    const chatsSnapshot = await adminDb.collection('chats').where('participants', 'array-contains', userId).orderBy('lastMessage.timestamp', 'desc').get();
+    const chatsSnapshot = await adminDb.collection('chats').where('participants', 'array-contains', userId).get();
     
     if (chatsSnapshot.empty) {
       return { success: true, chats: [] };
@@ -479,14 +479,18 @@ export async function getChatsForUserAction(userId: string): Promise<{ success: 
     });
     await Promise.all(userPromises);
     
-    // Attach user data to each chat
+    // Attach user data to each chat and sort
     chats = chats.map(chat => ({
       ...chat,
       users: {
         [chat.participants[0]]: userProfiles[chat.participants[0]],
         [chat.participants[1]]: userProfiles[chat.participants[1]],
       }
-    }));
+    })).sort((a, b) => {
+      const timeA = a.lastMessage?.timestamp ? new Date(a.lastMessage.timestamp).getTime() : 0;
+      const timeB = b.lastMessage?.timestamp ? new Date(b.lastMessage.timestamp).getTime() : 0;
+      return timeB - timeA;
+    });
 
     return { success: true, chats: JSON.parse(JSON.stringify(chats)) };
   } catch (error) {
@@ -494,3 +498,5 @@ export async function getChatsForUserAction(userId: string): Promise<{ success: 
     return { success: false, message: 'Failed to load chats.' };
   }
 }
+
+    
