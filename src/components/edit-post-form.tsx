@@ -11,16 +11,6 @@ import { Textarea } from '@/components/ui/textarea';
 import type { Post } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { format } from 'date-fns';
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending} className="w-full">
-      {pending ? 'Saving Changes...' : 'Save Changes'}
-    </Button>
-  );
-}
 
 // Helper to format date for datetime-local input
 const formatDateForInput = (isoDate: string) => {
@@ -136,7 +126,9 @@ export function EditPostForm({ post }: { post: Post }) {
             />
           </div>
 
-          <SubmitButton />
+          <Button type="submit" className="w-full">
+            Save Changes
+          </Button>
         </form>
       </CardContent>
     </Card>

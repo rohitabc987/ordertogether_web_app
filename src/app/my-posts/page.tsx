@@ -31,26 +31,10 @@ export default function MyPostsPage() {
 
     const fetchPosts = async () => {
       setIsLoading(true);
-
-      // Try to load from cache first
-      try {
-        const cachedPostsJson = localStorage.getItem('myPosts');
-        if (cachedPostsJson) {
-          setPosts(JSON.parse(cachedPostsJson));
-        }
-      } catch (e) {
-        console.error('Failed to load myPosts from cache', e);
-      }
-      
       const result = await getMyPostsAction(user.id);
       
       if (result.success) {
         setPosts(result.posts);
-        try {
-          localStorage.setItem('myPosts', JSON.stringify(result.posts));
-        } catch (e) {
-          console.error('Failed to cache myPosts', e);
-        }
       } else {
         setError(result.message || 'Failed to load posts.');
       }
@@ -61,13 +45,7 @@ export default function MyPostsPage() {
   }, [user, router]);
   
   const handlePostDelete = (postId: string) => {
-    const updatedPosts = posts.filter(p => p.id !== postId);
-    setPosts(updatedPosts);
-    try {
-      localStorage.setItem('myPosts', JSON.stringify(updatedPosts));
-    } catch(e) {
-      console.error('Failed to update cache after delete', e);
-    }
+    setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
   };
 
   if (!user) {

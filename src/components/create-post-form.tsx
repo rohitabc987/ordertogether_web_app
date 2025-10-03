@@ -1,6 +1,3 @@
-
-
-
 'use client';
 
 import { useActionState, useEffect, useState, useRef } from 'react';
@@ -277,10 +274,10 @@ export function CreatePostForm({ user }: { user: User }) {
                 </DialogDescription>
             </DialogHeader>
             <div className="flex justify-around p-6 bg-gray-50 dark:bg-gray-700/50 rounded-b-lg">
-                <Button variant="outline" className="w-full mr-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => router.push('/dashboard')}>
+                <Button variant="outline" className="w-full mr-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => router.push('/')}>
                     Go to Dashboard
                 </Button>
-                <Button className="w-full ml-2 bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => router.push('/profile')}>
+                <Button className="w-full ml-2 bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => router.push('/my-posts')}>
                     View My Posts
                 </Button>
             </div>

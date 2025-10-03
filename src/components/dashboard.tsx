@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -28,7 +27,7 @@ function convertFirestoreTimestampToDate(timestamp: any): Date | null {
 
 export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { initialPosts: Post[], bannerImageUrl: string | null }) {
   const { user } = useAuth();
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const [posts] = useState<Post[]>(initialPosts);
   const [bannerImageUrl, setBannerImageUrl] = useState(initialBannerUrl);
   
   // Filter states
@@ -52,29 +51,6 @@ export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { 
       setBannerImageUrl(cachedUrl);
     }
   }, [initialBannerUrl]);
-
-  // This effect ensures that on client-side navigation or first load,
-  // we try to use cached posts if the server doesn't provide any.
-  useEffect(() => {
-    if (initialPosts.length > 0) {
-      setPosts(initialPosts);
-      try {
-        localStorage.setItem('cachedPosts', JSON.stringify(initialPosts));
-      } catch (error) {
-        console.error("Failed to cache posts:", error);
-      }
-    } else {
-      try {
-        const cachedPostsJSON = localStorage.getItem('cachedPosts');
-        if (cachedPostsJSON) {
-          const cachedPosts = JSON.parse(cachedPostsJSON);
-          setPosts(cachedPosts);
-        }
-      } catch (error) {
-        console.error("Failed to load cached posts:", error);
-      }
-    }
-  }, [initialPosts]);
 
 
   const filteredPosts = useMemo(() => {
