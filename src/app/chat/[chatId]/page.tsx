@@ -1,4 +1,3 @@
-
 import { ChatWindow } from "@/components/chat-window";
 import { getChatById, getMessagesForChat } from "@/lib/data";
 import { getCurrentUser } from "@/lib/session";
@@ -7,11 +6,11 @@ import { redirect } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface ChatPageProps {
-  params: { chatId: string };
+  params: Promise<{ chatId: string }>;
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
-  const { chatId } = params;
+  const { chatId } = await params;
   const user = await getCurrentUser();
   
   if (!user) {
