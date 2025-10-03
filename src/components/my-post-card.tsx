@@ -1,12 +1,29 @@
-
 'use client';
 
-import { useState } from 'react';
+import { useTransition } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Clock, Edit, Trash2, Info } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Clock,
+  Edit,
+  Trash2,
+  AlertTriangle,
+  CheckCircle,
+  Info,
+} from 'lucide-react';
+import type { Post } from '@/lib/types';
+import { formatDistanceToNow, differenceInSeconds, differenceInMinutes, differenceInHours } from 'date-fns';
+import { formatCurrency } from '@/lib/utils';
+import { deletePostAction } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,126 +35,111 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { formatDistanceToNow, differenceInMinutes } from 'date-fns';
-import { formatCurrency } from '@/lib/utils';
-import type { Post } from '@/lib/types';
-import { deletePostAction } from '@/lib/actions';
 import { Progress } from './ui/progress';
 
-function convertFirestoreTimestampToDate(timestamp: any): Date | null {
-  if (!timestamp) {
-    return null;
-  }
-  // Firestore timestamps are serialized to objects with seconds and nanoseconds
-  // when passed from server to client components.
-  if (typeof timestamp.seconds === 'number' && typeof timestamp.nanoseconds === 'number') {
-    return new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
-  }
-  // Fallback for cases where it might be a string (e.g., from `new Date().toISOString()`)
-  const date = new Date(timestamp);
-  if (!isNaN(date.getTime())) {
-    return date;
-  }
-  return null;
+function hasBeenEdited(createdAt: string, updatedAt?: string): boolean {
+  if (!updatedAt) return false;
+  const created = new Date(createdAt);
+  const updated = new Date(updatedAt);
+  // Consider edited if updated more than 2 seconds after creation
+  return differenceInSeconds(updated, created) > 2;
 }
 
 export function MyPostCard({ post }: { post: Post }) {
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
-  const deadline = convertFirestoreTimestampToDate(post.timestamps?.deadline);
-  const deadlineInPast = deadline ? deadline < new Date() : true;
-  
-  // A post is considered edited only if updatedAt exists and is more than
-  // 2 seconds after createdAt to account for creation time.
-  const createdAt = convertFirestoreTimestampToDate(post.timestamps?.createdAt);
-  const updatedAt = convertFirestoreTimestampToDate(post.timestamps?.updatedAt);
-  const hasBeenEdited = createdAt && updatedAt && (updatedAt.getTime() - createdAt.getTime() > 2000);
+  const deadline = new Date(post.timestamps.deadline);
+  const isExpired = deadline < new Date();
+  const wasEdited = hasBeenEdited(post.timestamps.createdAt, post.timestamps.updatedAt);
+  const canEdit = !isExpired && !wasEdited;
 
-  const remainingNeeded = post.order.totalAmount - post.order.contributionAmount;
-  const progressPercentage = (post.order.contributionAmount / post.order.totalAmount) * 100;
-
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    await deletePostAction(post.id);
+  const handleDelete = () => {
+    startTransition(async () => {
+      const result = await deletePostAction(post.id);
+      if (result.success) {
+        toast({
+          title: 'Success',
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: result.message,
+          variant: 'destructive',
+        });
+      }
+    });
   };
-
+  
   const getDeadlineText = () => {
-    if (!deadline) return 'N/A';
     const now = new Date();
     const minutesLeft = differenceInMinutes(deadline, now);
 
     if (minutesLeft <= 0) {
-      return formatDistanceToNow(deadline, { addSuffix: true });
+        return formatDistanceToNow(deadline, { addSuffix: true });
     }
     if (minutesLeft < 60) {
-      return `in ${minutesLeft} min`;
+        return `in ${minutesLeft} min`;
     }
     if (minutesLeft < 6 * 60) {
-      const hours = Math.floor(minutesLeft / 60);
-      const minutes = minutesLeft % 60;
-      return `in ${hours}hr ${minutes}min`;
+        const hours = Math.floor(minutesLeft / 60);
+        const minutes = minutesLeft % 60;
+        return `in ${hours}hr ${minutes}min`;
     }
     return formatDistanceToNow(deadline, { addSuffix: true });
-  };
-  
+  }
+
+  const progressPercentage = (post.order.contributionAmount / post.order.totalAmount) * 100;
+
   return (
     <Card className="flex flex-col">
       <CardHeader>
-        <CardTitle>{post.details.title}</CardTitle>
+        <CardTitle className="truncate">{post.details.title}</CardTitle>
         <CardDescription>From: {post.details.restaurant}</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow space-y-4">
         <div className="space-y-2">
             <div className="flex justify-between items-center text-xs text-muted-foreground">
-                <span>{formatCurrency(post.order.contributionAmount)} contributed</span>
-                <span>{formatCurrency(post.order.totalAmount)} total</span>
+                <span>{formatCurrency(post.order.contributionAmount)}</span>
+                <span>{formatCurrency(post.order.totalAmount)}</span>
             </div>
             <Progress value={progressPercentage} className="h-2" />
-            <p className="text-sm font-medium text-primary text-center">
-              {formatCurrency(remainingNeeded)} needed to complete the order.
-            </p>
+            <div className="flex justify-between items-center text-sm font-medium">
+                <span>Your Contribution</span>
+                <span>Total Needed</span>
+            </div>
         </div>
-        
+
         <div className="flex items-center text-sm text-muted-foreground">
-          <Clock className="mr-2 h-4 w-4" />
+          <Clock className="w-4 h-4 mr-2" />
           <span>Deadline: {getDeadlineText()}</span>
         </div>
-        
-        {post.details.notes && <p className="text-sm border-l-2 border-accent pl-3 py-1 bg-background rounded-r-md">{post.details.notes}</p>}
-
-        {hasBeenEdited && (
-           <Badge variant="outline" className="flex items-center gap-2">
-              <Info className="w-3 h-3"/>
-              Posts can be edited only once
-            </Badge>
+        {wasEdited && (
+           <div className="flex items-center text-sm text-amber-600 p-2 bg-amber-50 border border-amber-200 rounded-md">
+            <Info className="w-4 h-4 mr-2" />
+            <span>This post has been edited once.</span>
+          </div>
         )}
-
       </CardContent>
-      <CardFooter className="flex justify-end gap-2">
-        <Button
-          asChild
-          variant="outline"
-          size="sm"
-          disabled={hasBeenEdited || deadlineInPast}
-          className={(hasBeenEdited || deadlineInPast) ? 'opacity-50 cursor-not-allowed' : ''}
-        >
-          <Link href={`/edit-post/${post.id}`} onClick={(e) => (hasBeenEdited || deadlineInPast) && e.preventDefault()}>
-            <Edit />
-            Edit
+      <CardFooter className="grid grid-cols-2 gap-2">
+        <Button asChild variant="outline" disabled={!canEdit}>
+          <Link href={`/edit-post/${post.id}`}>
+            <Edit /> Edit
           </Link>
         </Button>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" size="sm" disabled={isDeleting}>
-              <Trash2 />
-              {isDeleting ? 'Deleting...' : 'Delete'}
+            <Button variant="destructive" disabled={isPending}>
+              <Trash2 /> {isPending ? 'Deleting...' : 'Delete'}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete your post.
+                This action cannot be undone. This will permanently delete your
+                post and remove it from our servers.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

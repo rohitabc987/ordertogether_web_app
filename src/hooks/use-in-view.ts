@@ -1,46 +1,24 @@
-
+// hooks/use-in-view.ts
 'use client';
 
-import { useState, useEffect, type RefObject } from 'react';
+import { useState, useEffect, RefObject } from 'react';
+import { useInView as useIntersectionObserver, IntersectionOptions } from 'react-intersection-observer';
 
-interface UseInViewOptions {
-  threshold?: number;
-  once?: boolean;
-}
-
-export function useInView(
-  ref: RefObject<Element>,
-  options: UseInViewOptions = {}
-): boolean {
-  const [isInView, setIsInView] = useState(false);
-  const { threshold = 0.1, once = true } = options;
+export function useInView(ref: RefObject<Element>, options?: IntersectionOptions) {
+  const { ref: observerRef, inView } = useIntersectionObserver(options);
+  const [hasBeenInView, setHasBeenInView] = useState(false);
 
   useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
+    if (ref.current) {
+      observerRef(ref.current);
+    }
+  }, [ref, observerRef]);
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          if (once) {
-            observer.unobserve(element);
-          }
-        } else {
-            if(!once) {
-                setIsInView(false);
-            }
-        }
-      },
-      { threshold }
-    );
+  useEffect(() => {
+    if (inView) {
+      setHasBeenInView(true);
+    }
+  }, [inView]);
 
-    observer.observe(element);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [ref, threshold, once]);
-
-  return isInView;
+  return hasBeenInView;
 }

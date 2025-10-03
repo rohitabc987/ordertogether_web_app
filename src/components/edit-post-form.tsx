@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useActionState, useEffect, useRef } from 'react';
@@ -9,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Post } from '@/lib/types';
+import type { Post } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { format } from 'date-fns';
@@ -23,14 +22,11 @@ function SubmitButton() {
   );
 }
 
-// Helper to format date string for datetime-local input
-const formatForDateTimeLocal = (isoString: string) => {
-    if (!isoString) return '';
-    const date = new Date(isoString);
-    // Adjust for timezone offset
-    const timezoneOffset = date.getTimezoneOffset() * 60000;
-    const localDate = new Date(date.getTime() - timezoneOffset);
-    return localDate.toISOString().slice(0, 16);
+// Helper to format date for datetime-local input
+const formatDateForInput = (isoDate: string) => {
+  if (!isoDate) return '';
+  // The 'T' needs to be there, and we slice off the milliseconds and 'Z'
+  return isoDate.substring(0, 16); 
 };
 
 
@@ -41,30 +37,34 @@ export function EditPostForm({ post }: { post: Post }) {
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (state?.message) {
-      const isSuccess = state.message.includes('successfully');
+    if (!state?.message) return;
+
+    if (state.message.includes('successfully')) {
       toast({
-        title: isSuccess ? 'Success!' : 'Error',
+        title: 'Success!',
         description: state.message,
-        variant: isSuccess ? 'default' : 'destructive',
       });
-      if (isSuccess) {
-        // Redirect to my-posts page on success
-        router.push('/my-posts?message=Post updated successfully!');
-      }
+      // Redirect to a page that will show the "locked" message
+      router.push(`/my-posts?message=Post updated successfully!`);
+    } else {
+      toast({
+        title: 'Error',
+        description: state.message,
+        variant: 'destructive',
+      });
     }
-  }, [state, toast, router]);
+  }, [state, toast, router, post.id]);
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-3xl font-headline">Edit Your Post</CardTitle>
-        <CardDescription>Make changes to your group order details.</CardDescription>
+    <Card className="w-full max-w-2xl mx-auto border-2 border-primary/20 shadow-lg">
+      <CardHeader className="text-center bg-primary/5 rounded-t-lg p-6">
+        <CardTitle className="text-3xl font-headline text-primary">Edit Your Order Post</CardTitle>
+        <CardDescription>Update the details of your group order.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-8">
         <form ref={formRef} action={formAction} className="space-y-6">
           <input type="hidden" name="postId" value={post.id} />
-          
+
           <div className="space-y-2">
             <Label htmlFor="title">Post Title / Main Discount</Label>
             <Input
@@ -93,7 +93,7 @@ export function EditPostForm({ post }: { post: Post }) {
                 id="deadline"
                 name="timestamps.deadline"
                 type="datetime-local"
-                defaultValue={formatForDateTimeLocal(post.timestamps.deadline)}
+                defaultValue={formatDateForInput(post.timestamps.deadline)}
                 required
               />
             </div>
@@ -119,7 +119,7 @@ export function EditPostForm({ post }: { post: Post }) {
                 name="order.contributionAmount"
                 type="number"
                 defaultValue={post.order.contributionAmount}
-                placeholder="e.g. 250"
+                placeholder="e.g. 199"
                 required
                 min="0"
               />
@@ -134,9 +134,6 @@ export function EditPostForm({ post }: { post: Post }) {
               defaultValue={post.details.notes}
               placeholder="e.g. Only veg allowed, I'm ordering a Medium Pizza"
             />
-            <p className="text-xs text-muted-foreground">
-              Share what you are ordering, any special instructions, or how to coordinate.
-            </p>
           </div>
 
           <SubmitButton />
