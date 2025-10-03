@@ -222,6 +222,14 @@ export async function verifyAndSignInAction(idToken: string) {
     if (!email) {
       return { success: false, message: 'Email not found in token.' };
     }
+    
+    const allowedDomain = 'iitdh.ac.in';
+    const emailDomain = email.split('@')[1];
+    const allowedEmails = ['priyanshuabc987@gmail.com'];
+    
+    if (!allowedEmails.includes(email) && emailDomain !== allowedDomain) {
+      return { success: false, message: 'Access is restricted to iitdh.ac.in emails only.' };
+    }
 
     let user = await findUserByEmail(email);
 
