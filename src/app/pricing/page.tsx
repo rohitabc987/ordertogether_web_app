@@ -1,6 +1,10 @@
 
 import { PricingCard } from '@/components/pricing-card';
 import { getCurrentUser } from '@/lib/session';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { LogIn } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const plans = [
   {
@@ -54,6 +58,25 @@ export default async function PricingPage() {
           />
         ))}
       </div>
+      
+      {!isLoggedIn && (
+        <Card className="mt-12 max-w-2xl mx-auto text-center bg-card/50">
+           <CardHeader>
+            <CardTitle>Ready to Subscribe?</CardTitle>
+            <CardDescription>
+                You must be signed in to choose a plan and start connecting with others.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild size="lg">
+              <Link href="/login">
+                <LogIn className="mr-2 h-5 w-5" />
+                Sign In to Subscribe
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

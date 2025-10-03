@@ -2,11 +2,10 @@
 'use client';
 
 import { useTransition } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Check, LogIn } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { subscribeAction } from '@/lib/actions';
 import { useAuth } from '@/providers';
 import { cn } from '@/lib/utils';
@@ -69,11 +68,10 @@ export function PricingCard({ plan, isCurrentPlan, isLoggedIn }: PricingCardProp
         </ul>
       </CardContent>
       <CardFooter className="flex flex-col items-stretch">
-        {isLoggedIn ? (
-          <Button
+        <Button
             className="w-full"
             onClick={handleSubscribe}
-            disabled={isPending || isCurrentPlan}
+            disabled={isPending || isCurrentPlan || !isLoggedIn}
           >
             {isPending
               ? 'Processing...'
@@ -81,20 +79,6 @@ export function PricingCard({ plan, isCurrentPlan, isLoggedIn }: PricingCardProp
               ? 'Current Plan'
               : 'Subscribe'}
           </Button>
-        ) : (
-          <div className="space-y-4 text-center">
-            <Button className="w-full" disabled>Subscribe</Button>
-            <p className="text-sm text-muted-foreground">
-              You must be signed in to subscribe.
-            </p>
-            <Button variant="secondary" asChild className="w-full">
-              <Link href="/login">
-                <LogIn />
-                Sign In
-              </Link>
-            </Button>
-          </div>
-        )}
       </CardFooter>
     </Card>
   );
