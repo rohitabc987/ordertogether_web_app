@@ -2,10 +2,11 @@
 'use client';
 
 import { useTransition } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Check } from 'lucide-react';
+import { Check, LogIn } from 'lucide-react';
 import { subscribeAction } from '@/lib/actions';
 import { useAuth } from '@/providers';
 import { cn } from '@/lib/utils';
@@ -20,9 +21,10 @@ interface PricingCardProps {
     features: string[];
   };
   isCurrentPlan: boolean;
+  isLoggedIn: boolean;
 }
 
-export function PricingCard({ plan, isCurrentPlan }: PricingCardProps) {
+export function PricingCard({ plan, isCurrentPlan, isLoggedIn }: PricingCardProps) {
   const { user } = useAuth();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -37,9 +39,8 @@ export function PricingCard({ plan, isCurrentPlan }: PricingCardProps) {
           title: 'Subscription Successful!',
           description: `Your ${plan.name} is now active.`,
         });
-        // Redirect to force a refresh of user data on the client
         router.push('/profile');
-        router.refresh(); // Also explicitly ask Next.js to refresh server data
+        router.refresh(); 
       } else {
         toast({
           title: 'Subscription Failed',
@@ -67,18 +68,33 @@ export function PricingCard({ plan, isCurrentPlan }: PricingCardProps) {
           ))}
         </ul>
       </CardContent>
-      <CardFooter>
-        <Button
-          className="w-full"
-          onClick={handleSubscribe}
-          disabled={isPending || isCurrentPlan}
-        >
-          {isPending
-            ? 'Processing...'
-            : isCurrentPlan
-            ? 'Current Plan'
-            : 'Subscribe'}
-        </Button>
+      <CardFooter className="flex flex-col items-stretch">
+        {isLoggedIn ? (
+          <Button
+            className="w-full"
+            onClick={handleSubscribe}
+            disabled={isPending || isCurrentPlan}
+          >
+            {isPending
+              ? 'Processing...'
+              : isCurrentPlan
+              ? 'Current Plan'
+              : 'Subscribe'}
+          </Button>
+        ) : (
+          <div className="space-y-4 text-center">
+            <Button className="w-full" disabled>Subscribe</Button>
+            <p className="text-sm text-muted-foreground">
+              You must be signed in to subscribe.
+            </p>
+            <Button variant="secondary" asChild className="w-full">
+              <Link href="/login">
+                <LogIn />
+                Sign In
+              </Link>
+            </Button>
+          </div>
+        )}
       </CardFooter>
     </Card>
   );

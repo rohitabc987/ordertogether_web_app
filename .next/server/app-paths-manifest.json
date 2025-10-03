@@ -1,15 +1,13 @@
 {
   "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/about/page": "app/about/page.js",
   "/api/session/route": "app/api/session/route.js",
-  "/contact/page": "app/contact/page.js",
-  "/create-post/page": "app/create-post/page.js",
+  "/edit-post/[id]/page": "app/edit-post/[id]/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/feedback/page": "app/feedback/page.js",
   "/how-it-works/page": "app/how-it-works/page.js",
-  "/know-more/page": "app/know-more/page.js",
-  "/legal/privacy-policy/page": "app/legal/privacy-policy/page.js",
-  "/legal/terms-of-service/page": "app/legal/terms-of-service/page.js",
+  "/my-posts/page": "app/my-posts/page.js",
   "/page": "app/page.js",
-  "/pricing/page": "app/pricing/page.js"
+  "/pricing/page": "app/pricing/page.js",
+  "/profile/page": "app/profile/page.js"
 }

@@ -1,7 +1,6 @@
 
 import { PricingCard } from '@/components/pricing-card';
 import { getCurrentUser } from '@/lib/session';
-import { redirect } from 'next/navigation';
 
 const plans = [
   {
@@ -36,12 +35,8 @@ const plans = [
 
 export default async function PricingPage() {
   const user = await getCurrentUser();
-  
-  if(!user){
-    redirect('/login');
-  }
-
   const currentPlanId = user?.subscription?.plan;
+  const isLoggedIn = !!user;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -51,7 +46,12 @@ export default async function PricingPage() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
         {plans.map(plan => (
-          <PricingCard key={plan.id} plan={plan} isCurrentPlan={currentPlanId === plan.id} />
+          <PricingCard 
+            key={plan.id} 
+            plan={plan} 
+            isCurrentPlan={currentPlanId === plan.id}
+            isLoggedIn={isLoggedIn}
+          />
         ))}
       </div>
     </div>
