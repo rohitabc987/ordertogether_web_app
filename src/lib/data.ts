@@ -1,6 +1,4 @@
 
-
-
 // @ts-nocheck
 import type { User, Post } from './types';
 import { db } from './firebase-admin';
@@ -110,26 +108,27 @@ async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
 }
 
 export const getPostsForUser = cache(async (user: User | null): Promise<Post[]> => {
-  let query: Query = postsCollection;
-
-  if (user?.institution?.institutionName) {
-    query = query.where('location.institutionName', '==', user.institution.institutionName);
-  } 
-  
-  // Always sort by creation time and limit the results.
-  // This might require a composite index if you combine it with other filters.
-  query = query.orderBy('timestamps.createdAt', 'desc').limit(50);
-
+  // Simple query that does not require a composite index
+  let query: Query = postsCollection.orderBy('timestamps.createdAt', 'desc').limit(50);
   const snapshot = await query.get();
   
-  let posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  let allRecentPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-  // Exclude posts made by the current user from their own feed
+  let postsToDisplay = allRecentPosts;
+
+  // If the user is logged in, filter the posts in code
   if (user) {
-    posts = posts.filter(post => post.authorId !== user.id);
+    // Filter posts from the user's institution
+    if (user.institution?.institutionName) {
+      postsToDisplay = allRecentPosts.filter(post => 
+        post.location?.institutionName === user.institution.institutionName
+      );
+    }
+    // Exclude posts made by the current user from their own feed
+    postsToDisplay = postsToDisplay.filter(post => post.authorId !== user.id);
   }
 
-  const postsWithAuthors = await joinAuthorToPosts(posts);
+  const postsWithAuthors = await joinAuthorToPosts(postsToDisplay);
   
   return postsWithAuthors;
 });
@@ -187,6 +186,7 @@ export async function createUserInDb(data: { name: string; email: string; photoU
     contact: {
       email: data.email,
       phone: null,
+      whatsapp: null,
       shareContact: true,
     },
     location: {

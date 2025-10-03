@@ -173,6 +173,22 @@ function convertTimestamps(obj) {
     }
     return obj;
 }
+// Uncached base function
+const _getUserById = async (userId)=>{
+    console.log(`data: getUserById called for ID: ${userId}`);
+    const userDoc = await usersCollection.doc(userId).get();
+    if (!userDoc.exists) {
+        console.log(`data: No user found with ID: ${userId}`);
+        return undefined;
+    }
+    const userData = {
+        id: userDoc.id,
+        ...userDoc.data()
+    };
+    // Convert timestamps for client-side usage
+    return convertTimestamps(userData);
+};
+const getUserById = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cache"])(_getUserById);
 const getAuthorAndInstitution = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cache"])(async (authorId)=>{
     try {
         const userDoc = await usersCollection.doc(authorId).get();
@@ -210,35 +226,22 @@ const findUserByEmail = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node
     console.log(`data: User found with ID: ${userDoc.id}`, userData);
     return convertTimestamps(userData);
 });
-const getUserById = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cache"])(async (userId)=>{
-    console.log(`data: getUserById called for ID: ${userId}`);
-    const userDoc = await usersCollection.doc(userId).get();
-    if (!userDoc.exists) {
-        console.log(`data: No user found with ID: ${userId}`);
-        return undefined;
-    }
-    const userData = {
-        id: userDoc.id,
-        ...userDoc.data()
-    };
-    // Convert timestamps for client-side usage
-    return convertTimestamps(userData);
-});
 async function joinAuthorToPosts(posts) {
     if (posts.length === 0) return [];
     const authorIds = [
         ...new Set(posts.map((p)=>p.authorId).filter(Boolean))
     ];
-    const authors = {};
-    if (authorIds.length > 0) {
-        const authorPromises = authorIds.map((id)=>getUserById(id));
-        const authorResults = await Promise.all(authorPromises);
-        authorResults.forEach((author)=>{
-            if (author) {
-                authors[author.id] = author;
-            }
-        });
+    if (authorIds.length === 0) {
+        return convertTimestamps(posts);
     }
+    const authorPromises = authorIds.map((id)=>getUserById(id));
+    const authorResults = await Promise.all(authorPromises);
+    const authors = authorResults.reduce((acc, author)=>{
+        if (author) {
+            acc[author.id] = author;
+        }
+        return acc;
+    }, {});
     const joinedPosts = posts.map((post)=>({
             ...post,
             author: authors[post.authorId] || null
@@ -250,20 +253,15 @@ const getPostsForUser = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node
     let query = postsCollection;
     if (user?.institution?.institutionName) {
         query = query.where('location.institutionName', '==', user.institution.institutionName);
-    } else {
-        // Only apply ordering when not filtering by institution to avoid composite index need
-        query = query.orderBy('timestamps.createdAt', 'desc');
     }
-    query = query.limit(25);
+    // Always sort by creation time and limit the results.
+    // This might require a composite index if you combine it with other filters.
+    query = query.orderBy('timestamps.createdAt', 'desc').limit(50);
     const snapshot = await query.get();
     let posts = snapshot.docs.map((doc)=>({
             id: doc.id,
             ...doc.data()
         }));
-    // Manually sort if we didn't do it in the query
-    if (user?.institution?.institutionName) {
-        posts.sort((a, b)=>b.timestamps.createdAt.toMillis() - a.timestamps.createdAt.toMillis());
-    }
     // Exclude posts made by the current user from their own feed
     if (user) {
         posts = posts.filter((post)=>post.authorId !== user.id);
@@ -272,13 +270,11 @@ const getPostsForUser = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node
     return postsWithAuthors;
 });
 const getPostsByAuthorId = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cache"])(async (authorId)=>{
-    const snapshot = await postsCollection.where('authorId', '==', authorId).get();
+    const snapshot = await postsCollection.where('authorId', '==', authorId).orderBy('timestamps.createdAt', 'desc').get();
     let posts = snapshot.docs.map((doc)=>({
             id: doc.id,
             ...doc.data()
         }));
-    // Manual sort to avoid composite index
-    posts.sort((a, b)=>b.timestamps.createdAt.toMillis() - a.timestamps.createdAt.toMillis());
     const postsWithAuthors = await joinAuthorToPosts(posts);
     return postsWithAuthors;
 });
@@ -291,7 +287,7 @@ async function updatePost(postId, updates) {
 async function deletePost(postId) {
     await postsCollection.doc(postId).delete();
 }
-const getPostById = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cache"])(async (postId)=>{
+const _getPostById = async (postId)=>{
     const postDoc = await postsCollection.doc(postId).get();
     if (!postDoc.exists) {
         return null;
@@ -304,7 +300,8 @@ const getPostById = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_mod
         postData
     ]);
     return postsWithAuthor[0] || null; // Return null if author join fails
-});
+};
+const getPostById = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cache"])(_getPostById);
 async function updateUser(userId, updates) {
     await usersCollection.doc(userId).update(updates);
     const updatedUser = await getUserById(userId);
