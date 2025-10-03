@@ -1,5 +1,6 @@
 
 
+
 // @ts-nocheck
 import type { User, Post } from './types';
 import { db } from './firebase-admin';
@@ -29,6 +30,23 @@ function convertTimestamps(obj: any): any {
   }
   return obj;
 }
+
+// Uncached base function
+const _getUserById = async (userId: string): Promise<User | undefined> => {
+  console.log(`data: getUserById called for ID: ${userId}`);
+  const userDoc = await usersCollection.doc(userId).get();
+  if (!userDoc.exists) {
+    console.log(`data: No user found with ID: ${userId}`);
+    return undefined;
+  }
+  const userData = { id: userDoc.id, ...userDoc.data() } as User;
+  // Convert timestamps for client-side usage
+  return convertTimestamps(userData);
+};
+
+// Cached/memoized version of the function for server-side rendering
+export const getUserById = cache(_getUserById);
+
 
 export const getAuthorAndInstitution = cache(async (authorId: string): Promise<{ authorData: User; institutionId: string; } | null> => {
   try {
@@ -63,33 +81,24 @@ export const findUserByEmail = cache(async (email: string): Promise<User | undef
   return convertTimestamps(userData);
 });
 
-export const getUserById = cache(async (userId: string): Promise<User | undefined> => {
-  console.log(`data: getUserById called for ID: ${userId}`);
-  const userDoc = await usersCollection.doc(userId).get();
-  if (!userDoc.exists) {
-    console.log(`data: No user found with ID: ${userId}`);
-    return undefined;
-  }
-  const userData = { id: userDoc.id, ...userDoc.data() } as User;
-  // Convert timestamps for client-side usage
-  return convertTimestamps(userData);
-});
-
 async function joinAuthorToPosts(posts: any[]): Promise<Post[]> {
   if (posts.length === 0) return [];
 
   const authorIds = [...new Set(posts.map(p => p.authorId).filter(Boolean))];
   
-  const authors = {};
-  if (authorIds.length > 0) {
-    const authorPromises = authorIds.map(id => getUserById(id));
-    const authorResults = await Promise.all(authorPromises);
-    authorResults.forEach(author => {
-      if (author) {
-        authors[author.id] = author;
-      }
-    });
+  if (authorIds.length === 0) {
+    return convertTimestamps(posts);
   }
+
+  const authorPromises = authorIds.map(id => getUserById(id));
+  const authorResults = await Promise.all(authorPromises);
+  
+  const authors = authorResults.reduce((acc, author) => {
+    if (author) {
+      acc[author.id] = author;
+    }
+    return acc;
+  }, {});
 
   const joinedPosts = posts.map(post => ({
     ...post,
@@ -105,21 +114,15 @@ export const getPostsForUser = cache(async (user: User | null): Promise<Post[]> 
 
   if (user?.institution?.institutionName) {
     query = query.where('location.institutionName', '==', user.institution.institutionName);
-  } else {
-    // Only apply ordering when not filtering by institution to avoid composite index need
-    query = query.orderBy('timestamps.createdAt', 'desc');
-  }
-
-  query = query.limit(25);
+  } 
+  
+  // Always sort by creation time and limit the results.
+  // This might require a composite index if you combine it with other filters.
+  query = query.orderBy('timestamps.createdAt', 'desc').limit(50);
 
   const snapshot = await query.get();
   
   let posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-  // Manually sort if we didn't do it in the query
-  if (user?.institution?.institutionName) {
-    posts.sort((a, b) => b.timestamps.createdAt.toMillis() - a.timestamps.createdAt.toMillis());
-  }
 
   // Exclude posts made by the current user from their own feed
   if (user) {
@@ -133,11 +136,8 @@ export const getPostsForUser = cache(async (user: User | null): Promise<Post[]> 
 
 
 export const getPostsByAuthorId = cache(async (authorId: string): Promise<Post[]> => {
-  const snapshot = await postsCollection.where('authorId', '==', authorId).get();
+  const snapshot = await postsCollection.where('authorId', '==', authorId).orderBy('timestamps.createdAt', 'desc').get();
   let posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-  // Manual sort to avoid composite index
-  posts.sort((a, b) => b.timestamps.createdAt.toMillis() - a.timestamps.createdAt.toMillis());
   
   const postsWithAuthors = await joinAuthorToPosts(posts);
   
@@ -155,7 +155,7 @@ export async function deletePost(postId: string): Promise<void> {
   await postsCollection.doc(postId).delete();
 }
 
-export const getPostById = cache(async (postId: string): Promise<Post | null> => {
+const _getPostById = async (postId: string): Promise<Post | null> => {
   const postDoc = await postsCollection.doc(postId).get();
   if (!postDoc.exists) {
     return null;
@@ -163,7 +163,9 @@ export const getPostById = cache(async (postId: string): Promise<Post | null> =>
   const postData = { id: postDoc.id, ...postDoc.data() };
   const postsWithAuthor = await joinAuthorToPosts([postData]);
   return postsWithAuthor[0] || null; // Return null if author join fails
-});
+};
+export const getPostById = cache(_getPostById);
+
 
 export async function updateUser(userId: string, updates: Record<string, any>): Promise<User> {
   await usersCollection.doc(userId).update(updates);
