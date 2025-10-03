@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -36,7 +37,7 @@ export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { 
   const [amountFilter, setAmountFilter] = useState([0, 10000]);
   const [genderFilter, setGenderFilter] = useState('all');
   const [restaurantFilter, setRestaurantFilter] = useState('');
-  const [institutionFilter, setInstitutionFilter] = useState('iit-dharwad');
+  const [institutionFilter, setInstitutionFilter] = useState(user?.institution?.institutionName || 'iit-dharwad');
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -52,17 +53,17 @@ export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { 
     }
   }, [initialBannerUrl]);
 
+  // This effect ensures that on client-side navigation or first load,
+  // we try to use cached posts if the server doesn't provide any.
   useEffect(() => {
-    // If server provides posts, cache them.
     if (initialPosts.length > 0) {
+      setPosts(initialPosts);
       try {
         localStorage.setItem('cachedPosts', JSON.stringify(initialPosts));
-        setPosts(initialPosts);
       } catch (error) {
         console.error("Failed to cache posts:", error);
       }
     } else {
-      // If no initial posts (e.g., client-side navigation), try to load from cache.
       try {
         const cachedPostsJSON = localStorage.getItem('cachedPosts');
         if (cachedPostsJSON) {
@@ -139,7 +140,7 @@ export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { 
     setAmountFilter([0, 10000]);
     setGenderFilter('all');
     setRestaurantFilter('');
-    setInstitutionFilter('iit-dharwad');
+    setInstitutionFilter(user?.institution?.institutionName || 'iit-dharwad');
     setCurrentPage(1);
   };
   
