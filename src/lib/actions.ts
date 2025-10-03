@@ -460,14 +460,14 @@ export async function getChatsForUserAction(userId: string): Promise<{ success: 
       return { success: true, chats: [] };
     }
 
-    let chats: Chat[] = chatsSnapshot.docs.map(doc => ({
+    const chatsData = chatsSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
-    } as Chat));
+    })) as Chat[];
     
     // Get all unique participant IDs from all chats
     const participantIds = new Set<string>();
-    chats.forEach(chat => chat.participants.forEach(id => participantIds.add(id)));
+    chatsData.forEach(chat => chat.participants.forEach(id => participantIds.add(id)));
 
     // Fetch user profiles for all participants
     const userProfiles: { [key: string]: Pick<User, 'id' | 'userProfile'> } = {};
@@ -479,24 +479,27 @@ export async function getChatsForUserAction(userId: string): Promise<{ success: 
     });
     await Promise.all(userPromises);
     
-    // Attach user data to each chat and sort
-    chats = chats.map(chat => ({
+    // Attach user data to each chat
+    const chatsWithUsers = chatsData.map(chat => ({
       ...chat,
       users: {
         [chat.participants[0]]: userProfiles[chat.participants[0]],
         [chat.participants[1]]: userProfiles[chat.participants[1]],
       }
-    })).sort((a, b) => {
-      const timeA = a.lastMessage?.timestamp ? new Date(a.lastMessage.timestamp).getTime() : 0;
-      const timeB = b.lastMessage?.timestamp ? new Date(b.lastMessage.timestamp).getTime() : 0;
+    }));
+
+    // Now sort the chats in code
+    const sortedChats = chatsWithUsers.sort((a, b) => {
+      // Handle cases where lastMessage or its timestamp might be missing
+      const timeA = a.lastMessage?.timestamp ? convertFirestoreTimestampToDate(a.lastMessage.timestamp)?.getTime() ?? 0 : 0;
+      const timeB = b.lastMessage?.timestamp ? convertFirestoreTimestampToDate(b.lastMessage.timestamp)?.getTime() ?? 0 : 0;
       return timeB - timeA;
     });
 
-    return { success: true, chats: JSON.parse(JSON.stringify(chats)) };
+    return { success: true, chats: JSON.parse(JSON.stringify(sortedChats)) };
   } catch (error) {
     console.error('Error fetching chats:', error);
     return { success: false, message: 'Failed to load chats.' };
   }
 }
-
     

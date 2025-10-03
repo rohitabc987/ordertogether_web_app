@@ -47,6 +47,16 @@ export function ChatSidebar({ chats, currentUser }: ChatSidebarProps) {
             const lastMessageText = chat.lastMessage?.senderId === currentUser.id 
                 ? `You: ${chat.lastMessage.text}`
                 : chat.lastMessage?.text;
+            
+            const timestampStr = chat.lastMessage?.timestamp;
+            let timeAgo = '';
+            if (timestampStr) {
+                const date = new Date(timestampStr);
+                if (!isNaN(date.getTime())) {
+                    timeAgo = formatDistanceToNowStrict(date, { addSuffix: true });
+                }
+            }
+
 
             return (
               <li key={chat.id}>
@@ -66,9 +76,9 @@ export function ChatSidebar({ chats, currentUser }: ChatSidebarProps) {
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline">
                       <p className="font-semibold truncate">{otherUser.userProfile.name}</p>
-                      {chat.lastMessage?.timestamp && (
+                      {timeAgo && (
                          <time className="text-xs text-muted-foreground flex-shrink-0">
-                           {formatDistanceToNowStrict(new Date(chat.lastMessage.timestamp), { addSuffix: true })}
+                           {timeAgo}
                          </time>
                       )}
                     </div>
