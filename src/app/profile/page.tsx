@@ -10,7 +10,7 @@ import { redirect } from 'next/navigation';
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams: { message?: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const user = await getCurrentUser();
 
@@ -18,7 +18,7 @@ export default async function ProfilePage({
     redirect('/login');
   }
   
-  const message = searchParams?.message;
+  const message = searchParams?.message as string | undefined;
 
   const isSubscribed = user.subscription?.status === 'active';
 
