@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
@@ -6,9 +7,10 @@ import { updatePostViewCountAction } from '@/lib/actions';
 
 interface AuthContextType {
   user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null });
+const AuthContext = createContext<AuthContextType>({ user: null, setUser: () => {} });
 
 interface PostViewContextType {
   trackViewedPost: (postId: string) => void;
@@ -112,7 +114,13 @@ export function AuthProvider({ children, initialUser }: { children: React.ReactN
       }
     }
     
-    fetchSession();
+    // Only fetch if not loading from cache initially
+    if (!user) {
+        fetchSession();
+    } else {
+        setLoading(false);
+    }
+
 
     return () => {
       isMounted = false;
@@ -127,8 +135,8 @@ export function AuthProvider({ children, initialUser }: { children: React.ReactN
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user }}>
-      {loading ? null : <PostViewProvider>{children}</PostViewProvider>}
+    <AuthContext.Provider value={{ user, setUser }}>
+      {loading ? null : children}
     </AuthContext.Provider>
   );
 }
@@ -142,5 +150,11 @@ export function useAuth() {
 }
 
 export function Providers({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
-  return <AuthProvider initialUser={initialUser}>{children}</AuthProvider>;
+  return (
+    <AuthProvider initialUser={initialUser}>
+      <PostViewProvider>
+        {children}
+      </PostViewProvider>
+    </AuthProvider>
+  );
 }

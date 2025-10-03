@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useTransition } from 'react';
@@ -45,12 +46,16 @@ export function Header() {
       // Clear cached user data on logout
       try {
         localStorage.removeItem('cachedUser');
-        localStorage.removeItem('cachedPosts');
-        localStorage.removeItem('myPosts');
+        // Also clear posts cache just in case
+        const userId = user?.id; // get user id before it's gone
+        if (userId) {
+          localStorage.removeItem(`myPosts_${userId}`);
+        }
       } catch (error) {
         console.error('Failed to clear localStorage on logout', error);
       }
       router.push('/login');
+      router.refresh();
     });
   };
 

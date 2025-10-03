@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useActionState, useEffect, useRef } from 'react';
@@ -14,10 +15,23 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 
 // Helper to format date for datetime-local input
-const formatDateForInput = (isoDate: string) => {
-  if (!isoDate) return '';
+const formatDateForInput = (date: string | { _seconds: number, _nanoseconds: number }) => {
+  if (!date) return '';
+  
+  let dateObj;
+  // Check if it's a Firestore-like timestamp object from server-side rendering
+  if (typeof date === 'object' && '_seconds' in date) {
+    dateObj = new Date(date._seconds * 1000 + date._nanoseconds / 1000000);
+  } else if (typeof date === 'string') {
+    dateObj = new Date(date);
+  } else {
+    return '';
+  }
+  
+  if (isNaN(dateObj.getTime())) return '';
+
   // The 'T' needs to be there, and we slice off the milliseconds and 'Z'
-  return isoDate.substring(0, 16); 
+  return dateObj.toISOString().substring(0, 16); 
 };
 
 
