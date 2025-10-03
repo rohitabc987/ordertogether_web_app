@@ -1,59 +1,26 @@
-
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper function to check if the user is a participant of a chat
-    function isChatParticipant(chatId) {
-      return request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-    }
-
-    // Rules for the 'users' collection
     match /users/{userId} {
-      // Allow users to read their own profile, but not others' full profiles easily
-      allow read: if request.auth.uid == userId;
-      // Allow users to update their own profile
-      allow write: if request.auth.uid == userId;
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-
-    // Rules for the 'posts' collection
     match /posts/{postId} {
-      // Anyone can read posts
       allow read: if true;
-      // Only authenticated users can create posts
       allow create: if request.auth != null;
-      // Only the author can update or delete their own post
-      allow update, delete: if request.auth.uid == resource.data.authorId;
+      allow update, delete: if request.auth != null && resource.data.authorId == request.auth.uid;
     }
-
-    // Rules for 'feedback' collection
     match /feedback/{feedbackId} {
-        // Only authenticated users can submit feedback
-        allow create: if request.auth != null;
-        // Nobody can read or modify feedback through the client SDK
-        allow read, update, delete: if false;
+      allow create: if true;
     }
-
-    // Rules for the 'chats' collection
+    match /app_data/{docId} {
+        allow read: if true;
+    }
     match /chats/{chatId} {
-      // Users can only read/write a chat document if they are one of the participants
-      allow read, write: if request.auth.uid in resource.data.participants;
+      allow read, create, update: if request.auth.uid in resource.data.participants;
 
-      // Rules for the 'messages' subcollection within a chat
       match /messages/{messageId} {
-        // Users can read messages in a chat if they are a participant of that chat
-        allow read: if isChatParticipant(chatId);
-        // Users can create (send) messages in a chat if they are a participant
-        allow create: if isChatParticipant(chatId) && request.resource.data.senderId == request.auth.uid;
-        // Messages cannot be updated or deleted by clients
-        allow update, delete: if false;
+        allow get, list, create: if request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
       }
-    }
-    
-    // Default deny all other reads/writes
-    match /{document=**} {
-      allow read, write: if false;
     }
   }
 }
