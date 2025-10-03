@@ -17,7 +17,7 @@ export default async function ProfilePage({
     redirect('/login');
   }
   
-  const message = searchParams?.message as string | undefined;
+  const message = (await searchParams)?.message as string | undefined;
 
   const isSubscribed = user.subscription?.status === 'active';
 
