@@ -4,49 +4,56 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check if a user is authenticated
-    function isAuthenticated() {
-      return request.auth != null;
+    // Helper function to check if the user is a participant of a chat
+    function isChatParticipant(chatId) {
+      return request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
     }
 
-    // Helper function to check if the user is the owner of a document
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    // Users can read their own profile, and any authenticated user can see a user's public profile info
+    // Rules for the 'users' collection
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
+      // Allow users to read their own profile, but not others' full profiles easily
+      allow read: if request.auth.uid == userId;
+      // Allow users to update their own profile
+      allow write: if request.auth.uid == userId;
     }
 
-    // Posts can be read by anyone, but only created/updated/deleted by the author
+    // Rules for the 'posts' collection
     match /posts/{postId} {
-      allow read: if isAuthenticated();
-      allow create, update, delete: if isAuthenticated() && request.auth.uid == request.resource.data.authorId;
+      // Anyone can read posts
+      allow read: if true;
+      // Only authenticated users can create posts
+      allow create: if request.auth != null;
+      // Only the author can update or delete their own post
+      allow update, delete: if request.auth.uid == resource.data.authorId;
     }
 
-    // App data like banner images can be read by anyone
-    match /app_data/{docId} {
-      allow read: if true;
-      allow write: if false; // Nobody should write to this from the client
+    // Rules for 'feedback' collection
+    match /feedback/{feedbackId} {
+        // Only authenticated users can submit feedback
+        allow create: if request.auth != null;
+        // Nobody can read or modify feedback through the client SDK
+        allow read, update, delete: if false;
+    }
+
+    // Rules for the 'chats' collection
+    match /chats/{chatId} {
+      // Users can only read/write a chat document if they are one of the participants
+      allow read, write: if request.auth.uid in resource.data.participants;
+
+      // Rules for the 'messages' subcollection within a chat
+      match /messages/{messageId} {
+        // Users can read messages in a chat if they are a participant of that chat
+        allow read: if isChatParticipant(chatId);
+        // Users can create (send) messages in a chat if they are a participant
+        allow create: if isChatParticipant(chatId) && request.resource.data.senderId == request.auth.uid;
+        // Messages cannot be updated or deleted by clients
+        allow update, delete: if false;
+      }
     }
     
-    // Feedback can be written by any authenticated user
-    match /feedback/{feedbackId} {
-      allow create: if isAuthenticated();
-      allow read, update, delete: if false; // Only allow creation
-    }
-
-    // Chat documents can only be accessed by participants
-    match /chats/{chatId} {
-      allow read, write: if isAuthenticated() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-
-      // Messages within a chat can only be accessed by participants of that chat
-      match /messages/{messageId} {
-        allow read, create: if isAuthenticated() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-        allow update, delete: if false; // Do not allow editing/deleting messages
-      }
+    // Default deny all other reads/writes
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

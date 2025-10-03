@@ -11,12 +11,13 @@ export default async function ChatPage({
 }: {
   params: { chatId: string };
 }) {
+  const { chatId } = params;
   const user = await getCurrentUser();
+  
   if (!user) {
     redirect("/login");
   }
 
-  const chatId = params.chatId;
   const chat = await getChatById(chatId, user.id);
   
   if (!chat) {
