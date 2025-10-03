@@ -5,9 +5,9 @@ import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 const headlines = [
-  { pre: 'Craving something ', highlight: 'delicious?' },
-  { pre: 'Tired of high ', highlight: 'delivery fees?' },
-  { pre: 'Want to unlock that ', highlight: 'restaurant deal?' },
+  { title: 'Craving something delicious?', highlight: 'delicious?' },
+  { title: 'Tired of high delivery fees?', highlight: 'delivery fees?' },
+  { title: 'Want to unlock that restaurant deal?', highlight: 'restaurant deal?' },
 ];
 
 const subHeadlines = [
@@ -15,6 +15,27 @@ const subHeadlines = [
   "Combine orders to meet minimums and say goodbye to extra charges.",
   "Join forces on OrderlyGather to get the best discounts on every meal.",
 ];
+
+const renderHighlightedTitle = (title: string, highlight: string) => {
+  if (!highlight || !title.includes(highlight)) {
+    return title;
+  }
+  const parts = title.split(new RegExp(`(${highlight})`, 'gi'));
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.toLowerCase() === highlight.toLowerCase() ? (
+          <span key={index} className="text-accent">
+            {part}
+          </span>
+        ) : (
+          part
+        )
+      )}
+    </>
+  );
+};
+
 
 export function RotatingHeadlines() {
   const [index, setIndex] = useState(0);
@@ -40,8 +61,7 @@ export function RotatingHeadlines() {
           isFadingOut ? 'animate-fade-out-right' : 'animate-fade-in-left'
         )}
       >
-        {headlines[index].pre}
-        <span className="text-accent">{headlines[index].highlight}</span>
+        {renderHighlightedTitle(headlines[index].title, headlines[index].highlight)}
       </h1>
       <p
         className={cn(

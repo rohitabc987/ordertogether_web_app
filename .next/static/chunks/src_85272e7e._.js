@@ -2430,15 +2430,15 @@ var _s = __turbopack_context__.k.signature();
 ;
 const headlines = [
     {
-        pre: 'Craving something ',
+        title: 'Craving something delicious?',
         highlight: 'delicious?'
     },
     {
-        pre: 'Tired of high ',
+        title: 'Tired of high delivery fees?',
         highlight: 'delivery fees?'
     },
     {
-        pre: 'Want to unlock that ',
+        title: 'Want to unlock that restaurant deal?',
         highlight: 'restaurant deal?'
     }
 ];
@@ -2447,6 +2447,22 @@ const subHeadlines = [
     "Combine orders to meet minimums and say goodbye to extra charges.",
     "Join forces on OrderlyGather to get the best discounts on every meal."
 ];
+const renderHighlightedTitle = (title, highlight)=>{
+    if (!highlight || !title.includes(highlight)) {
+        return title;
+    }
+    const parts = title.split(new RegExp(`(${highlight})`, 'gi'));
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+        children: parts.map((part, index)=>part.toLowerCase() === highlight.toLowerCase() ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                className: "text-accent",
+                children: part
+            }, index, false, {
+                fileName: "[project]/src/components/rotating-headlines.tsx",
+                lineNumber: 28,
+                columnNumber: 11
+            }, this) : part)
+    }, void 0, false);
+};
 function RotatingHeadlines() {
     _s();
     const [index, setIndex] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
@@ -2476,20 +2492,10 @@ function RotatingHeadlines() {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
                 className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])('text-5xl md:text-6xl font-extrabold text-white transition-all duration-500', isFadingOut ? 'animate-fade-out-right' : 'animate-fade-in-left'),
-                children: [
-                    headlines[index].pre,
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                        className: "text-accent",
-                        children: headlines[index].highlight
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/rotating-headlines.tsx",
-                        lineNumber: 44,
-                        columnNumber: 9
-                    }, this)
-                ]
-            }, void 0, true, {
+                children: renderHighlightedTitle(headlines[index].title, headlines[index].highlight)
+            }, void 0, false, {
                 fileName: "[project]/src/components/rotating-headlines.tsx",
-                lineNumber: 37,
+                lineNumber: 58,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2497,13 +2503,13 @@ function RotatingHeadlines() {
                 children: subHeadlines[index]
             }, void 0, false, {
                 fileName: "[project]/src/components/rotating-headlines.tsx",
-                lineNumber: 46,
+                lineNumber: 66,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/rotating-headlines.tsx",
-        lineNumber: 36,
+        lineNumber: 57,
         columnNumber: 5
     }, this);
 }
