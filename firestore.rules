@@ -1,43 +1,38 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to check if a user is a participant in a chat
-    function isChatParticipant(chatId) {
-      return request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-    }
-
-    // Users can only read their own data
+    // Users can read their own profile, but only write to specific fields.
     match /users/{userId} {
-      allow read, update: if request.auth.uid == userId;
+      allow read: if request.auth.uid == userId;
+      allow write: if request.auth.uid == userId;
     }
 
-    // Posts can be read by anyone, but only created/updated/deleted by the author
+    // Posts can be read by anyone, but only created/edited/deleted by the author.
     match /posts/{postId} {
-      allow read: if true;
+      allow read: if request.auth != null;
       allow create, update, delete: if request.auth.uid == request.resource.data.authorId;
     }
 
-    // Chats can only be accessed by participants
-    match /chats/{chatId} {
-      allow read, create, update: if request.auth.uid in resource.data.participants;
-      
-      // Messages can only be accessed by chat participants
-      match /messages/{messageId} {
-        allow create, read: if isChatParticipant(chatId);
-      }
-    }
-
-    // Feedback can be written by anyone
+    // Feedback can be written by anyone.
     match /feedback/{feedbackId} {
-        allow create: if true;
+      allow create: if true;
+    }
+    
+    // App data is read-only for authenticated users.
+    match /app_data/{docId} {
+       allow read: if request.auth != null;
     }
 
-    // App data can be read by anyone
-    match /app_data/{docId} {
-      allow read: if true;
+    // --- Chat Rules ---
+    // A user can only read/write a chat document if they are a participant.
+    match /chats/{chatId} {
+      allow read, write: if request.auth.uid in resource.data.participants;
+
+      // A user can only read/write messages in a chat if they are a participant.
+      match /messages/{messageId} {
+        allow read, write: if request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+      }
     }
   }
 }

@@ -6,12 +6,12 @@ import { AlertCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-export default async function ChatPage({
-  params,
-}: {
-  params: { chatId: string };
-}) {
-  const { chatId } = params;
+interface ChatPageProps {
+  params: Promise<{ chatId: string }>;
+}
+
+export default async function ChatPage({ params }: ChatPageProps) {
+  const { chatId } = await params;
   const user = await getCurrentUser();
   
   if (!user) {
