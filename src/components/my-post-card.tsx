@@ -43,7 +43,7 @@ function hasBeenEdited(createdAt: string, updatedAt?: string): boolean {
   return differenceInSeconds(updated, created) > 2;
 }
 
-export function MyPostCard({ post }: { post: Post }) {
+export function MyPostCard({ post, onDelete }: { post: Post; onDelete: (postId: string) => void; }) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
@@ -60,6 +60,7 @@ export function MyPostCard({ post }: { post: Post }) {
           title: 'Success',
           description: result.message,
         });
+        onDelete(post.id); // Trigger callback to update UI
       } else {
         toast({
           title: 'Error',

@@ -1,6 +1,7 @@
 
 
 
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -8,7 +9,7 @@ import { Post, User } from './types';
 import {FieldValue,Timestamp,} from 'firebase-admin/firestore';
 import { db as adminDb, auth as adminAuth } from './firebase-admin';
 import { cookies } from 'next/headers';
-import { findUserByEmail, createUserInDb, getAuthorAndInstitution } from './data';
+import { findUserByEmail, createUserInDb, getAuthorAndInstitution, getPostsByAuthorId } from './data';
 
 function convertFirestoreTimestampToDate(timestamp: any): Date | null {
   if (!timestamp) {
@@ -325,4 +326,17 @@ export async function updatePostViewCountAction(userId: string, count: number) {
     } catch (error) {
         console.error(`Failed to update view count for user ${userId}:`, error);
     }
+}
+
+export async function getMyPostsAction(userId: string) {
+  if (!userId) {
+    return { success: false, message: 'User not found.', posts: [] };
+  }
+  try {
+    const posts = await getPostsByAuthorId(userId);
+    return { success: true, posts: JSON.parse(JSON.stringify(posts)) };
+  } catch (error) {
+    console.error('Error fetching my posts:', error);
+    return { success: false, message: 'Failed to fetch posts.', posts: [] };
+  }
 }

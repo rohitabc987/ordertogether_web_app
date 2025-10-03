@@ -27,7 +27,7 @@ function convertFirestoreTimestampToDate(timestamp: any): Date | null {
 
 export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { initialPosts: Post[], bannerImageUrl: string | null }) {
   const { user } = useAuth();
-  const [posts] = useState<Post[]>(initialPosts);
+  const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [bannerImageUrl, setBannerImageUrl] = useState(initialBannerUrl);
   
   // Filter states
@@ -51,6 +51,29 @@ export function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }: { 
       setBannerImageUrl(cachedUrl);
     }
   }, [initialBannerUrl]);
+
+  useEffect(() => {
+    // If server provides posts, cache them.
+    if (initialPosts.length > 0) {
+      try {
+        localStorage.setItem('cachedPosts', JSON.stringify(initialPosts));
+        setPosts(initialPosts);
+      } catch (error) {
+        console.error("Failed to cache posts:", error);
+      }
+    } else {
+      // If no initial posts (e.g., client-side navigation), try to load from cache.
+      try {
+        const cachedPostsJSON = localStorage.getItem('cachedPosts');
+        if (cachedPostsJSON) {
+          const cachedPosts = JSON.parse(cachedPostsJSON);
+          setPosts(cachedPosts);
+        }
+      } catch (error) {
+        console.error("Failed to load cached posts:", error);
+      }
+    }
+  }, [initialPosts]);
 
 
   const filteredPosts = useMemo(() => {

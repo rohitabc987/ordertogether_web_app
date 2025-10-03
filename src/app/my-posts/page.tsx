@@ -1,27 +1,79 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { MyPostCard } from '@/components/my-post-card';
 import { Button } from '@/components/ui/button';
-import { getPostsByAuthorId } from '@/lib/data';
-import { getCurrentUser } from '@/lib/session';
-import { PlusCircle, Info, CheckCircle } from 'lucide-react';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { getMyPostsAction } from '@/lib/actions';
+import { useAuth } from '@/providers';
+import type { Post } from '@/lib/types';
+import { PlusCircle, Info, CheckCircle, Loader } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-export default async function MyPostsPage({
-  searchParams,
-}: {
-  searchParams: { message?: string };
-}) {
-  const user = await getCurrentUser();
+export default function MyPostsPage() {
+  const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const message = searchParams.get('message');
+  const isSuccessMessage = message?.includes('success');
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    const fetchPosts = async () => {
+      setIsLoading(true);
+
+      // Try to load from cache first
+      try {
+        const cachedPostsJson = localStorage.getItem('myPosts');
+        if (cachedPostsJson) {
+          setPosts(JSON.parse(cachedPostsJson));
+        }
+      } catch (e) {
+        console.error('Failed to load myPosts from cache', e);
+      }
+      
+      const result = await getMyPostsAction(user.id);
+      
+      if (result.success) {
+        setPosts(result.posts);
+        try {
+          localStorage.setItem('myPosts', JSON.stringify(result.posts));
+        } catch (e) {
+          console.error('Failed to cache myPosts', e);
+        }
+      } else {
+        setError(result.message || 'Failed to load posts.');
+      }
+      setIsLoading(false);
+    };
+
+    fetchPosts();
+  }, [user, router]);
+  
+  const handlePostDelete = (postId: string) => {
+    const updatedPosts = posts.filter(p => p.id !== postId);
+    setPosts(updatedPosts);
+    try {
+      localStorage.setItem('myPosts', JSON.stringify(updatedPosts));
+    } catch(e) {
+      console.error('Failed to update cache after delete', e);
+    }
+  };
 
   if (!user) {
-    redirect('/login');
+    return null; // or a loading indicator while redirecting
   }
-
-  const posts = await getPostsByAuthorId(user.id);
-
-  const isSuccessMessage = searchParams.message?.includes('success');
-
+  
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -34,20 +86,31 @@ export default async function MyPostsPage({
         </Button>
       </div>
 
-       {searchParams.message && (
+       {message && (
         <Alert variant={isSuccessMessage ? 'success' : 'default'} className="mb-6">
           {isSuccessMessage ? <CheckCircle className="h-4 w-4" /> : <Info className="h-4 w-4" />}
           <AlertTitle>{isSuccessMessage ? 'Success' : 'Notification'}</AlertTitle>
           <AlertDescription>
-            {searchParams.message}
+            {message}
           </AlertDescription>
         </Alert>
       )}
 
-      {posts.length > 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center items-center py-16">
+          <Loader className="w-8 h-8 animate-spin" />
+          <span className="ml-4 text-muted-foreground">Loading your posts...</span>
+        </div>
+      ) : error ? (
+        <Alert variant="destructive">
+          <Info className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : posts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map(post => (
-            <MyPostCard key={post.id} post={post} />
+            <MyPostCard key={post.id} post={post} onDelete={handlePostDelete} />
           ))}
         </div>
       ) : (
