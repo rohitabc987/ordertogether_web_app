@@ -4,5 +4,8 @@
   "/api/session/route": "app/api/session/route.js",
   "/create-post/page": "app/create-post/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/page": "app/page.js"
+  "/how-it-works/page": "app/how-it-works/page.js",
+  "/legal/privacy-policy/page": "app/legal/privacy-policy/page.js",
+  "/page": "app/page.js",
+  "/pricing/page": "app/pricing/page.js"
 }

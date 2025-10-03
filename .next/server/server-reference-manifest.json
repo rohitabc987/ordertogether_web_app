@@ -14,8 +14,20 @@
           "moduleId": "[project]/.next-internal/server/app/create-post/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": true
         },
+        "app/how-it-works/page": {
+          "moduleId": "[project]/.next-internal/server/app/how-it-works/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true
+        },
+        "app/legal/privacy-policy/page": {
+          "moduleId": "[project]/.next-internal/server/app/legal/privacy-policy/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true
+        },
         "app/page": {
           "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true
+        },
+        "app/pricing/page": {
+          "moduleId": "[project]/.next-internal/server/app/pricing/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": true
         }
       },
@@ -23,7 +35,10 @@
         "app/(auth)/login/page": "action-browser",
         "app/about/page": "action-browser",
         "app/create-post/page": "action-browser",
-        "app/page": "action-browser"
+        "app/how-it-works/page": "action-browser",
+        "app/legal/privacy-policy/page": "action-browser",
+        "app/page": "action-browser",
+        "app/pricing/page": "action-browser"
       }
     },
     "004d49033eb565a117b1d8b30854d8c4f35e240335": {
@@ -40,8 +55,20 @@
           "moduleId": "[project]/.next-internal/server/app/create-post/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": true
         },
+        "app/how-it-works/page": {
+          "moduleId": "[project]/.next-internal/server/app/how-it-works/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true
+        },
+        "app/legal/privacy-policy/page": {
+          "moduleId": "[project]/.next-internal/server/app/legal/privacy-policy/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true
+        },
         "app/page": {
           "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true
+        },
+        "app/pricing/page": {
+          "moduleId": "[project]/.next-internal/server/app/pricing/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": true
         }
       },
@@ -49,7 +76,10 @@
         "app/(auth)/login/page": "action-browser",
         "app/about/page": "action-browser",
         "app/create-post/page": "action-browser",
-        "app/page": "action-browser"
+        "app/how-it-works/page": "action-browser",
+        "app/legal/privacy-policy/page": "action-browser",
+        "app/page": "action-browser",
+        "app/pricing/page": "action-browser"
       }
     },
     "40ed8ce8c40eb1eb22037a6c8d02de7eed81678c50": {
@@ -83,6 +113,17 @@
       },
       "layer": {
         "app/(auth)/login/page": "action-browser"
+      }
+    },
+    "608a37014da282c02d5887e206935bc210b6f2413e": {
+      "workers": {
+        "app/pricing/page": {
+          "moduleId": "[project]/.next-internal/server/app/pricing/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true
+        }
+      },
+      "layer": {
+        "app/pricing/page": "action-browser"
       }
     }
   },

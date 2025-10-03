@@ -5,10 +5,11 @@ module.exports = {
 
 var { g: global, __dirname, a: __turbopack_async_module__ } = __turbopack_context__;
 __turbopack_async_module__(async (__turbopack_handle_async_dependencies__, __turbopack_async_result__) => { try {
-/* __next_internal_action_entry_do_not_use__ [{"004d49033eb565a117b1d8b30854d8c4f35e240335":"logoutAction","40a73254002cde1c95d945c197624b37db4228a7b2":"verifyAndSignInAction","40d76ba21f5c1cbd3af04bef3319e67f3dfa2f2fd6":"deletePostAction","40ed8ce8c40eb1eb22037a6c8d02de7eed81678c50":"deactivateSinglePostPassAction","608074465a1d4bbd442a023bf1b703e67a89a32fad":"updateProfileAction","608a37014da282c02d5887e206935bc210b6f2413e":"subscribeAction","60b6d4174f531998bb03d7597b43fbe35e948f2fce":"submitFeedbackAction","60bc52c11466e52f0c2a505bb94923b8ccc29a1207":"updatePostAction","60c4845d655df4260dec5b69b6fec9102e1ca7e934":"createPostAction","60cc8ebb244f6fe1f1f1b3d8ee4bd944f52bd618c3":"updatePostViewCountAction"},"",""] */ __turbopack_context__.s({
+/* __next_internal_action_entry_do_not_use__ [{"004d49033eb565a117b1d8b30854d8c4f35e240335":"logoutAction","408aca7a0fb27129f61d895da58e51bd97ba77dbdf":"getMyPostsAction","40a73254002cde1c95d945c197624b37db4228a7b2":"verifyAndSignInAction","40d76ba21f5c1cbd3af04bef3319e67f3dfa2f2fd6":"deletePostAction","40ed8ce8c40eb1eb22037a6c8d02de7eed81678c50":"deactivateSinglePostPassAction","608074465a1d4bbd442a023bf1b703e67a89a32fad":"updateProfileAction","608a37014da282c02d5887e206935bc210b6f2413e":"subscribeAction","60b6d4174f531998bb03d7597b43fbe35e948f2fce":"submitFeedbackAction","60bc52c11466e52f0c2a505bb94923b8ccc29a1207":"updatePostAction","60c4845d655df4260dec5b69b6fec9102e1ca7e934":"createPostAction","60cc8ebb244f6fe1f1f1b3d8ee4bd944f52bd618c3":"updatePostViewCountAction"},"",""] */ __turbopack_context__.s({
     "createPostAction": (()=>createPostAction),
     "deactivateSinglePostPassAction": (()=>deactivateSinglePostPassAction),
     "deletePostAction": (()=>deletePostAction),
+    "getMyPostsAction": (()=>getMyPostsAction),
     "logoutAction": (()=>logoutAction),
     "submitFeedbackAction": (()=>submitFeedbackAction),
     "subscribeAction": (()=>subscribeAction),
@@ -366,6 +367,29 @@ async function updatePostViewCountAction(userId, count) {
         console.error(`Failed to update view count for user ${userId}:`, error);
     }
 }
+async function getMyPostsAction(userId) {
+    if (!userId) {
+        return {
+            success: false,
+            message: 'User not found.',
+            posts: []
+        };
+    }
+    try {
+        const posts = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getPostsByAuthorId"])(userId);
+        return {
+            success: true,
+            posts: JSON.parse(JSON.stringify(posts))
+        };
+    } catch (error) {
+        console.error('Error fetching my posts:', error);
+        return {
+            success: false,
+            message: 'Failed to fetch posts.',
+            posts: []
+        };
+    }
+}
 ;
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$action$2d$validate$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["ensureServerEntryExports"])([
     createPostAction,
@@ -377,7 +401,8 @@ async function updatePostViewCountAction(userId, count) {
     logoutAction,
     subscribeAction,
     submitFeedbackAction,
-    updatePostViewCountAction
+    updatePostViewCountAction,
+    getMyPostsAction
 ]);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(createPostAction, "60c4845d655df4260dec5b69b6fec9102e1ca7e934", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(deletePostAction, "40d76ba21f5c1cbd3af04bef3319e67f3dfa2f2fd6", null);
@@ -389,6 +414,7 @@ async function updatePostViewCountAction(userId, count) {
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(subscribeAction, "608a37014da282c02d5887e206935bc210b6f2413e", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(submitFeedbackAction, "60b6d4174f531998bb03d7597b43fbe35e948f2fce", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(updatePostViewCountAction, "60cc8ebb244f6fe1f1f1b3d8ee4bd944f52bd618c3", null);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(getMyPostsAction, "408aca7a0fb27129f61d895da58e51bd97ba77dbdf", null);
 __turbopack_async_result__();
 } catch(e) { __turbopack_async_result__(e); } }, false);}),
 "[project]/.next-internal/server/app/create-post/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript) <locals>": ((__turbopack_context__) => {
