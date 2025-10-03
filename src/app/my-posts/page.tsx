@@ -33,43 +33,35 @@ export default function MyPostsPage() {
     let isMounted = true;
 
     const fetchPosts = async () => {
-      // 1. Try to load from cache first for an instant UI
-      let cachedPosts: Post[] = [];
+      // 1. Try to load from cache first
       try {
         const cachedPostsRaw = localStorage.getItem(`myPosts_${user.id}`);
         if (cachedPostsRaw) {
-          cachedPosts = JSON.parse(cachedPostsRaw);
+          const cachedPosts = JSON.parse(cachedPostsRaw);
           if (isMounted) {
             setPosts(cachedPosts);
-            setIsLoading(false); // We have something to show, stop initial loading indicator
+            setIsLoading(false);
           }
+          // If we have cached data, we don't need to fetch from the server.
+          return;
         }
       } catch (e) {
         console.warn("Could not load posts from cache", e);
       }
 
-      // 2. Fetch from server to get the latest, definitive data
+      // 2. If cache is empty, fetch from server
       const result = await getMyPostsAction(user.id);
       
       if (!isMounted) return;
 
       if (result.success) {
         const serverPosts = result.posts;
-        
-        // 3. Smartly merge server data with cached data to prevent flicker
-        const serverPostIds = new Set(serverPosts.map(p => p.id));
-        const newPostsFromCache = cachedPosts.filter(p => !serverPostIds.has(p.id));
-        
-        // The definitive list is the server's list plus any new posts from cache
-        // that haven't shown up on the server yet.
-        const finalPosts = [...newPostsFromCache, ...serverPosts];
-        
-        setPosts(finalPosts);
+        setPosts(serverPosts);
         setError(null);
         
-        // 4. Update cache with the new definitive list
+        // 3. Update cache with the new definitive list from server
         try {
-          localStorage.setItem(`myPosts_${user.id}`, JSON.stringify(finalPosts));
+          localStorage.setItem(`myPosts_${user.id}`, JSON.stringify(serverPosts));
         } catch (e) {
           console.warn("Could not save posts to cache", e);
         }
@@ -90,7 +82,7 @@ export default function MyPostsPage() {
   
   const handlePostDelete = (postId: string) => {
     setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
-    // The cache update logic is now inside MyPostCard
+    // The cache update logic is inside MyPostCard's onDelete handler
   };
 
   if (!user && !isLoading) {
