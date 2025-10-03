@@ -1,9 +1,3 @@
-
-
-
-
-
-
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -11,7 +5,7 @@ import { Post, User } from './types';
 import {FieldValue,Timestamp,} from 'firebase-admin/firestore';
 import { db as adminDb, auth as adminAuth } from './firebase-admin';
 import { cookies } from 'next/headers';
-import { findUserByEmail, createUserInDb, getAuthorAndInstitution, getPostsByAuthorId } from './data';
+import { findUserByEmail, createUserInDb, getAuthorAndInstitution, getPostsByAuthorId, getPostById as fetchPostById } from './data';
 
 function convertFirestoreTimestampToDate(timestamp: any): Date | null {
   if (!timestamp) {
@@ -27,13 +21,13 @@ function convertFirestoreTimestampToDate(timestamp: any): Date | null {
   return null;
 }
 
-export async function createPostAction(prevState: any, formData: FormData) {
+export async function createPostAction(prevState: any, formData: FormData): Promise<{ success: boolean; message?: string; post?: Post }> {
   const authorId = formData.get('authorId') as string;
 
   try {
     const authorResult = await getAuthorAndInstitution(authorId);
     if (!authorResult) {
-      return { message: 'Error: Could not find author or institution.' };
+      return { success: false, message: 'Error: Could not find author or institution.' };
     }
 
     const { authorData } = authorResult;
@@ -41,7 +35,7 @@ export async function createPostAction(prevState: any, formData: FormData) {
     const deadlineStr = formData.get('timestamps.deadline') as string;
     const deadline = Timestamp.fromDate(new Date(deadlineStr));
 
-    const newPost: Omit<Post, 'id' | 'author'> = {
+    const newPostData: Omit<Post, 'id' | 'author'> = {
       authorId,
       authorInfo: {
         authorName: authorData.userProfile.name,
@@ -68,20 +62,26 @@ export async function createPostAction(prevState: any, formData: FormData) {
       },
     };
 
-    await adminDb.collection('posts').add(newPost);
+    const docRef = await adminDb.collection('posts').add(newPostData);
+    const newPost = await fetchPostById(docRef.id);
     
     revalidatePath('/');
     revalidatePath('/my-posts');
+    
+    if (!newPost) {
+        return { success: false, message: "Post created but failed to retrieve." };
+    }
 
-    return { message: 'Post created successfully!' };
+    // Return the newly created post so the client can update its cache
+    return { success: true, post: JSON.parse(JSON.stringify(newPost)) };
 
   } catch (error) {
     console.error('Error creating post:', error);
-    return { message: `Error creating post: ${error instanceof Error ? error.message : 'Unknown error'}` };
+    return { success: false, message: `Error creating post: ${error instanceof Error ? error.message : 'Unknown error'}` };
   }
 }
 
-export async function deletePostAction(postId: string) {
+export async function deletePostAction(postId: string, userId: string) {
     try {
         await adminDb.collection('posts').doc(postId).delete();
         revalidatePath('/my-posts');
@@ -92,10 +92,11 @@ export async function deletePostAction(postId: string) {
     }
 }
 
-export async function updatePostAction(prevState: any, formData: FormData) {
+export async function updatePostAction(prevState: any, formData: FormData): Promise<{ success: boolean; message?: string; post?: Post }> {
     const postId = formData.get('postId') as string;
-    if (!postId) {
-        return { message: 'Error: Post ID is missing.' };
+    const userId = formData.get('userId') as string;
+    if (!postId || !userId) {
+        return { success: false, message: 'Error: Post ID or User ID is missing.' };
     }
 
     try {
@@ -113,15 +114,20 @@ export async function updatePostAction(prevState: any, formData: FormData) {
         };
 
         await adminDb.collection('posts').doc(postId).update(updates);
+        const updatedPost = await fetchPostById(postId);
 
         revalidatePath('/');
         revalidatePath('/my-posts');
         revalidatePath(`/edit-post/${postId}`);
 
-        return { message: 'Post updated successfully!' };
+        if (!updatedPost) {
+            return { success: false, message: "Post updated but failed to retrieve." };
+        }
+
+        return { success: true, message: 'Post updated successfully!', post: JSON.parse(JSON.stringify(updatedPost)) };
     } catch (error) {
         console.error(`Error updating post ${postId}:`, error);
-        return { message: `Error updating post: ${error instanceof Error ? error.message : 'Unknown error'}` };
+        return { success: false, message: `Error updating post: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
 }
 

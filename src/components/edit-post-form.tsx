@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Post } from '@/lib/types';
+import { useAuth } from '@/providers';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 
@@ -23,27 +24,38 @@ const formatDateForInput = (isoDate: string) => {
 export function EditPostForm({ post }: { post: Post }) {
   const [state, formAction] = useActionState(updatePostAction, null);
   const { toast } = useToast();
+  const { user } = useAuth();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (!state?.message) return;
+    if (!state) return;
 
-    if (state.message.includes('successfully')) {
+    if (state.success && state.post && user) {
+      // Update cache
+      try {
+        const cachedPostsRaw = localStorage.getItem(`myPosts_${user.id}`);
+        const cachedPosts: Post[] = cachedPostsRaw ? JSON.parse(cachedPostsRaw) : [];
+        const updatedPosts = cachedPosts.map(p => p.id === state.post.id ? state.post : p);
+        localStorage.setItem(`myPosts_${user.id}`, JSON.stringify(updatedPosts));
+      } catch (e) {
+        console.warn("Could not update cache with edited post", e);
+      }
+
       toast({
         title: 'Success!',
         description: state.message,
       });
       // Redirect to a page that will show the "locked" message
       router.push(`/my-posts?message=Post updated successfully!`);
-    } else {
+    } else if (!state.success) {
       toast({
         title: 'Error',
         description: state.message,
         variant: 'destructive',
       });
     }
-  }, [state, toast, router, post.id]);
+  }, [state, toast, router, post.id, user]);
 
   return (
     <Card className="w-full max-w-2xl mx-auto border-2 border-primary/20 shadow-lg">
@@ -54,6 +66,7 @@ export function EditPostForm({ post }: { post: Post }) {
       <CardContent className="p-8">
         <form ref={formRef} action={formAction} className="space-y-6">
           <input type="hidden" name="postId" value={post.id} />
+          {user && <input type="hidden" name="userId" value={user.id} />}
 
           <div className="space-y-2">
             <Label htmlFor="title">Post Title / Main Discount</Label>

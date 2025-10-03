@@ -5,7 +5,7 @@ module.exports = {
 
 var { g: global, __dirname, a: __turbopack_async_module__ } = __turbopack_context__;
 __turbopack_async_module__(async (__turbopack_handle_async_dependencies__, __turbopack_async_result__) => { try {
-/* __next_internal_action_entry_do_not_use__ [{"004d49033eb565a117b1d8b30854d8c4f35e240335":"logoutAction","408aca7a0fb27129f61d895da58e51bd97ba77dbdf":"getMyPostsAction","40a73254002cde1c95d945c197624b37db4228a7b2":"verifyAndSignInAction","40d76ba21f5c1cbd3af04bef3319e67f3dfa2f2fd6":"deletePostAction","40ed8ce8c40eb1eb22037a6c8d02de7eed81678c50":"deactivateSinglePostPassAction","608074465a1d4bbd442a023bf1b703e67a89a32fad":"updateProfileAction","608a37014da282c02d5887e206935bc210b6f2413e":"subscribeAction","60b6d4174f531998bb03d7597b43fbe35e948f2fce":"submitFeedbackAction","60bc52c11466e52f0c2a505bb94923b8ccc29a1207":"updatePostAction","60c4845d655df4260dec5b69b6fec9102e1ca7e934":"createPostAction","60cc8ebb244f6fe1f1f1b3d8ee4bd944f52bd618c3":"updatePostViewCountAction"},"",""] */ __turbopack_context__.s({
+/* __next_internal_action_entry_do_not_use__ [{"004d49033eb565a117b1d8b30854d8c4f35e240335":"logoutAction","408aca7a0fb27129f61d895da58e51bd97ba77dbdf":"getMyPostsAction","40a73254002cde1c95d945c197624b37db4228a7b2":"verifyAndSignInAction","40ed8ce8c40eb1eb22037a6c8d02de7eed81678c50":"deactivateSinglePostPassAction","608074465a1d4bbd442a023bf1b703e67a89a32fad":"updateProfileAction","608a37014da282c02d5887e206935bc210b6f2413e":"subscribeAction","60b6d4174f531998bb03d7597b43fbe35e948f2fce":"submitFeedbackAction","60bc52c11466e52f0c2a505bb94923b8ccc29a1207":"updatePostAction","60c4845d655df4260dec5b69b6fec9102e1ca7e934":"createPostAction","60cc8ebb244f6fe1f1f1b3d8ee4bd944f52bd618c3":"updatePostViewCountAction","60d76ba21f5c1cbd3af04bef3319e67f3dfa2f2fd6":"deletePostAction"},"",""] */ __turbopack_context__.s({
     "createPostAction": (()=>createPostAction),
     "deactivateSinglePostPassAction": (()=>deactivateSinglePostPassAction),
     "deletePostAction": (()=>deletePostAction),
@@ -57,13 +57,14 @@ async function createPostAction(prevState, formData) {
         const authorResult = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getAuthorAndInstitution"])(authorId);
         if (!authorResult) {
             return {
+                success: false,
                 message: 'Error: Could not find author or institution.'
             };
         }
         const { authorData } = authorResult;
         const deadlineStr = formData.get('timestamps.deadline');
         const deadline = __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin$2f$firestore__$5b$external$5d$__$28$firebase$2d$admin$2f$firestore$2c$__esm_import$29$__["Timestamp"].fromDate(new Date(deadlineStr));
-        const newPost = {
+        const newPostData = {
             authorId,
             authorInfo: {
                 authorName: authorData.userProfile.name,
@@ -89,20 +90,30 @@ async function createPostAction(prevState, formData) {
                 city: authorData.location?.city ?? undefined
             }
         };
-        await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$firebase$2d$admin$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["db"].collection('posts').add(newPost);
+        const docRef = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$firebase$2d$admin$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["db"].collection('posts').add(newPostData);
+        const newPost = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getPostById"])(docRef.id);
         (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["revalidatePath"])('/');
         (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["revalidatePath"])('/my-posts');
+        if (!newPost) {
+            return {
+                success: false,
+                message: "Post created but failed to retrieve."
+            };
+        }
+        // Return the newly created post so the client can update its cache
         return {
-            message: 'Post created successfully!'
+            success: true,
+            post: JSON.parse(JSON.stringify(newPost))
         };
     } catch (error) {
         console.error('Error creating post:', error);
         return {
+            success: false,
             message: `Error creating post: ${error instanceof Error ? error.message : 'Unknown error'}`
         };
     }
 }
-async function deletePostAction(postId) {
+async function deletePostAction(postId, userId) {
     try {
         await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$firebase$2d$admin$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["db"].collection('posts').doc(postId).delete();
         (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["revalidatePath"])('/my-posts');
@@ -120,9 +131,11 @@ async function deletePostAction(postId) {
 }
 async function updatePostAction(prevState, formData) {
     const postId = formData.get('postId');
-    if (!postId) {
+    const userId = formData.get('userId');
+    if (!postId || !userId) {
         return {
-            message: 'Error: Post ID is missing.'
+            success: false,
+            message: 'Error: Post ID or User ID is missing.'
         };
     }
     try {
@@ -138,15 +151,25 @@ async function updatePostAction(prevState, formData) {
             'timestamps.updatedAt': __TURBOPACK__imported__module__$5b$externals$5d2f$firebase$2d$admin$2f$firestore__$5b$external$5d$__$28$firebase$2d$admin$2f$firestore$2c$__esm_import$29$__["FieldValue"].serverTimestamp()
         };
         await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$firebase$2d$admin$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["db"].collection('posts').doc(postId).update(updates);
+        const updatedPost = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getPostById"])(postId);
         (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["revalidatePath"])('/');
         (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["revalidatePath"])('/my-posts');
         (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["revalidatePath"])(`/edit-post/${postId}`);
+        if (!updatedPost) {
+            return {
+                success: false,
+                message: "Post updated but failed to retrieve."
+            };
+        }
         return {
-            message: 'Post updated successfully!'
+            success: true,
+            message: 'Post updated successfully!',
+            post: JSON.parse(JSON.stringify(updatedPost))
         };
     } catch (error) {
         console.error(`Error updating post ${postId}:`, error);
         return {
+            success: false,
             message: `Error updating post: ${error instanceof Error ? error.message : 'Unknown error'}`
         };
     }
@@ -406,7 +429,7 @@ async function getMyPostsAction(userId) {
     getMyPostsAction
 ]);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(createPostAction, "60c4845d655df4260dec5b69b6fec9102e1ca7e934", null);
-(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(deletePostAction, "40d76ba21f5c1cbd3af04bef3319e67f3dfa2f2fd6", null);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(deletePostAction, "60d76ba21f5c1cbd3af04bef3319e67f3dfa2f2fd6", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(updatePostAction, "60bc52c11466e52f0c2a505bb94923b8ccc29a1207", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(updateProfileAction, "608074465a1d4bbd442a023bf1b703e67a89a32fad", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(deactivateSinglePostPassAction, "40ed8ce8c40eb1eb22037a6c8d02de7eed81678c50", null);
@@ -458,8 +481,8 @@ __turbopack_async_module__(async (__turbopack_handle_async_dependencies__, __tur
 __turbopack_context__.s({
     "004d49033eb565a117b1d8b30854d8c4f35e240335": (()=>__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["logoutAction"]),
     "408aca7a0fb27129f61d895da58e51bd97ba77dbdf": (()=>__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getMyPostsAction"]),
-    "40d76ba21f5c1cbd3af04bef3319e67f3dfa2f2fd6": (()=>__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["deletePostAction"]),
-    "60cc8ebb244f6fe1f1f1b3d8ee4bd944f52bd618c3": (()=>__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["updatePostViewCountAction"])
+    "60cc8ebb244f6fe1f1f1b3d8ee4bd944f52bd618c3": (()=>__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["updatePostViewCountAction"]),
+    "60d76ba21f5c1cbd3af04bef3319e67f3dfa2f2fd6": (()=>__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["deletePostAction"])
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/actions.ts [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f2e$next$2d$internal$2f$server$2f$app$2f$my$2d$posts$2f$page$2f$actions$2e$js__$7b$__ACTIONS_MODULE0__$3d3e$__$225b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$2922$__$7d$__$5b$app$2d$rsc$5d$__$28$server__actions__loader$2c$__ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i('[project]/.next-internal/server/app/my-posts/page/actions.js { ACTIONS_MODULE0 => "[project]/src/lib/actions.ts [app-rsc] (ecmascript)" } [app-rsc] (server actions loader, ecmascript) <locals>');
@@ -478,8 +501,8 @@ __turbopack_async_module__(async (__turbopack_handle_async_dependencies__, __tur
 __turbopack_context__.s({
     "004d49033eb565a117b1d8b30854d8c4f35e240335": (()=>__TURBOPACK__imported__module__$5b$project$5d2f2e$next$2d$internal$2f$server$2f$app$2f$my$2d$posts$2f$page$2f$actions$2e$js__$7b$__ACTIONS_MODULE0__$3d3e$__$225b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$2922$__$7d$__$5b$app$2d$rsc$5d$__$28$server__actions__loader$2c$__ecmascript$29$__$3c$exports$3e$__["004d49033eb565a117b1d8b30854d8c4f35e240335"]),
     "408aca7a0fb27129f61d895da58e51bd97ba77dbdf": (()=>__TURBOPACK__imported__module__$5b$project$5d2f2e$next$2d$internal$2f$server$2f$app$2f$my$2d$posts$2f$page$2f$actions$2e$js__$7b$__ACTIONS_MODULE0__$3d3e$__$225b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$2922$__$7d$__$5b$app$2d$rsc$5d$__$28$server__actions__loader$2c$__ecmascript$29$__$3c$exports$3e$__["408aca7a0fb27129f61d895da58e51bd97ba77dbdf"]),
-    "40d76ba21f5c1cbd3af04bef3319e67f3dfa2f2fd6": (()=>__TURBOPACK__imported__module__$5b$project$5d2f2e$next$2d$internal$2f$server$2f$app$2f$my$2d$posts$2f$page$2f$actions$2e$js__$7b$__ACTIONS_MODULE0__$3d3e$__$225b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$2922$__$7d$__$5b$app$2d$rsc$5d$__$28$server__actions__loader$2c$__ecmascript$29$__$3c$exports$3e$__["40d76ba21f5c1cbd3af04bef3319e67f3dfa2f2fd6"]),
-    "60cc8ebb244f6fe1f1f1b3d8ee4bd944f52bd618c3": (()=>__TURBOPACK__imported__module__$5b$project$5d2f2e$next$2d$internal$2f$server$2f$app$2f$my$2d$posts$2f$page$2f$actions$2e$js__$7b$__ACTIONS_MODULE0__$3d3e$__$225b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$2922$__$7d$__$5b$app$2d$rsc$5d$__$28$server__actions__loader$2c$__ecmascript$29$__$3c$exports$3e$__["60cc8ebb244f6fe1f1f1b3d8ee4bd944f52bd618c3"])
+    "60cc8ebb244f6fe1f1f1b3d8ee4bd944f52bd618c3": (()=>__TURBOPACK__imported__module__$5b$project$5d2f2e$next$2d$internal$2f$server$2f$app$2f$my$2d$posts$2f$page$2f$actions$2e$js__$7b$__ACTIONS_MODULE0__$3d3e$__$225b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$2922$__$7d$__$5b$app$2d$rsc$5d$__$28$server__actions__loader$2c$__ecmascript$29$__$3c$exports$3e$__["60cc8ebb244f6fe1f1f1b3d8ee4bd944f52bd618c3"]),
+    "60d76ba21f5c1cbd3af04bef3319e67f3dfa2f2fd6": (()=>__TURBOPACK__imported__module__$5b$project$5d2f2e$next$2d$internal$2f$server$2f$app$2f$my$2d$posts$2f$page$2f$actions$2e$js__$7b$__ACTIONS_MODULE0__$3d3e$__$225b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$2922$__$7d$__$5b$app$2d$rsc$5d$__$28$server__actions__loader$2c$__ecmascript$29$__$3c$exports$3e$__["60d76ba21f5c1cbd3af04bef3319e67f3dfa2f2fd6"])
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f2e$next$2d$internal$2f$server$2f$app$2f$my$2d$posts$2f$page$2f$actions$2e$js__$7b$__ACTIONS_MODULE0__$3d3e$__$225b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$2922$__$7d$__$5b$app$2d$rsc$5d$__$28$server__actions__loader$2c$__ecmascript$29$__$3c$module__evaluation$3e$__ = __turbopack_context__.i('[project]/.next-internal/server/app/my-posts/page/actions.js { ACTIONS_MODULE0 => "[project]/src/lib/actions.ts [app-rsc] (ecmascript)" } [app-rsc] (server actions loader, ecmascript) <module evaluation>');
 var __TURBOPACK__imported__module__$5b$project$5d2f2e$next$2d$internal$2f$server$2f$app$2f$my$2d$posts$2f$page$2f$actions$2e$js__$7b$__ACTIONS_MODULE0__$3d3e$__$225b$project$5d2f$src$2f$lib$2f$actions$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$2922$__$7d$__$5b$app$2d$rsc$5d$__$28$server__actions__loader$2c$__ecmascript$29$__$3c$exports$3e$__ = __turbopack_context__.i('[project]/.next-internal/server/app/my-posts/page/actions.js { ACTIONS_MODULE0 => "[project]/src/lib/actions.ts [app-rsc] (ecmascript)" } [app-rsc] (server actions loader, ecmascript) <exports>');

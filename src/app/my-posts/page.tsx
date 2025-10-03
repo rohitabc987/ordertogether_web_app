@@ -30,15 +30,34 @@ export default function MyPostsPage() {
     }
 
     const fetchPosts = async () => {
-      setIsLoading(true);
+      // 1. Try to load from cache first
+      try {
+        const cachedPosts = localStorage.getItem(`myPosts_${user.id}`);
+        if (cachedPosts) {
+          setPosts(JSON.parse(cachedPosts));
+          setIsLoading(false); // We have something to show, so stop initial loading indicator
+        }
+      } catch (e) {
+        console.warn("Could not load posts from cache", e);
+      }
+
+      // 2. Fetch from server to get the latest data
       const result = await getMyPostsAction(user.id);
       
       if (result.success) {
         setPosts(result.posts);
+        setError(null);
+        // 3. Update cache with fresh data
+        try {
+          localStorage.setItem(`myPosts_${user.id}`, JSON.stringify(result.posts));
+        } catch (e) {
+          console.warn("Could not save posts to cache", e);
+        }
       } else {
         setError(result.message || 'Failed to load posts.');
       }
-      setIsLoading(false);
+      // Always set loading to false after server fetch is complete
+      setIsLoading(false); 
     };
 
     fetchPosts();
@@ -46,9 +65,10 @@ export default function MyPostsPage() {
   
   const handlePostDelete = (postId: string) => {
     setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
+    // The cache update logic is now inside MyPostCard
   };
 
-  if (!user) {
+  if (!user && !isLoading) {
     return null; // or a loading indicator while redirecting
   }
   

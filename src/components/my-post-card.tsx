@@ -18,6 +18,7 @@ import {
   Info,
 } from 'lucide-react';
 import type { Post } from '@/lib/types';
+import { useAuth } from '@/providers';
 import { formatDistanceToNow, differenceInSeconds, differenceInMinutes } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
 import { deletePostAction } from '@/lib/actions';
@@ -46,6 +47,7 @@ function hasBeenEdited(createdAt: string, updatedAt?: string): boolean {
 export function MyPostCard({ post, onDelete }: { post: Post; onDelete: (postId: string) => void; }) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const deadline = new Date(post.timestamps.deadline);
   const isExpired = deadline < new Date();
@@ -54,13 +56,23 @@ export function MyPostCard({ post, onDelete }: { post: Post; onDelete: (postId: 
 
   const handleDelete = () => {
     startTransition(async () => {
-      const result = await deletePostAction(post.id);
+      if (!user) return;
+      const result = await deletePostAction(post.id, user.id);
       if (result.success) {
         toast({
           title: 'Success',
           description: result.message,
         });
-        onDelete(post.id); // Trigger callback to update UI
+        // Update local cache
+        try {
+          const cachedPostsRaw = localStorage.getItem(`myPosts_${user.id}`);
+          let cachedPosts: Post[] = cachedPostsRaw ? JSON.parse(cachedPostsRaw) : [];
+          cachedPosts = cachedPosts.filter(p => p.id !== post.id);
+          localStorage.setItem(`myPosts_${user.id}`, JSON.stringify(cachedPosts));
+        } catch(e) {
+          console.warn("Could not update cache on post delete", e);
+        }
+        onDelete(post.id); // Trigger callback to update UI state
       } else {
         toast({
           title: 'Error',

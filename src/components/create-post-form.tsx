@@ -69,18 +69,28 @@ export function CreatePostForm({ user }: { user: User }) {
   };
 
   useEffect(() => {
-    if (!state?.message) return;
+    if (!state) return;
 
-    if (state.message.includes('successfully')) {
+    if (state.success && state.post) {
       setShowSuccessDialog(true);
-    } else {
+      // Add the new post to the cache
+      try {
+        const cachedPostsRaw = localStorage.getItem(`myPosts_${user.id}`);
+        const cachedPosts: Post[] = cachedPostsRaw ? JSON.parse(cachedPostsRaw) : [];
+        const updatedPosts = [state.post, ...cachedPosts];
+        localStorage.setItem(`myPosts_${user.id}`, JSON.stringify(updatedPosts));
+      } catch (e) {
+        console.warn("Could not update cache with new post", e);
+      }
+
+    } else if (!state.success) {
       toast({
         title: 'Error',
         description: state.message,
         variant: 'destructive',
       });
     }
-  }, [state, toast]);
+  }, [state, toast, user.id]);
 
   const handleDialogChange = (open: boolean) => {
     if (!open) {
