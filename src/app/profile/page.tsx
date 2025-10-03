@@ -1,3 +1,4 @@
+
 import { ProfileForm } from '@/components/profile-form';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +18,7 @@ export default async function ProfilePage({
     redirect('/login');
   }
   
-  const message = (await searchParams)?.message as string | undefined;
+  const message = searchParams?.message as string | undefined;
 
   const isSubscribed = user.subscription?.status === 'active';
 
