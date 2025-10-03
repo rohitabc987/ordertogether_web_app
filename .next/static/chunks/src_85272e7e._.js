@@ -2422,9 +2422,11 @@ __turbopack_context__.s({
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/utils.ts [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 'use client';
+;
 ;
 const headlines = [
     {
@@ -2448,13 +2450,20 @@ const subHeadlines = [
 function RotatingHeadlines() {
     _s();
     const [index, setIndex] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
+    const [isFadingOut, setIsFadingOut] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "RotatingHeadlines.useEffect": ()=>{
             const interval = setInterval({
                 "RotatingHeadlines.useEffect.interval": ()=>{
-                    setIndex({
-                        "RotatingHeadlines.useEffect.interval": (prevIndex)=>(prevIndex + 1) % headlines.length
-                    }["RotatingHeadlines.useEffect.interval"]);
+                    setIsFadingOut(true); // Start fade-out
+                    setTimeout({
+                        "RotatingHeadlines.useEffect.interval": ()=>{
+                            setIndex({
+                                "RotatingHeadlines.useEffect.interval": (prevIndex)=>(prevIndex + 1) % headlines.length
+                            }["RotatingHeadlines.useEffect.interval"]);
+                            setIsFadingOut(false); // Start fade-in of new item
+                        }
+                    }["RotatingHeadlines.useEffect.interval"], 500); // Duration of fade-out animation
                 }
             }["RotatingHeadlines.useEffect.interval"], 5000); // Change headline every 5 seconds
             return ({
@@ -2466,7 +2475,7 @@ function RotatingHeadlines() {
         className: "space-y-4",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                className: "text-5xl md:text-6xl font-extrabold text-white animate-fade-in-left",
+                className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])('text-5xl md:text-6xl font-extrabold text-white transition-all duration-500', isFadingOut ? 'animate-fade-out-right' : 'animate-fade-in-left'),
                 children: [
                     headlines[index].pre,
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2474,31 +2483,31 @@ function RotatingHeadlines() {
                         children: headlines[index].highlight
                     }, void 0, false, {
                         fileName: "[project]/src/components/rotating-headlines.tsx",
-                        lineNumber: 33,
+                        lineNumber: 44,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/rotating-headlines.tsx",
-                lineNumber: 31,
+                lineNumber: 37,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                className: "text-lg md:text-xl text-slate-200 animate-fade-in-left animation-delay-300",
+                className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])('text-lg md:text-xl text-slate-200 transition-all duration-500', isFadingOut ? 'animate-fade-out-right' : 'animate-fade-in-left animation-delay-300'),
                 children: subHeadlines[index]
             }, void 0, false, {
                 fileName: "[project]/src/components/rotating-headlines.tsx",
-                lineNumber: 35,
+                lineNumber: 46,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/rotating-headlines.tsx",
-        lineNumber: 30,
+        lineNumber: 36,
         columnNumber: 5
     }, this);
 }
-_s(RotatingHeadlines, "c3fuAdVwNN91t4bNS1qBXl5hAWY=");
+_s(RotatingHeadlines, "FbM4suvJUTeC51DJJBCw6ZLCOok=");
 _c = RotatingHeadlines;
 var _c;
 __turbopack_context__.k.register(_c, "RotatingHeadlines");

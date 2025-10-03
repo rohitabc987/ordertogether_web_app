@@ -825,6 +825,22 @@ h1, h2, h3, h4, h5, h6 {
   animation: .5s ease-out forwards fade-in-left;
 }
 
+@keyframes fade-out-right {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
+
+.animate-fade-out-right {
+  animation: .5s ease-in forwards fade-out-right;
+}
+
 @keyframes pulse {
   50% {
     opacity: .5;
@@ -1799,8 +1815,12 @@ h1, h2, h3, h4, h5, h6 {
   animation-duration: .15s;
 }
 
-.fade-in-0 {
+.fade-in, .fade-in-0 {
   --tw-enter-opacity: 0;
+}
+
+.fade-out {
+  --tw-exit-opacity: 0;
 }
 
 .zoom-in-95 {

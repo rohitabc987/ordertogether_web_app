@@ -114,7 +114,7 @@ export default {
             transform: 'translateX(0)',
           },
         },
-        'fade-out-left': {
+        'fade-out-right': {
           '0%': {
             opacity: '1',
             transform: 'translateX(0)',
@@ -129,7 +129,7 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in-left': 'fade-in-left 0.5s ease-out forwards',
-        'fade-out-left': 'fade-out-left 0.5s ease-in forwards',
+        'fade-out-right': 'fade-out-right 0.5s ease-in forwards',
       },
       backgroundImage: {
         'brand-gradient': 'linear-gradient(to right, #008080, #800080)',
