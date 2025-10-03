@@ -1,0 +1,52 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if a user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if the user is the owner of a document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Users can read their own profile, and any authenticated user can see a user's public profile info
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    // Posts can be read by anyone, but only created/updated/deleted by the author
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated() && request.auth.uid == request.resource.data.authorId;
+    }
+
+    // App data like banner images can be read by anyone
+    match /app_data/{docId} {
+      allow read: if true;
+      allow write: if false; // Nobody should write to this from the client
+    }
+    
+    // Feedback can be written by any authenticated user
+    match /feedback/{feedbackId} {
+      allow create: if isAuthenticated();
+      allow read, update, delete: if false; // Only allow creation
+    }
+
+    // Chat documents can only be accessed by participants
+    match /chats/{chatId} {
+      allow read, write: if isAuthenticated() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+
+      // Messages within a chat can only be accessed by participants of that chat
+      match /messages/{messageId} {
+        allow read, create: if isAuthenticated() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow update, delete: if false; // Do not allow editing/deleting messages
+      }
+    }
+  }
+}

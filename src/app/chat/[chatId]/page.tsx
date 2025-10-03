@@ -35,9 +35,10 @@ export default async function ChatPage({
 
   const initialMessages = await getMessagesForChat(chatId);
 
+  // Ensure we pass a serializable user object to the client component
+  const serializableUser = JSON.parse(JSON.stringify(user));
+
   return (
-    <ChatWindow chat={chat} initialMessages={initialMessages} currentUser={user} />
+    <ChatWindow chat={chat} initialMessages={initialMessages} currentUser={serializableUser} />
   );
 }
-
-    
