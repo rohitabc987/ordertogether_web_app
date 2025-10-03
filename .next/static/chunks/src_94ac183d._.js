@@ -855,26 +855,46 @@ function MyPostsPage() {
                 router.push('/login');
                 return;
             }
+            let isMounted = true;
             const fetchPosts = {
                 "MyPostsPage.useEffect.fetchPosts": async ()=>{
-                    // 1. Try to load from cache first
+                    // 1. Try to load from cache first for an instant UI
+                    let cachedPosts = [];
                     try {
-                        const cachedPosts = localStorage.getItem(`myPosts_${user.id}`);
-                        if (cachedPosts) {
-                            setPosts(JSON.parse(cachedPosts));
-                            setIsLoading(false); // We have something to show, so stop initial loading indicator
+                        const cachedPostsRaw = localStorage.getItem(`myPosts_${user.id}`);
+                        if (cachedPostsRaw) {
+                            cachedPosts = JSON.parse(cachedPostsRaw);
+                            if (isMounted) {
+                                setPosts(cachedPosts);
+                                setIsLoading(false); // We have something to show, stop initial loading indicator
+                            }
                         }
                     } catch (e) {
                         console.warn("Could not load posts from cache", e);
                     }
-                    // 2. Fetch from server to get the latest data
+                    // 2. Fetch from server to get the latest, definitive data
                     const result = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$3a$64d873__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$text$2f$javascript$3e$__["getMyPostsAction"])(user.id);
+                    if (!isMounted) return;
                     if (result.success) {
-                        setPosts(result.posts);
+                        const serverPosts = result.posts;
+                        // 3. Smartly merge server data with cached data to prevent flicker
+                        const serverPostIds = new Set(serverPosts.map({
+                            "MyPostsPage.useEffect.fetchPosts": (p)=>p.id
+                        }["MyPostsPage.useEffect.fetchPosts"]));
+                        const newPostsFromCache = cachedPosts.filter({
+                            "MyPostsPage.useEffect.fetchPosts.newPostsFromCache": (p)=>!serverPostIds.has(p.id)
+                        }["MyPostsPage.useEffect.fetchPosts.newPostsFromCache"]);
+                        // The definitive list is the server's list plus any new posts from cache
+                        // that haven't shown up on the server yet.
+                        const finalPosts = [
+                            ...newPostsFromCache,
+                            ...serverPosts
+                        ];
+                        setPosts(finalPosts);
                         setError(null);
-                        // 3. Update cache with fresh data
+                        // 4. Update cache with the new definitive list
                         try {
-                            localStorage.setItem(`myPosts_${user.id}`, JSON.stringify(result.posts));
+                            localStorage.setItem(`myPosts_${user.id}`, JSON.stringify(finalPosts));
                         } catch (e) {
                             console.warn("Could not save posts to cache", e);
                         }
@@ -886,6 +906,11 @@ function MyPostsPage() {
                 }
             }["MyPostsPage.useEffect.fetchPosts"];
             fetchPosts();
+            return ({
+                "MyPostsPage.useEffect": ()=>{
+                    isMounted = false;
+                }
+            })["MyPostsPage.useEffect"];
         }
     }["MyPostsPage.useEffect"], [
         user,
@@ -909,7 +934,7 @@ function MyPostsPage() {
                         children: "My Posts"
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 78,
+                        lineNumber: 103,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -919,25 +944,25 @@ function MyPostsPage() {
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$plus$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__PlusCircle$3e$__["PlusCircle"], {}, void 0, false, {
                                     fileName: "[project]/src/app/my-posts/page.tsx",
-                                    lineNumber: 81,
+                                    lineNumber: 106,
                                     columnNumber: 13
                                 }, this),
                                 "Create New Post"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/my-posts/page.tsx",
-                            lineNumber: 80,
+                            lineNumber: 105,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 79,
+                        lineNumber: 104,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/my-posts/page.tsx",
-                lineNumber: 77,
+                lineNumber: 102,
                 columnNumber: 7
             }, this),
             message && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Alert"], {
@@ -948,33 +973,33 @@ function MyPostsPage() {
                         className: "h-4 w-4"
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 89,
+                        lineNumber: 114,
                         columnNumber: 31
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$info$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Info$3e$__["Info"], {
                         className: "h-4 w-4"
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 89,
+                        lineNumber: 114,
                         columnNumber: 69
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertTitle"], {
                         children: isSuccessMessage ? 'Success' : 'Notification'
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 90,
+                        lineNumber: 115,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDescription"], {
                         children: message
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 91,
+                        lineNumber: 116,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/my-posts/page.tsx",
-                lineNumber: 88,
+                lineNumber: 113,
                 columnNumber: 9
             }, this),
             isLoading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -984,7 +1009,7 @@ function MyPostsPage() {
                         className: "w-8 h-8 animate-spin"
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 99,
+                        lineNumber: 124,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -992,13 +1017,13 @@ function MyPostsPage() {
                         children: "Loading your posts..."
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 100,
+                        lineNumber: 125,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/my-posts/page.tsx",
-                lineNumber: 98,
+                lineNumber: 123,
                 columnNumber: 9
             }, this) : error ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Alert"], {
                 variant: "destructive",
@@ -1007,27 +1032,27 @@ function MyPostsPage() {
                         className: "h-4 w-4"
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 104,
+                        lineNumber: 129,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertTitle"], {
                         children: "Error"
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 105,
+                        lineNumber: 130,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDescription"], {
                         children: error
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 106,
+                        lineNumber: 131,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/my-posts/page.tsx",
-                lineNumber: 103,
+                lineNumber: 128,
                 columnNumber: 9
             }, this) : posts.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
@@ -1036,12 +1061,12 @@ function MyPostsPage() {
                         onDelete: handlePostDelete
                     }, post.id, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 111,
+                        lineNumber: 136,
                         columnNumber: 13
                     }, this))
             }, void 0, false, {
                 fileName: "[project]/src/app/my-posts/page.tsx",
-                lineNumber: 109,
+                lineNumber: 134,
                 columnNumber: 9
             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "text-center py-16 border-2 border-dashed rounded-lg bg-card",
@@ -1054,12 +1079,12 @@ function MyPostsPage() {
                             className: "w-48 h-48"
                         }, void 0, false, {
                             fileName: "[project]/src/app/my-posts/page.tsx",
-                            lineNumber: 117,
+                            lineNumber: 142,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 116,
+                        lineNumber: 141,
                         columnNumber: 12
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -1067,7 +1092,7 @@ function MyPostsPage() {
                         children: "You haven't created any posts yet."
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 119,
+                        lineNumber: 144,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1075,19 +1100,19 @@ function MyPostsPage() {
                         children: "Want free delivery and great coupons? Create a group order today"
                     }, void 0, false, {
                         fileName: "[project]/src/app/my-posts/page.tsx",
-                        lineNumber: 122,
+                        lineNumber: 147,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/my-posts/page.tsx",
-                lineNumber: 115,
+                lineNumber: 140,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/my-posts/page.tsx",
-        lineNumber: 76,
+        lineNumber: 101,
         columnNumber: 5
     }, this);
 }

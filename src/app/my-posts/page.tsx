@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -29,38 +30,62 @@ export default function MyPostsPage() {
       return;
     }
 
+    let isMounted = true;
+
     const fetchPosts = async () => {
-      // 1. Try to load from cache first
+      // 1. Try to load from cache first for an instant UI
+      let cachedPosts: Post[] = [];
       try {
-        const cachedPosts = localStorage.getItem(`myPosts_${user.id}`);
-        if (cachedPosts) {
-          setPosts(JSON.parse(cachedPosts));
-          setIsLoading(false); // We have something to show, so stop initial loading indicator
+        const cachedPostsRaw = localStorage.getItem(`myPosts_${user.id}`);
+        if (cachedPostsRaw) {
+          cachedPosts = JSON.parse(cachedPostsRaw);
+          if (isMounted) {
+            setPosts(cachedPosts);
+            setIsLoading(false); // We have something to show, stop initial loading indicator
+          }
         }
       } catch (e) {
         console.warn("Could not load posts from cache", e);
       }
 
-      // 2. Fetch from server to get the latest data
+      // 2. Fetch from server to get the latest, definitive data
       const result = await getMyPostsAction(user.id);
       
+      if (!isMounted) return;
+
       if (result.success) {
-        setPosts(result.posts);
+        const serverPosts = result.posts;
+        
+        // 3. Smartly merge server data with cached data to prevent flicker
+        const serverPostIds = new Set(serverPosts.map(p => p.id));
+        const newPostsFromCache = cachedPosts.filter(p => !serverPostIds.has(p.id));
+        
+        // The definitive list is the server's list plus any new posts from cache
+        // that haven't shown up on the server yet.
+        const finalPosts = [...newPostsFromCache, ...serverPosts];
+        
+        setPosts(finalPosts);
         setError(null);
-        // 3. Update cache with fresh data
+        
+        // 4. Update cache with the new definitive list
         try {
-          localStorage.setItem(`myPosts_${user.id}`, JSON.stringify(result.posts));
+          localStorage.setItem(`myPosts_${user.id}`, JSON.stringify(finalPosts));
         } catch (e) {
           console.warn("Could not save posts to cache", e);
         }
       } else {
         setError(result.message || 'Failed to load posts.');
       }
+      
       // Always set loading to false after server fetch is complete
       setIsLoading(false); 
     };
 
     fetchPosts();
+
+    return () => {
+      isMounted = false;
+    };
   }, [user, router]);
   
   const handlePostDelete = (postId: string) => {
