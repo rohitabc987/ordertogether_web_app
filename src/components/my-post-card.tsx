@@ -103,7 +103,7 @@ export function MyPostCard({ post, onDelete }: { post: Post; onDelete: (postId: 
                 <span>{formatCurrency(post.order.contributionAmount)}</span>
                 <span>{formatCurrency(post.order.totalAmount)}</span>
             </div>
-            <Progress value={progressPercentage} className="h-2 bg-tertiary" />
+            <Progress value={progressPercentage} className="h-2 bg-secondary" />
             <div className="flex justify-between items-center text-sm font-medium">
                 <span>Your Contribution</span>
                 <span>Total Needed</span>
