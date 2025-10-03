@@ -78,7 +78,7 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+        <nav className="flex items-center space-x-6 text-sm font-medium">
           {navLinks.map((link) => {
             // Handle active state for nested chat routes
             const isActive = link.href === '/chat' ? pathname.startsWith('/chat') : pathname === link.href;
