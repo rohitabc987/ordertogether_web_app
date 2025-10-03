@@ -42,6 +42,14 @@ export function Header() {
         await signOut(auth);
       }
       await logoutAction();
+      // Clear cached user data on logout
+      try {
+        localStorage.removeItem('cachedUser');
+        localStorage.removeItem('cachedPosts');
+        localStorage.removeItem('myPosts');
+      } catch (error) {
+        console.error('Failed to clear localStorage on logout', error);
+      }
       router.push('/login');
     });
   };

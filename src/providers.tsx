@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
@@ -59,19 +57,34 @@ function PostViewProvider({ children }: { children: React.ReactNode }) {
 
 
 export function AuthProvider({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
-  const [user, setUser] = useState<User | null>(initialUser);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(() => {
+    // Load initial user from localStorage if available
+    try {
+      const cachedUser = localStorage.getItem('cachedUser');
+      return cachedUser ? JSON.parse(cachedUser) : initialUser;
+    } catch (error) {
+      console.error('Failed to load cached user', error);
+      return initialUser;
+    }
+  });
+  const [loading, setLoading] = useState(!user);
 
   useEffect(() => {
-    // If we have an initial user from the server, we are not loading.
+    // If we have an initial user from server, update cache
     if (initialUser) {
-      setUser(initialUser);
+      try {
+        localStorage.setItem('cachedUser', JSON.stringify(initialUser));
+      } catch (error) {
+        console.error('Failed to cache initial user', error);
+      }
+      if (JSON.stringify(user) !== JSON.stringify(initialUser)) {
+        setUser(initialUser);
+      }
       setLoading(false);
       return;
     }
 
-    // If no initial user, this might be a client-side navigation.
-    // Try to fetch the session from our API route.
+    // If no initial user, this might be a client-side navigation or first load with no session.
     let isMounted = true;
     
     async function fetchSession() {
@@ -79,15 +92,27 @@ export function AuthProvider({ children, initialUser }: { children: React.ReactN
         const response = await fetch('/api/session');
         if (response.ok) {
           const session = await response.json();
+          const fetchedUser = session.user || null;
           if (isMounted) {
-            setUser(session.user || null);
+            setUser(fetchedUser);
+            if (fetchedUser) {
+              localStorage.setItem('cachedUser', JSON.stringify(fetchedUser));
+            } else {
+              localStorage.removeItem('cachedUser');
+            }
           }
         } else {
-          if (isMounted) setUser(null);
+          if (isMounted) {
+            setUser(null);
+            localStorage.removeItem('cachedUser');
+          }
         }
       } catch (error) {
         console.error('Failed to fetch session:', error);
-        if (isMounted) setUser(null);
+        if (isMounted) {
+          setUser(null);
+          localStorage.removeItem('cachedUser');
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -98,7 +123,7 @@ export function AuthProvider({ children, initialUser }: { children: React.ReactN
     return () => {
       isMounted = false;
     };
-  }, [initialUser]);
+  }, [initialUser, user]);
 
   return (
     <AuthContext.Provider value={{ user }}>
