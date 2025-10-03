@@ -5,9 +5,9 @@ import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 const headlines = [
-  { title: 'Craving something delicious?', highlight: 'delicious?' },
-  { title: 'Tired of high delivery fees?', highlight: 'delivery fees?' },
-  { title: 'Want to unlock that restaurant deal?', highlight: 'restaurant deal?' },
+  { title: 'Craving something delicious?', highlight: 'Craving' },
+  { title: 'Tired of high delivery fees?', highlight: 'Tired' },
+  { title: 'Want to unlock that restaurant deal?', highlight: 'Want' },
 ];
 
 const subHeadlines = [

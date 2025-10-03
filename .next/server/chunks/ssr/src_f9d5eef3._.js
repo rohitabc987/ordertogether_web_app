@@ -2238,15 +2238,15 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$
 const headlines = [
     {
         title: 'Craving something delicious?',
-        highlight: 'delicious?'
+        highlight: 'Craving'
     },
     {
         title: 'Tired of high delivery fees?',
-        highlight: 'delivery fees?'
+        highlight: 'Tired'
     },
     {
         title: 'Want to unlock that restaurant deal?',
-        highlight: 'restaurant deal?'
+        highlight: 'Want'
     }
 ];
 const subHeadlines = [
@@ -2586,7 +2586,7 @@ function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }) {
                 bannerImageUrl: bannerImageUrl
             }, void 0, false, {
                 fileName: "[project]/src/components/dashboard.tsx",
-                lineNumber: 131,
+                lineNumber: 125,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2601,7 +2601,7 @@ function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }) {
                                 children: "Active Group Orders"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard.tsx",
-                                lineNumber: 135,
+                                lineNumber: 129,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2609,13 +2609,13 @@ function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }) {
                                 children: user ? `Orders available in ${locationName}. Join one or create your own!` : 'Discover group orders near you. Log in to create your own.'
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard.tsx",
-                                lineNumber: 138,
+                                lineNumber: 132,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard.tsx",
-                        lineNumber: 134,
+                        lineNumber: 128,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2639,12 +2639,12 @@ function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }) {
                                     onReset: resetFilters
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard.tsx",
-                                    lineNumber: 149,
+                                    lineNumber: 143,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard.tsx",
-                                lineNumber: 148,
+                                lineNumber: 142,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2659,12 +2659,12 @@ function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }) {
                                                     index: index
                                                 }, post.id, false, {
                                                     fileName: "[project]/src/components/dashboard.tsx",
-                                                    lineNumber: 171,
+                                                    lineNumber: 165,
                                                     columnNumber: 21
                                                 }, this))
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard.tsx",
-                                            lineNumber: 169,
+                                            lineNumber: 163,
                                             columnNumber: 17
                                         }, this),
                                         totalPages > 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2677,7 +2677,7 @@ function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }) {
                                                     children: "Previous"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard.tsx",
-                                                    lineNumber: 176,
+                                                    lineNumber: 170,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2690,7 +2690,7 @@ function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }) {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/dashboard.tsx",
-                                                    lineNumber: 183,
+                                                    lineNumber: 177,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2700,19 +2700,19 @@ function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }) {
                                                     children: "Next"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard.tsx",
-                                                    lineNumber: 186,
+                                                    lineNumber: 180,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/dashboard.tsx",
-                                            lineNumber: 175,
+                                            lineNumber: 169,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/dashboard.tsx",
-                                    lineNumber: 168,
+                                    lineNumber: 162,
                                     columnNumber: 15
                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "flex h-full flex-col items-center justify-center rounded-lg border-2 border-dashed bg-card p-12 text-center",
@@ -2727,12 +2727,12 @@ function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }) {
                                                 className: "mx-auto"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard.tsx",
-                                                lineNumber: 199,
+                                                lineNumber: 193,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard.tsx",
-                                            lineNumber: 198,
+                                            lineNumber: 192,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -2740,7 +2740,7 @@ function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }) {
                                             children: "No Matching Orders Found"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard.tsx",
-                                            lineNumber: 201,
+                                            lineNumber: 195,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2748,7 +2748,7 @@ function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }) {
                                             children: "Try adjusting your filters or check back later for new group orders."
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard.tsx",
-                                            lineNumber: 204,
+                                            lineNumber: 198,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2758,36 +2758,36 @@ function Dashboard({ initialPosts, bannerImageUrl: initialBannerUrl }) {
                                             children: "Clear All Filters"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard.tsx",
-                                            lineNumber: 207,
+                                            lineNumber: 201,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/dashboard.tsx",
-                                    lineNumber: 197,
+                                    lineNumber: 191,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard.tsx",
-                                lineNumber: 166,
+                                lineNumber: 160,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard.tsx",
-                        lineNumber: 147,
+                        lineNumber: 141,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/dashboard.tsx",
-                lineNumber: 133,
+                lineNumber: 127,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/dashboard.tsx",
-        lineNumber: 130,
+        lineNumber: 124,
         columnNumber: 5
     }, this);
 }
