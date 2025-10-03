@@ -2427,9 +2427,18 @@ var _s = __turbopack_context__.k.signature();
 'use client';
 ;
 const headlines = [
-    'Craving something delicious?',
-    'Tired of high delivery fees?',
-    'Want to unlock that restaurant deal?'
+    {
+        pre: 'Craving something ',
+        highlight: 'delicious?'
+    },
+    {
+        pre: 'Tired of high ',
+        highlight: 'delivery fees?'
+    },
+    {
+        pre: 'Want to unlock that ',
+        highlight: 'restaurant deal?'
+    }
 ];
 const subHeadlines = [
     "Team up with your neighbors for group orders and save money together.",
@@ -2458,10 +2467,20 @@ function RotatingHeadlines() {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
                 className: "text-5xl md:text-6xl font-extrabold text-white animate-fade-in-left",
-                children: headlines[index]
-            }, void 0, false, {
+                children: [
+                    headlines[index].pre,
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                        className: "text-accent",
+                        children: headlines[index].highlight
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/rotating-headlines.tsx",
+                        lineNumber: 33,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
                 fileName: "[project]/src/components/rotating-headlines.tsx",
-                lineNumber: 30,
+                lineNumber: 31,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2469,13 +2488,13 @@ function RotatingHeadlines() {
                 children: subHeadlines[index]
             }, void 0, false, {
                 fileName: "[project]/src/components/rotating-headlines.tsx",
-                lineNumber: 33,
+                lineNumber: 35,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/rotating-headlines.tsx",
-        lineNumber: 29,
+        lineNumber: 30,
         columnNumber: 5
     }, this);
 }

@@ -1,11 +1,12 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 
 const headlines = [
-  'Craving something delicious?',
-  'Tired of high delivery fees?',
-  'Want to unlock that restaurant deal?',
+  { pre: 'Craving something ', highlight: 'delicious?' },
+  { pre: 'Tired of high ', highlight: 'delivery fees?' },
+  { pre: 'Want to unlock that ', highlight: 'restaurant deal?' },
 ];
 
 const subHeadlines = [
@@ -28,7 +29,8 @@ export function RotatingHeadlines() {
   return (
     <div className="space-y-4">
       <h1 className="text-5xl md:text-6xl font-extrabold text-white animate-fade-in-left">
-        {headlines[index]}
+        {headlines[index].pre}
+        <span className="text-accent">{headlines[index].highlight}</span>
       </h1>
       <p className="text-lg md:text-xl text-slate-200 animate-fade-in-left animation-delay-300">
         {subHeadlines[index]}
