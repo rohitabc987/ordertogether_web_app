@@ -1,11 +1,12 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { Post, User } from './types';
+import { Post, User, Chat, Message } from './types';
 import {FieldValue,Timestamp,} from 'firebase-admin/firestore';
 import { db as adminDb, auth as adminAuth } from './firebase-admin';
 import { cookies } from 'next/headers';
-import { findUserByEmail, createUserInDb, getAuthorAndInstitution, getPostsByAuthorId, getPostById as fetchPostById } from './data';
+import { findUserByEmail, createUserInDb, getAuthorAndInstitution, getPostsByAuthorId, getPostById as fetchPostById, getUserById } from './data';
 
 function convertFirestoreTimestampToDate(timestamp: any): Date | null {
   if (!timestamp) {
@@ -347,5 +348,149 @@ export async function getMyPostsAction(userId: string) {
   } catch (error) {
     console.error('Error fetching my posts:', error);
     return { success: false, message: 'Failed to fetch posts.', posts: [] };
+  }
+}
+
+export async function startOrGetChatAction(currentUserId: string, otherUserId: string, postId?: string, postTitle?: string): Promise<{ success: boolean; chatId?: string; message?: string }> {
+  if (currentUserId === otherUserId) {
+    return { success: false, message: 'Cannot start a chat with yourself.' };
+  }
+
+  const participants = [currentUserId, otherUserId].sort();
+  const chatId = participants.join('_');
+  
+  const chatRef = adminDb.collection('chats').doc(chatId);
+  const chatDoc = await chatRef.get();
+
+  try {
+    if (!chatDoc.exists) {
+      // Create new chat
+      await chatRef.set({
+        participants: participants,
+        lastMessage: {
+          text: `Chat started`,
+          timestamp: FieldValue.serverTimestamp(),
+          senderId: 'system',
+        },
+      });
+
+      // If it's from a post, send the initial message
+      if (postId && postTitle) {
+        const firstMessage: Omit<Message, 'id' | 'timestamp'> = {
+          senderId: 'system',
+          text: `I want to join this order: ${postTitle}`,
+          postId: postId,
+          postTitle: postTitle,
+        };
+        await chatRef.collection('messages').add({
+          ...firstMessage,
+          timestamp: FieldValue.serverTimestamp(),
+        });
+      }
+    } else {
+       // If chat exists and it's initiated from a post, check if a message for this post already exists
+      if (postId && postTitle) {
+        const messagesRef = chatRef.collection('messages');
+        const postIntroQuery = await messagesRef.where('postId', '==', postId).where('senderId', '==', 'system').limit(1).get();
+
+        if (postIntroQuery.empty) {
+          // No intro message for this post yet, so add one
+          const introMessage: Omit<Message, 'id' | 'timestamp'> = {
+            senderId: 'system',
+            text: `I'm interested in this order: ${postTitle}`,
+            postId: postId,
+            postTitle: postTitle,
+          };
+          await messagesRef.add({
+            ...introMessage,
+            timestamp: FieldValue.serverTimestamp(),
+          });
+        }
+      }
+    }
+    revalidatePath('/chat');
+    revalidatePath(`/chat/${chatId}`);
+    return { success: true, chatId };
+  } catch (error) {
+    console.error('Error starting or getting chat:', error);
+    return { success: false, message: 'Failed to initiate chat.' };
+  }
+}
+
+export async function sendMessageAction(chatId: string, senderId: string, text: string): Promise<{ success: boolean; message?: string }> {
+  if (!text.trim()) {
+    return { success: false, message: 'Message cannot be empty.' };
+  }
+
+  const chatRef = adminDb.collection('chats').doc(chatId);
+  const messagesRef = chatRef.collection('messages');
+
+  try {
+    const messageData = {
+      senderId,
+      text,
+      timestamp: FieldValue.serverTimestamp(),
+    };
+    
+    // Add new message
+    await messagesRef.add(messageData);
+
+    // Update lastMessage on the chat document
+    await chatRef.update({
+      lastMessage: {
+        text,
+        senderId,
+        timestamp: messageData.timestamp,
+      },
+    });
+
+    revalidatePath(`/chat/${chatId}`);
+    return { success: true };
+  } catch (error) {
+    console.error('Error sending message:', error);
+    return { success: false, message: 'Failed to send message.' };
+  }
+}
+
+export async function getChatsForUserAction(userId: string): Promise<{ success: boolean; chats?: Chat[]; message?: string }> {
+  try {
+    const chatsSnapshot = await adminDb.collection('chats').where('participants', 'array-contains', userId).orderBy('lastMessage.timestamp', 'desc').get();
+    
+    if (chatsSnapshot.empty) {
+      return { success: true, chats: [] };
+    }
+
+    let chats: Chat[] = chatsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    } as Chat));
+    
+    // Get all unique participant IDs from all chats
+    const participantIds = new Set<string>();
+    chats.forEach(chat => chat.participants.forEach(id => participantIds.add(id)));
+
+    // Fetch user profiles for all participants
+    const userProfiles: { [key: string]: Pick<User, 'id' | 'userProfile'> } = {};
+    const userPromises = Array.from(participantIds).map(async (id) => {
+        const user = await getUserById(id);
+        if (user) {
+            userProfiles[id] = { id: user.id, userProfile: user.userProfile };
+        }
+    });
+    await Promise.all(userPromises);
+    
+    // Attach user data to each chat
+    chats = chats.map(chat => ({
+      ...chat,
+      users: {
+        [chat.participants[0]]: userProfiles[chat.participants[0]],
+        [chat.participants[1]]: userProfiles[chat.participants[1]],
+      }
+    }));
+
+    return { success: true, chats: JSON.parse(JSON.stringify(chats)) };
+  } catch (error) {
+    console.error('Error fetching chats:', error);
+    return { success: false, message: 'Failed to load chats.' };
   }
 }

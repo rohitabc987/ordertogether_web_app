@@ -21,7 +21,9 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { deactivateSinglePostPassAction } from '@/lib/actions';
+import { deactivateSinglePostPassAction, startOrGetChatAction } from '@/lib/actions';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 function convertFirestoreTimestampToDate(timestamp: any): Date | null {
   if (!timestamp) {
@@ -81,15 +83,16 @@ const getRestaurantEmoji = (name: string): string => {
   return '🍽️';
 };
 
-
-
 export function PostCard({ post, index }: { post: Post; index: number }) {
   const { user } = useAuth();
   const { trackViewedPost } = useContext(PostViewContext);
-  const [isPending, startTransition] = useTransition();
+  const [isContactPending, startContactTransition] = useTransition();
+  const [isChatPending, startChatTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showPrompt, setShowPrompt] = useState<'login' | 'subscribe' | 'limit-reached' | null>(null);
   const [catchyTitle, setCatchyTitle] = useState(post.details?.title || "Group Order");
+  const router = useRouter();
+  const { toast } = useToast();
 
   const deadline = convertFirestoreTimestampToDate(post.timestamps.deadline);
   const deadlineInPast = deadline ? deadline < new Date() : true;
@@ -133,7 +136,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     .toUpperCase();
 
 
-  const handleToggle = () => {
+  const handleToggleContact = () => {
     if (isExpanded) {
       setIsExpanded(false);
       return;
@@ -158,7 +161,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
 
     // Handle single-post plan logic
     if (subscription.plan === 'single-post') {
-      startTransition(async () => {
+      startContactTransition(async () => {
         const result = await deactivateSinglePostPassAction(user.id);
         if (result.success) {
           trackViewedPost(post.id);
@@ -173,6 +176,26 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
       setIsExpanded(true);
     }
   };
+
+  const handleStartChat = () => {
+     if (!user) {
+      setShowPrompt('login');
+      return;
+    }
+    if (deadlineInPast) {
+      toast({ title: 'This order has expired and chat is disabled.', variant: 'destructive' });
+      return;
+    }
+    
+    startChatTransition(async () => {
+      const result = await startOrGetChatAction(user.id, post.authorId, post.id, catchyTitle);
+      if (result.success && result.chatId) {
+        router.push(`/chat/${result.chatId}`);
+      } else {
+        toast({ title: 'Could not start chat.', description: result.message, variant: 'destructive' });
+      }
+    });
+  }
 
   const closePrompt = () => {
     setShowPrompt(null);
@@ -259,15 +282,25 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
           {post.details.notes && <p className="text-sm border-l-2 border-accent pl-3 mt-2 py-1 bg-background rounded-r-md flex items-start gap-2"><Info className="w-4 h-4 mt-0.5 text-accent"/><span>{post.details.notes}</span></p>}
       </div>
 
-      <div className="flex justify-start">
+       <div className="flex justify-start gap-2">
         <Button 
             size="sm"
-            onClick={handleToggle} 
-            disabled={deadlineInPast || isPending}
+            onClick={handleStartChat} 
+            disabled={deadlineInPast || isChatPending}
             className="transition-transform duration-300 hover:scale-105"
           >
-            {isPending ? 'Processing...' : deadlineInPast ? 'Expired' : 'Join'}
-            {!deadlineInPast && !isPending && <ChevronDown className={cn("w-4 h-4 ml-1 transition-transform", isExpanded && "rotate-180")} />}
+            {isChatPending ? 'Starting...' : deadlineInPast ? 'Expired' : 'Chat to Join'}
+            {!deadlineInPast && !isChatPending && <MessageSquare className="w-4 h-4 ml-1" />}
+          </Button>
+          <Button 
+            size="sm"
+            variant="outline"
+            onClick={handleToggleContact} 
+            disabled={deadlineInPast || isContactPending}
+            className="transition-transform duration-300 hover:scale-105"
+          >
+            {isContactPending ? '...' : 'View Contact'}
+            <ChevronDown className={cn("w-4 h-4 ml-1 transition-transform", isExpanded && "rotate-180")} />
           </Button>
       </div>
       
@@ -323,7 +356,7 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
                   <DialogTitle className="mb-4">Please Log In</DialogTitle>
                 </DialogHeader>
                 <DialogDescription className="mb-4">
-                  You must log in to view contact details.
+                  You must log in to view contact details or start a chat.
                 </DialogDescription>
                 <Button asChild>
                   <Link href="/login">Log In</Link>
@@ -362,5 +395,3 @@ export function PostCard({ post, index }: { post: Post; index: number }) {
     </div>
   );
 }
-
-    

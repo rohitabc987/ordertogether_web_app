@@ -61,3 +61,24 @@ export interface Post {
   // The full author object is joined on the server, not stored in DB
   author?: User;
 }
+
+export interface Message {
+  id: string;
+  senderId: string;
+  text: string;
+  timestamp: string;
+  postId?: string;
+  postTitle?: string;
+}
+
+export interface Chat {
+  id: string;
+  participants: string[];
+  lastMessage?: {
+    text: string;
+    timestamp: string;
+    senderId: string;
+  };
+  // `users` will be populated on the client-side after fetching
+  users?: { [key: string]: Pick<User, 'id' | 'userProfile'> };
+}

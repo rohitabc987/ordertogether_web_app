@@ -18,6 +18,7 @@ import {
   Info,
   ListOrdered,
   LayoutDashboard,
+  MessageSquare,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -61,13 +62,14 @@ export function Header() {
 
   const navLinks = [
     { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/chat', label: 'Chats', icon: MessageSquare },
     { href: '/about', label: 'About', icon: Info },
     { href: '/create-post', label: 'Create Post', icon: PlusCircle },
     { href: '/pricing', label: 'Pricing', icon: IndianRupee },
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-header-background">
+    <header className="sticky top-0 z-50 w-full bg-header-background/80 backdrop-blur-sm border-b">
       <div className="container flex h-16 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <UtensilsCrossed className="h-6 w-6 text-primary" />
@@ -78,7 +80,8 @@ export function Header() {
 
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href;
+            // Handle active state for nested chat routes
+            const isActive = link.href === '/chat' ? pathname.startsWith('/chat') : pathname === link.href;
             return (
               <Link
                 key={link.href}
@@ -130,6 +133,13 @@ export function Header() {
                   <Link href="/my-posts">
                     <ListOrdered className="mr-2 h-4 w-4" />
                     <span>My Posts</span>
+                  </Link>
+                </DropdownMenuItem>
+
+                 <DropdownMenuItem asChild>
+                  <Link href="/chat">
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    <span>My Chats</span>
                   </Link>
                 </DropdownMenuItem>
 

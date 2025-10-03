@@ -1,6 +1,6 @@
 
 // @ts-nocheck
-import type { User, Post } from './types';
+import type { User, Post, Chat, Message } from './types';
 import { db } from './firebase-admin';
 import { cache } from 'react';
 import { Timestamp, FieldPath, type Query } from 'firebase-admin/firestore';
@@ -8,6 +8,8 @@ import { Timestamp, FieldPath, type Query } from 'firebase-admin/firestore';
 const usersCollection = db.collection('users');
 const postsCollection = db.collection('posts');
 const appDataCollection = db.collection('app_data');
+const chatsCollection = db.collection('chats');
+
 
 // Helper function to convert Firestore Timestamps to JS Dates
 function convertTimestamps(obj: any): any {
@@ -231,4 +233,41 @@ export const getBannerImageUrl = cache(async (): Promise<string | null> => {
     console.error('Error fetching banner image URL:', error);
     return null;
   }
+});
+
+
+export const getChatById = cache(async (chatId: string, currentUserId: string): Promise<Chat | null> => {
+  const doc = await chatsCollection.doc(chatId).get();
+  if (!doc.exists) {
+    return null;
+  }
+
+  const chat = { id: doc.id, ...doc.data() } as Chat;
+
+  // Security check
+  if (!chat.participants.includes(currentUserId)) {
+    console.warn(`Security warning: User ${currentUserId} attempted to access chat ${chatId} without being a participant.`);
+    return null;
+  }
+
+  const participantPromises = chat.participants.map(id => getUserById(id));
+  const participantsData = await Promise.all(participantPromises);
+  
+  chat.users = {};
+  participantsData.forEach(user => {
+    if (user) {
+      chat.users[user.id] = { id: user.id, userProfile: user.userProfile };
+    }
+  });
+
+  return convertTimestamps(chat);
+});
+
+export const getMessagesForChat = cache(async (chatId: string): Promise<Message[]> => {
+  const messagesSnapshot = await chatsCollection.doc(chatId).collection('messages').orderBy('timestamp', 'asc').get();
+  const messages = messagesSnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Message[];
+  return convertTimestamps(messages);
 });
