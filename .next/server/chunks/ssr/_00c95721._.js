@@ -377,6 +377,7 @@ async function getMyPostsAction(userId) {
     }
     try {
         const posts = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getPostsByAuthorId"])(userId);
+        // Ensure data is serializable before sending to the client
         return {
             success: true,
             posts: JSON.parse(JSON.stringify(posts))

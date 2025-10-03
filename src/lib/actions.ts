@@ -3,6 +3,7 @@
 
 
 
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -268,12 +269,12 @@ export async function subscribeAction(planId: 'single-post' | 'daily' | 'weekly'
     }
     
     const subscriptionData = {
-      status: 'active',
+      status: 'active' as const,
       plan: planId,
       startDate: Timestamp.fromDate(now),
       expiry: Timestamp.fromDate(expiry),
       postsViewed: 0,
-    } as { [key: string]: any };
+    };
     
     await userRef.update({
         'subscription': subscriptionData
@@ -335,6 +336,7 @@ export async function getMyPostsAction(userId: string) {
   }
   try {
     const posts = await getPostsByAuthorId(userId);
+    // Ensure data is serializable before sending to the client
     return { success: true, posts: JSON.parse(JSON.stringify(posts)) };
   } catch (error) {
     console.error('Error fetching my posts:', error);
