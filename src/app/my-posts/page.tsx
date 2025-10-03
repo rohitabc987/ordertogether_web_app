@@ -50,6 +50,7 @@ export default function MyPostsPage() {
       }
 
       // 2. If cache is empty, fetch from server
+      setIsLoading(true); // Set loading true before fetch
       const result = await getMyPostsAction(user.id);
       
       if (!isMounted) return;
