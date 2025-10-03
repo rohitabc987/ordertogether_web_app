@@ -2,6 +2,7 @@
 
 
 
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -266,13 +267,13 @@ export async function subscribeAction(planId: 'single-post' | 'daily' | 'weekly'
         break;
     }
     
-    const subscriptionData: User['subscription'] = {
+    const subscriptionData = {
       status: 'active',
       plan: planId,
-      startDate: Timestamp.fromDate(now) as any,
-      expiry: Timestamp.fromDate(expiry) as any,
+      startDate: Timestamp.fromDate(now),
+      expiry: Timestamp.fromDate(expiry),
       postsViewed: 0,
-    };
+    } as { [key: string]: any };
     
     await userRef.update({
         'subscription': subscriptionData

@@ -478,6 +478,10 @@ h1, h2, h3, h4, h5, h6 {
   margin-left: .5rem;
 }
 
+.ml-4 {
+  margin-left: 1rem;
+}
+
 .ml-auto {
   margin-left: auto;
 }
@@ -512,10 +516,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .mt-6 {
   margin-top: 1.5rem;
-}
-
-.ml-4 {
-  margin-left: 1rem;
 }
 
 .block {
@@ -1189,6 +1189,10 @@ h1, h2, h3, h4, h5, h6 {
   background-color: hsl(var(--card));
 }
 
+.bg-card\/50 {
+  background-color: hsl(var(--card) / .5);
+}
+
 .bg-card\/70 {
   background-color: hsl(var(--card) / .7);
 }
@@ -1266,10 +1270,6 @@ h1, h2, h3, h4, h5, h6 {
 .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
-}
-
-.bg-card\/50 {
-  background-color: hsl(var(--card) / .5);
 }
 
 .bg-gradient-to-br {

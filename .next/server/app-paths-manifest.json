@@ -1,13 +1,4 @@
 {
-  "/(auth)/login/page": "app/(auth)/login/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/about/page": "app/about/page.js",
   "/api/session/route": "app/api/session/route.js",
-  "/edit-post/[id]/page": "app/edit-post/[id]/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/how-it-works/page": "app/how-it-works/page.js",
-  "/my-posts/page": "app/my-posts/page.js",
-  "/page": "app/page.js",
-  "/pricing/page": "app/pricing/page.js",
-  "/profile/page": "app/profile/page.js"
+  "/page": "app/page.js"
 }
