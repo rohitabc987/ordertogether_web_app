@@ -9,7 +9,7 @@ import { redirect } from 'next/navigation';
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const user = await getCurrentUser();
 
