@@ -179,14 +179,7 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
         container.scrollTop = container.scrollHeight;
     }
   }, [messages]);
-  // ========= END OF HOOKS SECTION =========
-
-  const otherUser = (chat.users && chat.participants)
-    ? chat.participants
-        .map(id => chat.users![id])
-        .find(u => u?.id !== currentUser.id)
-    : null;
-
+  
   const handleScroll = () => {
     const container = messagesContainerRef.current;
     if (container) {
@@ -197,7 +190,15 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
       }
     }
   };
+
+  // ========= LOGIC & DERIVED STATE (AFTER HOOKS) =========
+  const otherUser = (chat.users && chat.participants)
+    ? chat.participants
+        .map(id => chat.users?.[id])
+        .find(u => u?.id !== currentUser.id)
+    : null;
   
+  // ========= CONDITIONAL RENDERING (SINGLE RETURN) =========
   if (isLoading && messages.length === 0) {
     return (
         <div className="flex flex-col h-full items-center justify-center bg-muted/20">
@@ -287,3 +288,5 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
     </div>
   );
 }
+
+    
