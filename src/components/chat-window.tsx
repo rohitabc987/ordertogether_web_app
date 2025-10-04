@@ -32,7 +32,7 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
   const chatScrolledToBottom = useRef(true);
   const liveListenerUnsubscribe = useRef<(() => void) | null>(null);
 
-  // ========= HOOKS MOVED TO TOP (FIX) =========
+  // ========= ALL HOOKS MOVED TO TOP (FIX) =========
   const loadMoreMessages = useCallback(async () => {
     if (!firstVisible || isLoadingMore) return;
 
@@ -176,7 +176,7 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
 
   // ========= END OF HOOKS SECTION =========
 
-  const otherUser = chat.users
+  const otherUser = (chat.users && chat.participants)
     ? chat.participants
         .map(id => chat.users![id])
         .find(u => u?.id !== currentUser.id)
