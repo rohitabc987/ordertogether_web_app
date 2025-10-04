@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { getChatsForUserAction } from "@/lib/actions";
 import { useAuth } from '@/providers';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { ChatSidebar } from "@/components/chat-sidebar";
 import type { Chat } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -46,12 +46,13 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   const { user } = useAuth();
+  const router = useRouter();
   const [chats, setChats] = useState<Chat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
-      redirect("/login");
+      router.push("/login");
       return;
     }
 
@@ -79,7 +80,10 @@ export default function ChatLayout({
       if (!isMounted) return;
 
       if (result.success && result.chats) {
-        setChats(result.chats);
+        // Only update state if the fetched data is different from the current state
+        if (JSON.stringify(result.chats) !== JSON.stringify(chats)) {
+            setChats(result.chats);
+        }
         // 3. Update cache with the new list
         try {
           localStorage.setItem(cacheKey, JSON.stringify(result.chats));
@@ -87,12 +91,12 @@ export default function ChatLayout({
           console.warn("Could not save chats to cache", e);
         }
       } else {
-        // Handle error if needed, maybe show a toast
         console.error("Failed to fetch chats:", result.message);
       }
       
       // If we were showing the main loading spinner, hide it now.
-      if (isLoading) {
+      // Check isMounted again because the component could have unmounted during the async call
+      if (isMounted) {
         setIsLoading(false);
       }
     };
@@ -102,14 +106,9 @@ export default function ChatLayout({
     return () => {
       isMounted = false;
     };
-  }, [user, isLoading]); // re-run if user changes
+  }, [user, router]); // Dependency array simplified to only user and router
 
-  if (!user) {
-    // This will be caught by the redirect in useEffect, but good practice to have it
-    return <ChatLayoutSkeleton />;
-  }
-  
-  if (isLoading) {
+  if (!user || isLoading) {
     return <ChatLayoutSkeleton />;
   }
 
