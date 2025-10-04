@@ -46,11 +46,12 @@ export function EditPostForm({ post }: { post: Post }) {
     if (!state) return;
 
     if (state.success && state.post && user) {
+      const postToUpdate = state.post;
       // Update cache
       try {
         const cachedPostsRaw = localStorage.getItem(`myPosts_${user.id}`);
         const cachedPosts: Post[] = cachedPostsRaw ? JSON.parse(cachedPostsRaw) : [];
-        const updatedPosts = cachedPosts.map(p => p.id === state.post.id ? state.post : p);
+        const updatedPosts = cachedPosts.map(p => p.id === postToUpdate.id ? postToUpdate : p);
         localStorage.setItem(`myPosts_${user.id}`, JSON.stringify(updatedPosts));
       } catch (e) {
         console.warn("Could not update cache with edited post", e);
