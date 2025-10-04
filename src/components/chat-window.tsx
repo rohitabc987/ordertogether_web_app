@@ -97,28 +97,14 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
       
       setIsLoading(true);
 
-      // 2. Fetch only the latest message from DB to check for new ones
-      const latestMessageQuery = query(collection(db, `chats/${chat.id}/messages`), orderBy('timestamp', 'desc'), limit(1));
-      const latestSnapshot = await getDocs(latestMessageQuery);
-      const latestServerMessageDoc = latestSnapshot.docs[0];
-
-      if (!latestServerMessageDoc) {
-        // No messages in chat at all
-        if (isMounted) {
-          setMessages([]);
-          setHasMore(false);
-          setIsLoading(false);
-        }
-        return;
-      }
-      
-      const latestServerTimestamp = (latestServerMessageDoc.data().timestamp as Timestamp).toDate().toISOString();
+      // 2. Use the lastMessage from the parent chat doc to check for new messages
+      const lastServerTimestamp = chat.lastMessage?.timestamp ?? new Date(0).toISOString();
       const lastLocalTimestamp = localMessages.length > 0 ? localMessages[localMessages.length - 1].timestamp : new Date(0).toISOString();
 
       let finalMessages = localMessages;
 
       // 3. If server has newer messages, fetch the delta
-      if (latestServerTimestamp > lastLocalTimestamp) {
+      if (lastServerTimestamp > lastLocalTimestamp) {
         const newMessagesQuery = query(
           collection(db, `chats/${chat.id}/messages`),
           orderBy('timestamp', 'asc'),
@@ -143,8 +129,10 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
         } as Message)).reverse();
         
         const lastDoc = initialSnapshot.docs[initialSnapshot.docs.length - 1];
-        setFirstVisible(lastDoc || null);
-        setHasMore(initialSnapshot.docs.length === MESSAGES_PER_PAGE);
+        if (isMounted) {
+            setFirstVisible(lastDoc || null);
+            setHasMore(initialSnapshot.docs.length === MESSAGES_PER_PAGE);
+        }
       }
       
       if (isMounted) {
@@ -179,7 +167,11 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
 
         if (newLiveMessages.length > 0) {
           setMessages(prev => {
-            const updated = [...prev, ...newLiveMessages];
+            const existingIds = new Set(prev.map(m => m.id));
+            const uniqueNewMessages = newLiveMessages.filter(m => !existingIds.has(m.id));
+            if (uniqueNewMessages.length === 0) return prev;
+
+            const updated = [...prev, ...uniqueNewMessages];
              try {
                 localStorage.setItem(chatCacheKey, JSON.stringify(updated));
              } catch (e) { console.warn("Could not update cache with live message", e); }
@@ -197,7 +189,7 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
         liveListenerUnsubscribe.current();
       }
     };
-  }, [chat.id]);
+  }, [chat.id, chat.lastMessage?.timestamp]);
 
 
   useEffect(() => {
