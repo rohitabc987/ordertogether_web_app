@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Chat, Message, User } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot, limit, getDocs, startAfter, doc, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, limit, getDocs, startAfter, doc, DocumentData, QueryDocumentSnapshot, Timestamp } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { MessageInput } from './message-input';
 import { cn } from '@/lib/utils';
@@ -15,21 +15,22 @@ import { Button } from './ui/button';
 
 interface ChatWindowProps {
   chat: Chat;
-  initialMessages: Message[]; // This will now be empty, but kept for prop consistency
+  initialMessages: Message[];
   currentUser: User;
 }
 
-const MESSAGES_PER_PAGE = 15;
+const MESSAGES_PER_PAGE = 20;
 
 export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [firstVisible, setFirstVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const chatScrolledToBottom = useRef(true);
+  const liveListenerUnsubscribe = useRef<() => void | null>(null);
 
   const otherUser = chat.users 
     ? chat.participants
@@ -38,124 +39,165 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
     : null;
 
   const otherUserInitials = otherUser?.userProfile.name?.split(' ').map(n => n[0]).join('') || 'U';
-
-  const fetchInitialMessages = useCallback(async () => {
-    setIsLoading(true);
-    const messagesQuery = query(
-      collection(db, `chats/${chat.id}/messages`), 
-      orderBy('timestamp', 'desc'), 
-      limit(MESSAGES_PER_PAGE)
-    );
-
-    const documentSnapshots = await getDocs(messagesQuery);
-    
-    const newMessages: Message[] = [];
-    documentSnapshots.forEach((doc) => {
-      const data = doc.data();
-      newMessages.push({
-        id: doc.id,
-        ...data,
-        timestamp: data.timestamp?.toDate().toISOString(),
-      } as Message);
-    });
-
-    setMessages(newMessages.reverse());
-    
-    const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
-    setLastVisible(lastDoc);
-    setHasMore(documentSnapshots.docs.length === MESSAGES_PER_PAGE);
-    
-    setIsLoading(false);
-  }, [chat.id]);
-
+  const chatCacheKey = `chat_${chat.id}`;
 
   const loadMoreMessages = useCallback(async () => {
-    if (!lastVisible || isLoadingMore) return;
+    if (!firstVisible || isLoadingMore) return;
 
     setIsLoadingMore(true);
     const messagesQuery = query(
       collection(db, `chats/${chat.id}/messages`), 
       orderBy('timestamp', 'desc'),
-      startAfter(lastVisible),
+      startAfter(firstVisible),
       limit(MESSAGES_PER_PAGE)
     );
 
     const documentSnapshots = await getDocs(messagesQuery);
     
-    const newMessages: Message[] = [];
-    documentSnapshots.forEach((doc) => {
-      const data = doc.data();
-      newMessages.push({
-        id: doc.id,
-        ...data,
-        timestamp: data.timestamp?.toDate().toISOString(),
-      } as Message);
-    });
+    const newMessages: Message[] = documentSnapshots.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      timestamp: (doc.data().timestamp as Timestamp).toDate().toISOString(),
+    } as Message));
 
-    // Keep scroll position stable
     const container = messagesContainerRef.current;
     const oldScrollHeight = container?.scrollHeight || 0;
 
     setMessages(prev => [...newMessages.reverse(), ...prev]);
     
     const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
-    setLastVisible(lastDoc);
+    setFirstVisible(lastDoc);
     setHasMore(documentSnapshots.docs.length === MESSAGES_PER_PAGE);
 
     if (container) {
-      // Restore scroll position after new messages are rendered
       requestAnimationFrame(() => {
         container.scrollTop = container.scrollHeight - oldScrollHeight;
       });
     }
 
     setIsLoadingMore(false);
-  }, [chat.id, lastVisible, isLoadingMore]);
+  }, [chat.id, firstVisible, isLoadingMore]);
 
 
   useEffect(() => {
-    fetchInitialMessages();
-  }, [fetchInitialMessages]);
+    let isMounted = true;
 
-  
-  useEffect(() => {
-    // Set up the real-time listener for new messages only
-    if (messages.length === 0 && !isLoading) return; // Don't attach listener until initial load is done
+    const initializeChat = async () => {
+      // 1. Load messages from local cache first
+      let localMessages: Message[] = [];
+      try {
+        const cached = localStorage.getItem(chatCacheKey);
+        if (cached) {
+          localMessages = JSON.parse(cached);
+          if (isMounted) setMessages(localMessages);
+        }
+      } catch (e) {
+        console.warn("Could not read chat from cache", e);
+      }
+      
+      setIsLoading(true);
 
-    const lastTimestamp = messages.length > 0 ? new Date(messages[messages.length - 1].timestamp) : new Date(0);
+      // 2. Fetch only the latest message from DB to check for new ones
+      const latestMessageQuery = query(collection(db, `chats/${chat.id}/messages`), orderBy('timestamp', 'desc'), limit(1));
+      const latestSnapshot = await getDocs(latestMessageQuery);
+      const latestServerMessageDoc = latestSnapshot.docs[0];
 
-    const q = query(
-      collection(db, `chats/${chat.id}/messages`),
-      orderBy('timestamp', 'asc'),
-      startAfter(lastTimestamp)
-    );
+      if (!latestServerMessageDoc) {
+        // No messages in chat at all
+        if (isMounted) {
+          setMessages([]);
+          setHasMore(false);
+          setIsLoading(false);
+        }
+        return;
+      }
+      
+      const latestServerTimestamp = (latestServerMessageDoc.data().timestamp as Timestamp).toDate().toISOString();
+      const lastLocalTimestamp = localMessages.length > 0 ? localMessages[localMessages.length - 1].timestamp : new Date(0).toISOString();
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      setMessages(prevMessages => {
-        const newMessages: Message[] = [];
-        // Use a Set for quick ID lookup to prevent duplicates
-        const existingIds = new Set(prevMessages.map(m => m.id));
+      let finalMessages = localMessages;
 
-        querySnapshot.forEach((doc) => {
-          if (!existingIds.has(doc.id)) {
-            const data = doc.data();
-            newMessages.push({
-              id: doc.id,
-              ...data,
-              timestamp: data.timestamp.toDate().toISOString(),
-            } as Message);
-          }
+      // 3. If server has newer messages, fetch the delta
+      if (latestServerTimestamp > lastLocalTimestamp) {
+        const newMessagesQuery = query(
+          collection(db, `chats/${chat.id}/messages`),
+          orderBy('timestamp', 'asc'),
+          startAfter(Timestamp.fromDate(new Date(lastLocalTimestamp)))
+        );
+        const deltaSnapshot = await getDocs(newMessagesQuery);
+        const newMessages = deltaSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          timestamp: (doc.data().timestamp as Timestamp).toDate().toISOString(),
+        } as Message));
+        
+        finalMessages = [...localMessages, ...newMessages];
+      }
+
+      // If we didn't have anything locally, we need to fetch the initial page
+      if (localMessages.length === 0) {
+        const initialQuery = query(collection(db, `chats/${chat.id}/messages`), orderBy('timestamp', 'desc'), limit(MESSAGES_PER_PAGE));
+        const initialSnapshot = await getDocs(initialQuery);
+        finalMessages = initialSnapshot.docs.map(doc => ({
+            id: doc.id, ...doc.data(), timestamp: (doc.data().timestamp as Timestamp).toDate().toISOString()
+        } as Message)).reverse();
+        
+        const lastDoc = initialSnapshot.docs[initialSnapshot.docs.length - 1];
+        setFirstVisible(lastDoc || null);
+        setHasMore(initialSnapshot.docs.length === MESSAGES_PER_PAGE);
+      }
+      
+      if (isMounted) {
+        setMessages(finalMessages);
+        setIsLoading(false);
+      }
+
+      // 4. Update cache with the latest synchronized messages
+      try {
+        localStorage.setItem(chatCacheKey, JSON.stringify(finalMessages));
+      } catch (e) {
+        console.warn("Could not save chat to cache", e);
+      }
+
+      // 5. Attach REAL-TIME listener for messages AFTER the latest one we have
+      const lastSyncedTimestamp = finalMessages.length > 0 ? new Date(finalMessages[finalMessages.length - 1].timestamp) : new Date(0);
+      const liveQuery = query(
+        collection(db, `chats/${chat.id}/messages`),
+        orderBy('timestamp', 'asc'),
+        startAfter(Timestamp.fromDate(lastSyncedTimestamp))
+      );
+
+      if (liveListenerUnsubscribe.current) liveListenerUnsubscribe.current();
+
+      liveListenerUnsubscribe.current = onSnapshot(liveQuery, (snapshot) => {
+        const newLiveMessages: Message[] = [];
+        snapshot.forEach((doc) => {
+          newLiveMessages.push({
+            id: doc.id, ...doc.data(), timestamp: (doc.data().timestamp as Timestamp).toDate().toISOString()
+          } as Message);
         });
 
-        if (newMessages.length > 0) {
-          return [...prevMessages, ...newMessages];
+        if (newLiveMessages.length > 0) {
+          setMessages(prev => {
+            const updated = [...prev, ...newLiveMessages];
+             try {
+                localStorage.setItem(chatCacheKey, JSON.stringify(updated));
+             } catch (e) { console.warn("Could not update cache with live message", e); }
+            return updated;
+          });
         }
-        return prevMessages; // No changes
       });
-    });
+    };
 
-    return () => unsubscribe();
-  }, [chat.id, messages.length, isLoading]);
+    initializeChat();
+
+    return () => {
+      isMounted = false;
+      if (liveListenerUnsubscribe.current) {
+        liveListenerUnsubscribe.current();
+      }
+    };
+  }, [chat.id]);
 
 
   useEffect(() => {
@@ -176,7 +218,7 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
     }
   };
   
-  if (isLoading) {
+  if (isLoading && messages.length === 0) {
     return (
         <div className="flex flex-col h-full items-center justify-center bg-muted/20">
             <Loader2 className="w-12 h-12 animate-spin text-primary" />
