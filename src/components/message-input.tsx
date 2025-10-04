@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Send } from 'lucide-react';
@@ -17,6 +17,7 @@ export function MessageInput({ chatId, senderId }: MessageInputProps) {
   const [text, setText] = useState('');
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +25,7 @@ export function MessageInput({ chatId, senderId }: MessageInputProps) {
 
     const optimisticText = text;
     setText(''); // Clear input immediately for better UX
+    inputRef.current?.focus(); // Refocus immediately
 
     startTransition(async () => {
       const result = await sendMessageAction(chatId, senderId, optimisticText);
@@ -41,6 +43,7 @@ export function MessageInput({ chatId, senderId }: MessageInputProps) {
   return (
     <form onSubmit={handleSendMessage} className="flex items-center gap-2">
       <Input
+        ref={inputRef}
         type="text"
         placeholder="Type a message..."
         value={text}
