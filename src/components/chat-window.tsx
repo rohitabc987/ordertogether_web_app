@@ -21,7 +21,7 @@ interface ChatWindowProps {
 
 export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const otherUser = chat.users 
     ? chat.participants
@@ -51,7 +51,9 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
   }, [chat.id]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   }, [messages]);
   
   if (!otherUser) {
@@ -68,7 +70,7 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
         <h2 className="text-lg font-semibold">{otherUser.userProfile.name}</h2>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
         {messages.map((message, index) => {
           if (message.senderId === 'system') {
             return (
@@ -111,7 +113,6 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
             </div>
           );
         })}
-        <div ref={messagesEndRef} />
       </div>
       
       <div className="p-4 border-t">
