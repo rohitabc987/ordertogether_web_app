@@ -32,15 +32,7 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
   const chatScrolledToBottom = useRef(true);
   const liveListenerUnsubscribe = useRef<(() => void) | null>(null);
 
-  const otherUser = chat.users
-    ? chat.participants
-        .map(id => chat.users![id])
-        .find(u => u?.id !== currentUser.id)
-    : null;
-
-  const otherUserInitials = otherUser?.userProfile.name?.split(' ').map(n => n[0]).join('') || 'U';
-  const chatCacheKey = `chat_${chat.id}`;
-
+  // ========= HOOKS MOVED TO TOP (FIX) =========
   const loadMoreMessages = useCallback(async () => {
     if (!firstVisible || isLoadingMore) return;
 
@@ -78,32 +70,27 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
     setIsLoadingMore(false);
   }, [chat.id, firstVisible, isLoadingMore]);
 
-
   useEffect(() => {
     let isMounted = true;
+    const chatCacheKey = `chat_${chat.id}`;
 
     const initializeChat = async () => {
-      // 1. Load messages from local cache first
+      setIsLoading(true);
       let localMessages: Message[] = [];
+      
       try {
         const cached = localStorage.getItem(chatCacheKey);
         if (cached) {
           localMessages = JSON.parse(cached);
           if (isMounted) setMessages(localMessages);
         }
-      } catch (e) {
-        console.warn("Could not read chat from cache", e);
-      }
+      } catch (e) { console.warn("Could not read chat from cache", e); }
       
-      setIsLoading(true);
-
-      // 2. Use the lastMessage from the parent chat doc to check for new messages
       const lastServerTimestamp = chat.lastMessage?.timestamp ?? new Date(0).toISOString();
       const lastLocalTimestamp = localMessages.length > 0 ? localMessages[localMessages.length - 1].timestamp : new Date(0).toISOString();
 
       let finalMessages = localMessages;
 
-      // 3. If server has newer messages, fetch the delta
       if (lastServerTimestamp > lastLocalTimestamp) {
         const newMessagesQuery = query(
           collection(db, `chats/${chat.id}/messages`),
@@ -112,15 +99,11 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
         );
         const deltaSnapshot = await getDocs(newMessagesQuery);
         const newMessages = deltaSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          timestamp: (doc.data().timestamp as Timestamp).toDate().toISOString(),
+          id: doc.id, ...doc.data(), timestamp: (doc.data().timestamp as Timestamp).toDate().toISOString(),
         } as Message));
-        
         finalMessages = [...localMessages, ...newMessages];
       }
 
-      // If we didn't have anything locally, we need to fetch the initial page
       if (localMessages.length === 0) {
         const initialQuery = query(collection(db, `chats/${chat.id}/messages`), orderBy('timestamp', 'desc'), limit(MESSAGES_PER_PAGE));
         const initialSnapshot = await getDocs(initialQuery);
@@ -140,14 +123,10 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
         setIsLoading(false);
       }
 
-      // 4. Update cache with the latest synchronized messages
       try {
         localStorage.setItem(chatCacheKey, JSON.stringify(finalMessages));
-      } catch (e) {
-        console.warn("Could not save chat to cache", e);
-      }
+      } catch (e) { console.warn("Could not save chat to cache", e); }
 
-      // 5. Attach REAL-TIME listener for messages AFTER the latest one we have
       const lastSyncedTimestamp = finalMessages.length > 0 ? new Date(finalMessages[finalMessages.length - 1].timestamp) : new Date(0);
       const liveQuery = query(
         collection(db, `chats/${chat.id}/messages`),
@@ -158,12 +137,9 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
       if (liveListenerUnsubscribe.current) liveListenerUnsubscribe.current();
 
       liveListenerUnsubscribe.current = onSnapshot(liveQuery, (snapshot) => {
-        const newLiveMessages: Message[] = [];
-        snapshot.forEach((doc) => {
-          newLiveMessages.push({
-            id: doc.id, ...doc.data(), timestamp: (doc.data().timestamp as Timestamp).toDate().toISOString()
-          } as Message);
-        });
+        const newLiveMessages: Message[] = snapshot.docs.map(doc => ({
+          id: doc.id, ...doc.data(), timestamp: (doc.data().timestamp as Timestamp).toDate().toISOString()
+        } as Message));
 
         if (newLiveMessages.length > 0) {
           setMessages(prev => {
@@ -191,13 +167,20 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
     };
   }, [chat.id, chat.lastMessage?.timestamp]);
 
-
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (container && chatScrolledToBottom.current) {
         container.scrollTop = container.scrollHeight;
     }
   }, [messages]);
+
+  // ========= END OF HOOKS SECTION =========
+
+  const otherUser = chat.users
+    ? chat.participants
+        .map(id => chat.users![id])
+        .find(u => u?.id !== currentUser.id)
+    : null;
 
   const handleScroll = () => {
     const container = messagesContainerRef.current;
@@ -222,6 +205,8 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
   if (!otherUser) {
     return <div className="p-4">Could not load user data.</div>;
   }
+  
+  const otherUserInitials = otherUser.userProfile.name?.split(' ').map(n => n[0]).join('') || 'U';
 
   return (
     <div className="flex flex-col h-full bg-muted/20">
