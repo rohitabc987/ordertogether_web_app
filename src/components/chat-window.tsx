@@ -62,7 +62,7 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
 
   return (
     <div className="flex flex-col h-full bg-muted/20">
-      <header className="flex items-center gap-4 p-3 border-b bg-background/80 backdrop-blur-sm z-10">
+      <header className="flex items-center gap-4 p-3 border-b-2 border-border/50 bg-background/80 backdrop-blur-sm z-10">
          <Avatar>
             <AvatarImage src={otherUser.userProfile.photoURL ?? undefined} />
             <AvatarFallback>{otherUserInitials}</AvatarFallback>
@@ -101,8 +101,8 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
                 className={cn(
                   'max-w-md p-3 rounded-2xl shadow-sm',
                   isCurrentUser
-                    ? 'bg-primary text-primary-foreground rounded-br-none'
-                    : 'bg-background rounded-bl-none'
+                    ? 'bg-primary text-primary-foreground rounded-br-lg'
+                    : 'bg-background rounded-bl-lg'
                 )}
               >
                 <p className="text-sm">{message.text}</p>
@@ -115,7 +115,7 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
         })}
       </div>
       
-      <div className="p-4 border-t bg-background/80 backdrop-blur-sm">
+      <div className="p-4 border-t-2 border-border/50 bg-background/80 backdrop-blur-sm">
         <MessageInput chatId={chat.id} senderId={currentUser.id} />
       </div>
     </div>

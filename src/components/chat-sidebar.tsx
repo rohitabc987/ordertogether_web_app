@@ -19,8 +19,8 @@ export function ChatSidebar({ chats, currentUser }: ChatSidebarProps) {
 
   if (chats.length === 0) {
     return (
-      <div className="flex flex-col w-full md:w-80 lg:w-96 border-r bg-background">
-        <div className="p-4 border-b">
+      <div className="flex flex-col w-full md:w-80 lg:w-96 border-r-2 border-border/50 bg-background">
+        <div className="p-4 border-b-2 border-border/50">
           <h2 className="text-xl font-semibold">Chats</h2>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
@@ -35,8 +35,8 @@ export function ChatSidebar({ chats, currentUser }: ChatSidebarProps) {
   }
 
   return (
-    <div className="flex flex-col w-full md:w-80 lg:w-96 border-r bg-background">
-      <div className="p-4 border-b">
+    <div className="flex flex-col w-full md:w-80 lg:w-96 border-r-2 border-border/50 bg-background">
+      <div className="p-4 border-b-2 border-border/50">
         <h2 className="text-xl font-semibold">Chats</h2>
       </div>
       <nav className="flex-1 overflow-y-auto no-scrollbar">
@@ -75,7 +75,7 @@ export function ChatSidebar({ chats, currentUser }: ChatSidebarProps) {
                     'flex items-center gap-3 p-3 rounded-lg transition-colors group',
                     isActive
                       ? 'bg-primary text-primary-foreground'
-                      : 'hover:bg-muted/50'
+                      : 'hover:bg-muted'
                   )}
                 >
                   <Avatar>

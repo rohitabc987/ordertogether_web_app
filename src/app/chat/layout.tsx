@@ -19,7 +19,7 @@ export default async function ChatLayout({
 
   return (
     <div className="container mx-auto">
-      <div className="flex h-[80vh] border rounded-lg mt-4">
+      <div className="flex h-[80vh] border-2 border-border/50 rounded-lg mt-4">
         <ChatSidebar chats={chats} currentUser={user} />
         <div className="flex-1 flex flex-col">{children}</div>
       </div>
