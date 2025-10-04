@@ -19,7 +19,7 @@ interface ChatWindowProps {
   currentUser: User;
 }
 
-const MESSAGES_PER_PAGE = 20;
+const MESSAGES_PER_PAGE = 12;
 
 export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -32,7 +32,7 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
   const chatScrolledToBottom = useRef(true);
   const liveListenerUnsubscribe = useRef<(() => void) | null>(null);
 
-  const otherUser = chat.users 
+  const otherUser = chat.users
     ? chat.participants
         .map(id => chat.users![id])
         .find(u => u?.id !== currentUser.id)
