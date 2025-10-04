@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useTransition, useRef } from 'react';
+import { useState, useTransition, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Send } from 'lucide-react';
@@ -19,22 +19,24 @@ export function MessageInput({ chatId, senderId }: MessageInputProps) {
   const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (text === '') {
+      // Re-focus when cleared
+      inputRef.current?.focus();
+    }
+  }, [text]);
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
 
     const optimisticText = text;
-    setText(''); // Clear input immediately for better UX
-    
-    // Defer the focus call to run after the current execution context
-    setTimeout(() => {
-        inputRef.current?.focus();
-    }, 0);
+    setText(''); // Clear input immediately
 
     startTransition(async () => {
       const result = await sendMessageAction(chatId, senderId, optimisticText);
       if (!result.success) {
-        setText(optimisticText); // Restore text on failure
+        setText(optimisticText);
         toast({
           title: 'Error',
           description: result.message || 'Failed to send message.',
@@ -52,8 +54,8 @@ export function MessageInput({ chatId, senderId }: MessageInputProps) {
         placeholder="Type a message..."
         value={text}
         onChange={(e) => setText(e.target.value)}
-        disabled={isPending}
         autoComplete="off"
+        autoFocus
       />
       <Button type="submit" size="icon" disabled={isPending || !text.trim()}>
         <Send className="h-4 w-4" />
