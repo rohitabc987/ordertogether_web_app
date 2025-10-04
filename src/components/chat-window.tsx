@@ -1,27 +1,35 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Chat, Message, User } from '@/lib/types';
-import { useAuth } from '@/providers';
 import { db } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, limit, getDocs, startAfter, doc, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { MessageInput } from './message-input';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Utensils } from 'lucide-react';
+import { Utensils, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from './ui/button';
 
 interface ChatWindowProps {
   chat: Chat;
-  initialMessages: Message[];
+  initialMessages: Message[]; // This will now be empty, but kept for prop consistency
   currentUser: User;
 }
 
-export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowProps) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+const MESSAGES_PER_PAGE = 15;
+
+export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const chatScrolledToBottom = useRef(true);
 
   const otherUser = chat.users 
     ? chat.participants
@@ -31,31 +39,144 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
 
   const otherUserInitials = otherUser?.userProfile.name?.split(' ').map(n => n[0]).join('') || 'U';
 
-  useEffect(() => {
-    const messagesQuery = query(collection(db, `chats/${chat.id}/messages`), orderBy('timestamp', 'asc'));
+  const fetchInitialMessages = useCallback(async () => {
+    setIsLoading(true);
+    const messagesQuery = query(
+      collection(db, `chats/${chat.id}/messages`), 
+      orderBy('timestamp', 'desc'), 
+      limit(MESSAGES_PER_PAGE)
+    );
+
+    const documentSnapshots = await getDocs(messagesQuery);
     
-    const unsubscribe = onSnapshot(messagesQuery, (querySnapshot) => {
+    const newMessages: Message[] = [];
+    documentSnapshots.forEach((doc) => {
+      const data = doc.data();
+      newMessages.push({
+        id: doc.id,
+        ...data,
+        timestamp: data.timestamp?.toDate().toISOString(),
+      } as Message);
+    });
+
+    setMessages(newMessages.reverse());
+    
+    const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+    setLastVisible(lastDoc);
+    setHasMore(documentSnapshots.docs.length === MESSAGES_PER_PAGE);
+    
+    setIsLoading(false);
+  }, [chat.id]);
+
+
+  const loadMoreMessages = useCallback(async () => {
+    if (!lastVisible || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    const messagesQuery = query(
+      collection(db, `chats/${chat.id}/messages`), 
+      orderBy('timestamp', 'desc'),
+      startAfter(lastVisible),
+      limit(MESSAGES_PER_PAGE)
+    );
+
+    const documentSnapshots = await getDocs(messagesQuery);
+    
+    const newMessages: Message[] = [];
+    documentSnapshots.forEach((doc) => {
+      const data = doc.data();
+      newMessages.push({
+        id: doc.id,
+        ...data,
+        timestamp: data.timestamp?.toDate().toISOString(),
+      } as Message);
+    });
+
+    // Keep scroll position stable
+    const container = messagesContainerRef.current;
+    const oldScrollHeight = container?.scrollHeight || 0;
+
+    setMessages(prev => [...newMessages.reverse(), ...prev]);
+    
+    const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+    setLastVisible(lastDoc);
+    setHasMore(documentSnapshots.docs.length === MESSAGES_PER_PAGE);
+
+    if (container) {
+      // Restore scroll position after new messages are rendered
+      requestAnimationFrame(() => {
+        container.scrollTop = container.scrollHeight - oldScrollHeight;
+      });
+    }
+
+    setIsLoadingMore(false);
+  }, [chat.id, lastVisible, isLoadingMore]);
+
+
+  useEffect(() => {
+    fetchInitialMessages();
+  }, [fetchInitialMessages]);
+
+  
+  useEffect(() => {
+    // Set up the real-time listener for new messages only
+    if (messages.length === 0 && !isLoading) return; // Don't attach listener until initial load is done
+
+    const lastTimestamp = messages.length > 0 ? new Date(messages[messages.length - 1].timestamp) : new Date(0);
+
+    const q = query(
+      collection(db, `chats/${chat.id}/messages`),
+      orderBy('timestamp', 'asc'),
+      startAfter(lastTimestamp)
+    );
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const newMessages: Message[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        newMessages.push({
-          id: doc.id,
-          ...data,
-          timestamp: data.timestamp?.toDate().toISOString(),
-        } as Message);
+        // Check to prevent duplicates if listener fires too quickly
+        if (new Date(data.timestamp.toDate().toISOString()) > lastTimestamp) {
+            newMessages.push({
+            id: doc.id,
+            ...data,
+            timestamp: data.timestamp.toDate().toISOString(),
+          } as Message);
+        }
       });
-      setMessages(newMessages);
+      
+      if (newMessages.length > 0) {
+        setMessages(prev => [...prev, ...newMessages]);
+      }
     });
 
     return () => unsubscribe();
-  }, [chat.id]);
+  }, [chat.id, messages.length, isLoading]);
+
 
   useEffect(() => {
-    if (messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    const container = messagesContainerRef.current;
+    if (container && chatScrolledToBottom.current) {
+        container.scrollTop = container.scrollHeight;
     }
   }, [messages]);
+
+  const handleScroll = () => {
+    const container = messagesContainerRef.current;
+    if (container) {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      chatScrolledToBottom.current = scrollHeight - scrollTop - clientHeight < 50;
+    }
+  };
   
+  if (isLoading) {
+    return (
+        <div className="flex flex-col h-full items-center justify-center bg-muted/20">
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Loading Chat...</p>
+        </div>
+    );
+  }
+
   if (!otherUser) {
     return <div className="p-4">Could not load user data.</div>;
   }
@@ -70,8 +191,16 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
         <h2 className="text-lg font-semibold">{otherUser.userProfile.name}</h2>
       </header>
 
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar bg-gradient-to-b from-background/10 to-muted/20">
-        {messages.map((message, index) => {
+      <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar bg-gradient-to-b from-background/10 to-muted/20">
+        {hasMore && (
+          <div className="text-center">
+            <Button variant="link" onClick={loadMoreMessages} disabled={isLoadingMore}>
+              {isLoadingMore ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Load Older Messages
+            </Button>
+          </div>
+        )}
+        {messages.map((message) => {
           if (message.senderId === 'system') {
             return (
               <div key={message.id} className="text-center my-4">
