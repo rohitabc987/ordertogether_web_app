@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { MessageInput } from './message-input';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Post, Utensils } from 'lucide-react';
+import { Utensils } from 'lucide-react';
 import Link from 'next/link';
 
 interface ChatWindowProps {
@@ -61,8 +61,8 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <header className="flex items-center gap-4 p-4 border-b">
+    <div className="flex flex-col h-full bg-muted/20">
+      <header className="flex items-center gap-4 p-3 border-b bg-background/80 backdrop-blur-sm z-10">
          <Avatar>
             <AvatarImage src={otherUser.userProfile.photoURL ?? undefined} />
             <AvatarFallback>{otherUserInitials}</AvatarFallback>
@@ -70,12 +70,12 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
         <h2 className="text-lg font-semibold">{otherUser.userProfile.name}</h2>
       </header>
 
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth no-scrollbar">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth no-scrollbar bg-gradient-to-b from-background/10 to-muted/20">
         {messages.map((message, index) => {
           if (message.senderId === 'system') {
             return (
               <div key={message.id} className="text-center my-4">
-                <div className="inline-block bg-muted text-muted-foreground text-xs rounded-full px-3 py-1">
+                <div className="inline-block bg-muted text-muted-foreground text-xs rounded-full px-3 py-1 font-medium">
                   {message.postId && message.postTitle ? (
                     <Link href={`/`} className="flex items-center gap-2 hover:underline">
                       <Utensils className="w-4 h-4" />
@@ -99,10 +99,10 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
             >
               <div
                 className={cn(
-                  'max-w-sm md:max-w-md p-3 rounded-lg',
+                  'max-w-md p-3 rounded-2xl shadow-sm',
                   isCurrentUser
                     ? 'bg-primary text-primary-foreground rounded-br-none'
-                    : 'bg-muted rounded-bl-none'
+                    : 'bg-background rounded-bl-none'
                 )}
               >
                 <p className="text-sm">{message.text}</p>
@@ -115,7 +115,7 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
         })}
       </div>
       
-      <div className="p-4 border-t">
+      <div className="p-4 border-t bg-background/80 backdrop-blur-sm">
         <MessageInput chatId={chat.id} senderId={currentUser.id} />
       </div>
     </div>

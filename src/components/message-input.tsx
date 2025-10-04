@@ -47,7 +47,7 @@ export function MessageInput({ chatId, senderId }: MessageInputProps) {
   };
 
   return (
-    <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+    <form onSubmit={handleSendMessage} className="flex items-center gap-3">
       <Input
         ref={inputRef}
         type="text"
@@ -56,9 +56,10 @@ export function MessageInput({ chatId, senderId }: MessageInputProps) {
         onChange={(e) => setText(e.target.value)}
         autoComplete="off"
         autoFocus
+        className="h-11 rounded-full px-4"
       />
-      <Button type="submit" size="icon" disabled={isPending || !text.trim()}>
-        <Send className="h-4 w-4" />
+      <Button type="submit" size="icon" disabled={isPending || !text.trim()} className="rounded-full w-11 h-11">
+        <Send className="h-5 w-5" />
         <span className="sr-only">Send</span>
       </Button>
     </form>

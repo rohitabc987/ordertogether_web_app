@@ -7,6 +7,7 @@ import type { Chat, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { MessageSquarePlus } from 'lucide-react';
 
 interface ChatSidebarProps {
   chats: Chat[];
@@ -18,19 +19,27 @@ export function ChatSidebar({ chats, currentUser }: ChatSidebarProps) {
 
   if (chats.length === 0) {
     return (
-      <div className="w-full md:w-80 lg:w-96 border-r p-4 text-center">
-        <h2 className="text-xl font-semibold mb-4">Chats</h2>
-        <p className="text-muted-foreground">You have no active conversations.</p>
+      <div className="flex flex-col w-full md:w-80 lg:w-96 border-r bg-background">
+        <div className="p-4 border-b">
+          <h2 className="text-xl font-semibold">Chats</h2>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
+            <MessageSquarePlus className="w-16 h-16 text-muted-foreground/50 mb-4" />
+            <h3 className="font-semibold text-lg">No Conversations</h3>
+            <p className="text-muted-foreground text-sm">
+                You can start a chat from any active order post.
+            </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col w-full md:w-80 lg:w-96 border-r">
+    <div className="flex flex-col w-full md:w-80 lg:w-96 border-r bg-background">
       <div className="p-4 border-b">
         <h2 className="text-xl font-semibold">Chats</h2>
       </div>
-      <nav className="flex-1 overflow-y-auto">
+      <nav className="flex-1 overflow-y-auto no-scrollbar">
         <ul className="space-y-1 p-2">
           {chats.map((chat) => {
             const otherUserId = chat.participants.find(id => id !== currentUser.id);
@@ -63,9 +72,9 @@ export function ChatSidebar({ chats, currentUser }: ChatSidebarProps) {
                 <Link
                   href={`/chat/${chat.id}`}
                   className={cn(
-                    'flex items-center gap-3 p-3 rounded-lg transition-colors',
+                    'flex items-center gap-3 p-3 rounded-lg transition-colors group',
                     isActive
-                      ? 'bg-primary/10 text-primary'
+                      ? 'bg-primary text-primary-foreground'
                       : 'hover:bg-muted/50'
                   )}
                 >
@@ -77,12 +86,12 @@ export function ChatSidebar({ chats, currentUser }: ChatSidebarProps) {
                     <div className="flex justify-between items-baseline">
                       <p className="font-semibold truncate">{otherUser.userProfile.name}</p>
                       {timeAgo && (
-                         <time className="text-xs text-muted-foreground flex-shrink-0">
+                         <time className={cn("text-xs flex-shrink-0", isActive ? 'text-primary-foreground/80' : 'text-muted-foreground')}>
                            {timeAgo}
                          </time>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground truncate">{lastMessageText}</p>
+                    <p className={cn("text-sm truncate", isActive ? 'text-primary-foreground/90' : 'text-muted-foreground' )}>{lastMessageText}</p>
                   </div>
                 </Link>
               </li>
