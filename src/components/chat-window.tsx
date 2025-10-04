@@ -30,11 +30,11 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
   
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const chatScrolledToBottom = useRef(true);
-  const liveListenerUnsubscribe = useRef<() => void | null>(null);
+  const liveListenerUnsubscribe = useRef<(() => void) | null>(null);
 
   const otherUser = chat.users 
     ? chat.participants
-        .map(id => chat.users[id])
+        .map(id => chat.users![id])
         .find(u => u?.id !== currentUser.id)
     : null;
 
