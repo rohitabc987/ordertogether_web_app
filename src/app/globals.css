@@ -36,6 +36,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 220 90% 56%;
     --footer-background: 127 94.7% 68.9%;
+    --chat-border: 0 0% 0%; /* black */
 
     --radius: 1rem; /* smoother rounded edges */
   }
@@ -73,6 +74,7 @@
     --input: 217 33% 25%;
     --ring: 220 90% 56%;
     --footer-background: 162 91.1% 8.4%;
+    --chat-border: 0 0% 90%; /* light gray */
 
     --radius: 1rem;
   }

@@ -62,7 +62,7 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
 
   return (
     <div className="flex flex-col h-full bg-muted/20">
-      <header className="flex items-center gap-4 p-3 border-b-2 border-border/50 bg-background/80 backdrop-blur-sm z-10">
+      <header className="flex items-center gap-4 p-3 border-b-2 bg-background/80 backdrop-blur-sm z-10" style={{ borderColor: 'hsl(var(--chat-border))' }}>
          <Avatar>
             <AvatarImage src={otherUser.userProfile.photoURL ?? undefined} />
             <AvatarFallback>{otherUserInitials}</AvatarFallback>
@@ -70,7 +70,7 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
         <h2 className="text-lg font-semibold">{otherUser.userProfile.name}</h2>
       </header>
 
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth no-scrollbar bg-gradient-to-b from-background/10 to-muted/20">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar bg-gradient-to-b from-background/10 to-muted/20">
         {messages.map((message, index) => {
           if (message.senderId === 'system') {
             return (
@@ -115,7 +115,7 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
         })}
       </div>
       
-      <div className="p-4 border-t-2 border-border/50 bg-background/80 backdrop-blur-sm">
+      <div className="p-4 border-t-2 bg-background/80 backdrop-blur-sm" style={{ borderColor: 'hsl(var(--chat-border))' }}>
         <MessageInput chatId={chat.id} senderId={currentUser.id} />
       </div>
     </div>

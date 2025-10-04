@@ -19,8 +19,8 @@ export function ChatSidebar({ chats, currentUser }: ChatSidebarProps) {
 
   if (chats.length === 0) {
     return (
-      <div className="flex flex-col w-full md:w-80 lg:w-96 border-r-2 border-border/50 bg-background">
-        <div className="p-4 border-b-2 border-border/50">
+      <div className="flex flex-col w-full md:w-80 lg:w-96 border-r-2 bg-background" style={{ borderRightColor: 'hsl(var(--chat-border))' }}>
+        <div className="p-4 border-b-2" style={{ borderBottomColor: 'hsl(var(--chat-border))' }}>
           <h2 className="text-xl font-semibold">Chats</h2>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
@@ -35,8 +35,8 @@ export function ChatSidebar({ chats, currentUser }: ChatSidebarProps) {
   }
 
   return (
-    <div className="flex flex-col w-full md:w-80 lg:w-96 border-r-2 border-border/50 bg-background">
-      <div className="p-4 border-b-2 border-border/50">
+    <div className="flex flex-col w-full md:w-80 lg:w-96 border-r-2 bg-background" style={{ borderRightColor: 'hsl(var(--chat-border))' }}>
+      <div className="p-4 border-b-2" style={{ borderBottomColor: 'hsl(var(--chat-border))' }}>
         <h2 className="text-xl font-semibold">Chats</h2>
       </div>
       <nav className="flex-1 overflow-y-auto no-scrollbar">
