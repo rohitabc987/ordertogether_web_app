@@ -19,7 +19,7 @@ interface ChatWindowProps {
   currentUser: User;
 }
 
-const MESSAGES_PER_PAGE = 12;
+const MESSAGES_PER_PAGE = 20;
 
 export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
   // ========= ALL HOOKS AT THE TOP (UNCONDITIONAL) =========
@@ -288,5 +288,3 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
     </div>
   );
 }
-
-    
