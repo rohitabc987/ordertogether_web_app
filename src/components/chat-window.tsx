@@ -171,7 +171,7 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
         liveListenerUnsubscribe.current();
       }
     };
-  }, [chat.id, chat.lastMessage?.timestamp]);
+  }, [chat.id, chat.lastMessage?.timestamp, chatCacheKey]);
 
   useEffect(() => {
     const container = messagesContainerRef.current;
