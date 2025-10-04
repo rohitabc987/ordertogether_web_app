@@ -14,11 +14,11 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 // Enable offline persistence
+// This must be done before any other Firestore operations.
 try {
     enableIndexedDbPersistence(db)
       .catch((err) => {
@@ -35,3 +35,5 @@ try {
 } catch (error) {
     console.error("Error enabling Firestore persistence", error);
 }
+
+export { app, auth, db };
