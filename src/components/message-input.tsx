@@ -25,7 +25,11 @@ export function MessageInput({ chatId, senderId }: MessageInputProps) {
 
     const optimisticText = text;
     setText(''); // Clear input immediately for better UX
-    inputRef.current?.focus(); // Refocus immediately
+    
+    // Defer the focus call to run after the current execution context
+    setTimeout(() => {
+        inputRef.current?.focus();
+    }, 0);
 
     startTransition(async () => {
       const result = await sendMessageAction(chatId, senderId, optimisticText);
