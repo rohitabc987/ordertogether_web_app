@@ -32,29 +32,31 @@ import { auth as getAuthInstance } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 
 export function Header() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [isPending, startTransition] = useTransition();
   const pathname = usePathname();
   const router = useRouter();
 
   const handleLogout = async () => {
+    const userId = user?.id; // get user id before it's gone
     startTransition(async () => {
       const auth = getAuthInstance;
       if (auth) {
         await signOut(auth);
       }
       await logoutAction();
-      // Clear cached user data on logout
+
+      // Clear client-side state and cache
+      setUser(null);
       try {
         localStorage.removeItem('cachedUser');
-        // Also clear posts cache just in case
-        const userId = user?.id; // get user id before it's gone
         if (userId) {
           localStorage.removeItem(`myPosts_${userId}`);
         }
       } catch (error) {
         console.error('Failed to clear localStorage on logout', error);
       }
+      
       router.push('/login');
       router.refresh();
     });
