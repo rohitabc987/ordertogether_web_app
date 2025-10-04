@@ -253,7 +253,11 @@ export async function verifyAndSignInAction(idToken: string) {
     }
     
     const cookieStore = await cookies();
-    cookieStore.set('session_userId', user.id, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+    cookieStore.set('session_userId', user.id, { 
+        httpOnly: true, 
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+     });
 
     return { success: true, user };
   } catch (error: any) {
@@ -520,4 +524,5 @@ export async function getChatsForUserAction(userId: string): Promise<{ success: 
     return { success: false, message: 'Failed to load chats.' };
   }
 }
+    
     
