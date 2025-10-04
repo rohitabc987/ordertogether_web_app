@@ -30,8 +30,10 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
   const [firstVisible, setFirstVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const chatScrolledToBottom = useRef(true);
   const liveListenerUnsubscribe = useRef<(() => void) | null>(null);
+  const chatScrolledToBottom = useRef(true);
+
+  const chatCacheKey = `chat_${chat.id}`;
 
   const loadMoreMessages = useCallback(async () => {
     if (!firstVisible || isLoadingMore) return;
@@ -72,32 +74,34 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
 
   useEffect(() => {
     let isMounted = true;
-    const chatCacheKey = `chat_${chat.id}`;
-
     const initializeChat = async () => {
       setIsLoading(true);
+
       let localMessages: Message[] = [];
-      
       try {
         const cached = localStorage.getItem(chatCacheKey);
         if (cached) {
           localMessages = JSON.parse(cached);
-          if (isMounted) setMessages(localMessages);
+          if (isMounted) {
+            setMessages(localMessages);
+          }
         }
-      } catch (e) { console.warn("Could not read chat from cache", e); }
+      } catch (e) {
+        console.warn("Cache read error", e);
+      }
       
-      const lastServerTimestamp = chat.lastMessage?.timestamp ?? new Date(0).toISOString();
       const lastLocalTimestamp = localMessages.length > 0 ? localMessages[localMessages.length - 1].timestamp : new Date(0).toISOString();
+      const serverLastTimestamp = chat.lastMessage?.timestamp ?? new Date(0).toISOString();
 
       let finalMessages = localMessages;
 
-      if (lastServerTimestamp > lastLocalTimestamp) {
-        const newMessagesQuery = query(
+      if (serverLastTimestamp > lastLocalTimestamp) {
+        const deltaQuery = query(
           collection(db, `chats/${chat.id}/messages`),
           orderBy('timestamp', 'asc'),
           startAfter(Timestamp.fromDate(new Date(lastLocalTimestamp)))
         );
-        const deltaSnapshot = await getDocs(newMessagesQuery);
+        const deltaSnapshot = await getDocs(deltaQuery);
         const newMessages = deltaSnapshot.docs.map(doc => ({
           id: doc.id, ...doc.data(), timestamp: (doc.data().timestamp as Timestamp).toDate().toISOString(),
         } as Message));
@@ -125,7 +129,7 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
 
       try {
         localStorage.setItem(chatCacheKey, JSON.stringify(finalMessages));
-      } catch (e) { console.warn("Could not save chat to cache", e); }
+      } catch (e) { console.warn("Cache write error", e); }
 
       const lastSyncedTimestamp = finalMessages.length > 0 ? new Date(finalMessages[finalMessages.length - 1].timestamp) : new Date(0);
       const liveQuery = query(
@@ -134,7 +138,9 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
         startAfter(Timestamp.fromDate(lastSyncedTimestamp))
       );
 
-      if (liveListenerUnsubscribe.current) liveListenerUnsubscribe.current();
+      if (liveListenerUnsubscribe.current) {
+        liveListenerUnsubscribe.current();
+      }
 
       liveListenerUnsubscribe.current = onSnapshot(liveQuery, (snapshot) => {
         const newLiveMessages: Message[] = snapshot.docs.map(doc => ({
@@ -150,7 +156,7 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
             const updated = [...prev, ...uniqueNewMessages];
              try {
                 localStorage.setItem(chatCacheKey, JSON.stringify(updated));
-             } catch (e) { console.warn("Could not update cache with live message", e); }
+             } catch (e) { console.warn("Cache update error with live message", e); }
             return updated;
           });
         }
@@ -165,7 +171,7 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
         liveListenerUnsubscribe.current();
       }
     };
-  }, [chat.id]);
+  }, [chat.id, chat.lastMessage?.timestamp]);
 
   useEffect(() => {
     const container = messagesContainerRef.current;
@@ -202,7 +208,7 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
   }
 
   if (!otherUser) {
-    return <div className="p-4">Could not load user data.</div>;
+    return <div className="p-4 flex flex-col h-full items-center justify-center bg-muted/20">Could not load user data.</div>;
   }
   
   const otherUserInitials = otherUser.userProfile.name?.split(' ').map(n => n[0]).join('') || 'U';
@@ -276,5 +282,3 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
     </div>
   );
 }
-
-    
