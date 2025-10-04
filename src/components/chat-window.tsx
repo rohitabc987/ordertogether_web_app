@@ -22,6 +22,7 @@ interface ChatWindowProps {
 const MESSAGES_PER_PAGE = 12;
 
 export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
+  // ========= ALL HOOKS AT THE TOP =========
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -32,7 +33,6 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
   const chatScrolledToBottom = useRef(true);
   const liveListenerUnsubscribe = useRef<(() => void) | null>(null);
 
-  // ========= ALL HOOKS MOVED TO TOP (FIX) =========
   const loadMoreMessages = useCallback(async () => {
     if (!firstVisible || isLoadingMore) return;
 
@@ -165,7 +165,7 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
         liveListenerUnsubscribe.current();
       }
     };
-  }, [chat.id, chat.lastMessage?.timestamp]);
+  }, [chat.id]);
 
   useEffect(() => {
     const container = messagesContainerRef.current;
@@ -173,7 +173,6 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
         container.scrollTop = container.scrollHeight;
     }
   }, [messages]);
-
   // ========= END OF HOOKS SECTION =========
 
   const otherUser = (chat.users && chat.participants)
@@ -277,3 +276,5 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
     </div>
   );
 }
+
+    
