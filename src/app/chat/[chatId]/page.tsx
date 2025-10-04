@@ -1,5 +1,5 @@
 import { ChatWindow } from "@/components/chat-window";
-import { getChatById, getMessagesForChat } from "@/lib/data";
+import { getChatById } from "@/lib/data";
 import { getCurrentUser } from "@/lib/session";
 import { AlertCircle } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -33,7 +33,9 @@ export default async function ChatPage({ params }: ChatPageProps) {
     );
   }
 
-  const initialMessages = await getMessagesForChat(chatId);
+  // Pass an empty array for initial messages.
+  // The ChatWindow component is optimized to handle this by loading from cache/server.
+  const initialMessages = [];
 
   // Ensure we pass a serializable user object to the client component
   const serializableUser = JSON.parse(JSON.stringify(user));
