@@ -31,38 +31,35 @@ export default function MyPostsPage() {
     }
 
     let isMounted = true;
+    const cacheKey = `myPosts_${user.id}`;
 
     const fetchPosts = async () => {
-      // 1. Try to load from cache first
+      // 1. Try to load from cache first for an instant UI
       try {
-        const cachedPostsRaw = localStorage.getItem(`myPosts_${user.id}`);
+        const cachedPostsRaw = localStorage.getItem(cacheKey);
         if (cachedPostsRaw) {
           const cachedPosts = JSON.parse(cachedPostsRaw);
           if (isMounted) {
             setPosts(cachedPosts);
-            setIsLoading(false);
+            setIsLoading(false); // We have something to show, so stop the main loader
           }
-          // If we have cached data, we don't need to fetch from the server.
-          return;
         }
       } catch (e) {
         console.warn("Could not load posts from cache", e);
       }
 
-      // 2. If cache is empty, fetch from server
-      setIsLoading(true); // Set loading true before fetch
+      // 2. Always fetch definitive list from server to revalidate
       const result = await getMyPostsAction(user.id);
       
       if (!isMounted) return;
 
-      if (result.success) {
-        const serverPosts = result.posts;
-        setPosts(serverPosts);
+      if (result.success && result.posts) {
+        setPosts(result.posts);
         setError(null);
         
         // 3. Update cache with the new definitive list from server
         try {
-          localStorage.setItem(`myPosts_${user.id}`, JSON.stringify(serverPosts));
+          localStorage.setItem(cacheKey, JSON.stringify(result.posts));
         } catch (e) {
           console.warn("Could not save posts to cache", e);
         }
@@ -70,8 +67,10 @@ export default function MyPostsPage() {
         setError(result.message || 'Failed to load posts.');
       }
       
-      // Always set loading to false after server fetch is complete
-      setIsLoading(false); 
+      // If we were showing the main loading spinner, hide it now.
+      if (isLoading) {
+        setIsLoading(false); 
+      }
     };
 
     fetchPosts();
@@ -79,7 +78,7 @@ export default function MyPostsPage() {
     return () => {
       isMounted = false;
     };
-  }, [user, router]);
+  }, [user, router, isLoading]); // isLoading is in dependency array to refetch on component mount
   
   const handlePostDelete = (postId: string) => {
     setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
