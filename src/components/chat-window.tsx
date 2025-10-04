@@ -131,22 +131,27 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
     );
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const newMessages: Message[] = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        // Check to prevent duplicates if listener fires too quickly
-        if (new Date(data.timestamp.toDate().toISOString()) > lastTimestamp) {
+      setMessages(prevMessages => {
+        const newMessages: Message[] = [];
+        // Use a Set for quick ID lookup to prevent duplicates
+        const existingIds = new Set(prevMessages.map(m => m.id));
+
+        querySnapshot.forEach((doc) => {
+          if (!existingIds.has(doc.id)) {
+            const data = doc.data();
             newMessages.push({
-            id: doc.id,
-            ...data,
-            timestamp: data.timestamp.toDate().toISOString(),
-          } as Message);
+              id: doc.id,
+              ...data,
+              timestamp: data.timestamp.toDate().toISOString(),
+            } as Message);
+          }
+        });
+
+        if (newMessages.length > 0) {
+          return [...prevMessages, ...newMessages];
         }
+        return prevMessages; // No changes
       });
-      
-      if (newMessages.length > 0) {
-        setMessages(prev => [...prev, ...newMessages]);
-      }
     });
 
     return () => unsubscribe();
@@ -165,6 +170,9 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
     if (container) {
       const { scrollTop, scrollHeight, clientHeight } = container;
       chatScrolledToBottom.current = scrollHeight - scrollTop - clientHeight < 50;
+      if (scrollTop === 0 && hasMore && !isLoadingMore) {
+        loadMoreMessages();
+      }
     }
   };
   
