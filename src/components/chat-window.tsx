@@ -70,7 +70,7 @@ export function ChatWindow({ chat, initialMessages, currentUser }: ChatWindowPro
         <h2 className="text-lg font-semibold">{otherUser.userProfile.name}</h2>
       </header>
 
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth no-scrollbar">
         {messages.map((message, index) => {
           if (message.senderId === 'system') {
             return (
