@@ -1,9 +1,11 @@
+
 import { ChatWindow } from "@/components/chat-window";
 import { getChatById } from "@/lib/data";
 import { getCurrentUser } from "@/lib/session";
 import { AlertCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import type { Message } from "@/lib/types";
 
 interface ChatPageProps {
   params: Promise<{ chatId: string }>;
@@ -35,7 +37,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
 
   // Pass an empty array for initial messages.
   // The ChatWindow component is optimized to handle this by loading from cache/server.
-  const initialMessages = [];
+  const initialMessages: Message[] = [];
 
   // Ensure we pass a serializable user object to the client component
   const serializableUser = JSON.parse(JSON.stringify(user));
