@@ -22,7 +22,7 @@ interface ChatWindowProps {
 const MESSAGES_PER_PAGE = 12;
 
 export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
-  // ========= ALL HOOKS AT THE TOP =========
+  // ========= ALL HOOKS AT THE TOP (UNCONDITIONAL) =========
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -208,7 +208,12 @@ export function ChatWindow({ chat, currentUser }: ChatWindowProps) {
   }
 
   if (!otherUser) {
-    return <div className="p-4 flex flex-col h-full items-center justify-center bg-muted/20">Could not load user data.</div>;
+    return (
+        <div className="flex flex-col h-full items-center justify-center bg-muted/20">
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Initializing chat partner...</p>
+        </div>
+    );
   }
   
   const otherUserInitials = otherUser.userProfile.name?.split(' ').map(n => n[0]).join('') || 'U';
